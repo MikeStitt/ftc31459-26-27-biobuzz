@@ -100,7 +100,7 @@ public abstract class LessonsDriveTrain implements Drivetrain {
     public final void driveWheelsNow(double frontLeftPower, double frontRightPower,
                                      double backLeftPower, double backRightPower) {
         drivenDirectly = true;
-        // TODO: put the four powers into an array in the order front left, front
+        // TODO (L2): put the four powers into an array in the order front left, front
         //       right, back left, back right, hand it to normalized(), then pass
         //       what comes back to remember() and to writeWheels().
         //       double[] wheels = normalized(new double[]{frontLeftPower, ...});
@@ -117,7 +117,7 @@ public abstract class LessonsDriveTrain implements Drivetrain {
      * it somewhere else.
      */
     protected static double[] normalized(double[] powers) {
-        // TODO: find the biggest of the four, ignoring minus signs, or 1 if none
+        // TODO (L4): find the biggest of the four, ignoring minus signs, or 1 if none
         //       of them reaches 1. Then divide every one of them by that number.
         //       Math.abs takes the minus sign off; Math.max picks the bigger of
         //       two. Handing them back untouched is what happens now, which is
@@ -140,14 +140,14 @@ public abstract class LessonsDriveTrain implements Drivetrain {
      */
     public void setCommandedWheels(double frontLeftPower, double frontRightPower,
                                    double backLeftPower, double backRightPower) {
-        // TODO: remember the four powers in the commandedWheels field, in the
+        // TODO (L6): remember the four powers in the commandedWheels field, in the
         //       usual order. One line, and it looks like the array in
         //       driveWheelsNow.
     }
 
     /** Hands the wheels back to the follower. */
     public void releaseCommandedWheels() {
-        // TODO: forget the four powers, so drive() goes back to asking mix().
+        // TODO (L6): forget the four powers, so drive() goes back to asking mix().
         //       Setting commandedWheels to null is how a field says "nothing
         //       here".
     }
@@ -171,7 +171,7 @@ public abstract class LessonsDriveTrain implements Drivetrain {
                     + " Either call initAfter() with no drivetrain, or use setCommandedWheels.");
         }
         applyBrakeMode(manual);
-        // TODO: work out the four powers and send them on. If a lesson has
+        // TODO (L6): work out the four powers and send them on. If a lesson has
         //       commanded the wheels, use a copy of those --
         //       commandedWheels.clone() -- and if it has not, use
         //       normalized(mix(powers)). Then hand the four to remember() and to
