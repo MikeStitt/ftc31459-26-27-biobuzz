@@ -63,9 +63,14 @@ cd book && PATH="$PWD/.venv/bin:$PATH" ninja review
 ```
 
 `ninja review` writes a separate Sphinx site under `review/` and prints where the HTML landed. One
-page per lesson file, one section per blank, and each section is the diff that filling that blank
-makes — starting from the file as a student sees it and applying one blank at a time, so the context
-carries the blanks already done.
+page per lesson, one section per file, and each blank is the diff that filling it makes — starting
+from the file as a student sees it and applying one blank at a time, so the context carries the
+blanks already done.
+
+A blank in a file not named for a lesson lands on the lesson its marker names: `LessonsDriveTrain`
+writes `// TODO (L2):`, and that blank appears on the L2 page. A shared file whose class javadoc
+opens `L8:` gives that lesson to any of its blanks that name none. Add a shared blank with no lesson
+anywhere and the tool says so and fails.
 
 It is a view for reading, not a gate and not part of the guide: `ninja book` does not run it, and
 its pages are not committed. The answer pages under `source/answers/` say what fills each blank;

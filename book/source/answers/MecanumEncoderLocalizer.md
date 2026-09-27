@@ -69,23 +69,23 @@ What the solutions line has there:
     private MotionState state = MotionState.zero();
 ```
 
-## TODO 1
+## TODO 1 (L8)
 
 What the lesson leaves blank:
 
 ```java
-        // TODO 1: read source.wheelInches() and source.headingRadians().
-        // TODO 2: on the first loop there is nothing to compare against --
+        // TODO 1 (L8): read source.wheelInches() and source.headingRadians().
+        // TODO 2 (L8): on the first loop there is nothing to compare against --
         //         remember the values and return.
-        // TODO 3: work out how far each wheel moved since last time, then
+        // TODO 3 (L8): work out how far each wheel moved since last time, then
         //           forward = (fl + fr + bl + br) / 4
         //           left    = (-fl + fr + bl - br) / 4
         //         (Check that second one against a robot: to strafe LEFT, the
         //         front-left wheel rolls backwards.)
-        // TODO 4: rotate (forward, left) by the heading and add it to x and y:
+        // TODO 4 (L8): rotate (forward, left) by the heading and add it to x and y:
         //           x += forward * cos(h) - left * sin(h)
         //           y += forward * sin(h) + left * cos(h)
-        // TODO 5: publish the new pose with MotionState.ofTwist(...).
+        // TODO 5 (L8): publish the new pose with MotionState.ofTwist(...).
 ```
 
 What the solutions line has there:
@@ -136,12 +136,12 @@ What the solutions line has there:
                 new Twist(forwardSpeedInPerS, strafeLeftSpeedInPerS, turnCcwSpeedRadPerS));
 ```
 
-## TODO 6
+## TODO 6 (L8)
 
 What the lesson leaves blank:
 
 ```java
-        // TODO 6: start counting from this pose. The IMU's heading can't be
+        // TODO 6 (L8): start counting from this pose. The IMU's heading can't be
         //         moved, so remember the DIFFERENCE and add it from now on.
 ```
 
@@ -154,12 +154,12 @@ What the solutions line has there:
         publish(0, 0, 0);
 ```
 
-## TODO 5
+## TODO 5 (L8)
 
 What the lesson leaves blank:
 
 ```java
-        return MotionState.zero();   // TODO 5: return the pose you worked out
+        return MotionState.zero();   // TODO 5 (L8): return the pose you worked out
 ```
 
 What the solutions line has there:
@@ -168,12 +168,12 @@ What the solutions line has there:
         return state;
 ```
 
-## TODO 7
+## TODO 7 (L8)
 
 What the lesson leaves blank:
 
 ```java
-        // TODO 7: back to zero.
+        // TODO 7 (L8): back to zero.
 ```
 
 What the solutions line has there:

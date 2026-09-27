@@ -4,12 +4,12 @@ The blanks in this file, filled in from `5e7f23b`:
 
 `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/LessonsDriveTrain.java`
 
-## TODO 
+## TODO (L2)
 
 What the lesson leaves blank:
 
 ```java
-        // TODO: put the four powers into an array in the order front left, front
+        // TODO (L2): put the four powers into an array in the order front left, front
         //       right, back left, back right, hand it to normalized(), then pass
         //       what comes back to remember() and to writeWheels().
         //       double[] wheels = normalized(new double[]{frontLeftPower, ...});
@@ -26,12 +26,12 @@ What the solutions line has there:
         writeWheels(wheels);
 ```
 
-## TODO 
+## TODO (L4)
 
 What the lesson leaves blank:
 
 ```java
-        // TODO: find the biggest of the four, ignoring minus signs, or 1 if none
+        // TODO (L4): find the biggest of the four, ignoring minus signs, or 1 if none
         //       of them reaches 1. Then divide every one of them by that number.
         //       Math.abs takes the minus sign off; Math.max picks the bigger of
         //       two. Handing them back untouched is what happens now, which is
@@ -50,12 +50,12 @@ What the solutions line has there:
         for (int i = 0; i < powers.length; i++) powers[i] /= max;
 ```
 
-## TODO 
+## TODO (L6)
 
 What the lesson leaves blank:
 
 ```java
-        // TODO: remember the four powers in the commandedWheels field, in the
+        // TODO (L6): remember the four powers in the commandedWheels field, in the
         //       usual order. One line, and it looks like the array in
         //       driveWheelsNow.
 ```
@@ -67,12 +67,12 @@ What the solutions line has there:
                 backLeftPower, backRightPower};
 ```
 
-## TODO 
+## TODO (L6)
 
 What the lesson leaves blank:
 
 ```java
-        // TODO: forget the four powers, so drive() goes back to asking mix().
+        // TODO (L6): forget the four powers, so drive() goes back to asking mix().
         //       Setting commandedWheels to null is how a field says "nothing
         //       here".
 ```
@@ -83,12 +83,12 @@ What the solutions line has there:
         commandedWheels = null;
 ```
 
-## TODO 
+## TODO (L6)
 
 What the lesson leaves blank:
 
 ```java
-        // TODO: work out the four powers and send them on. If a lesson has
+        // TODO (L6): work out the four powers and send them on. If a lesson has
         //       commanded the wheels, use a copy of those --
         //       commandedWheels.clone() -- and if it has not, use
         //       normalized(mix(powers)). Then hand the four to remember() and to

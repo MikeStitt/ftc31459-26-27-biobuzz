@@ -1,17 +1,27 @@
-"""Show what each solution asks the student to write, one blank at a time.
+"""Show what each lesson asks the student to write, one blank at a time.
 
-The answer pages under source/answers/ say what fills each blank. This says
-something different: it starts from the lessons file as a student sees it, fills
-one blank, and shows the diff that made. Read down a page and you see the edits
-in the order a student makes them, each one on its own, with context that already
-carries the blanks before it.
+The answer pages under source/answers/ say what fills each blank, a page per
+file. This says something different, and groups it differently: a page per
+lesson, holding every blank that lesson asks for, wherever it lives. L2 asks for
+three blanks in L2Sticks, two in L2TankDriveTrain and one in LessonsDriveTrain,
+and all six are on the L2 page.
 
-Applying the blanks in order has to end at the solutions file, and the tool
-checks that it does. A blank that was missed, or applied in the wrong place,
+Each blank is shown as the diff that filling it makes, starting from the lessons
+file and applying one blank at a time, so the context lines already carry the
+blanks before it. Read down a page and you see the edits in the order a student
+makes them.
+
+Which lesson a blank belongs to comes from the files, not from a list kept here:
+a file named for a lesson supplies its own, a shared file's marker carries the
+lesson in brackets -- `// TODO (L2):` -- and a shared file whose javadoc opens
+`L8:` supplies that for anything its markers do not name.
+
+Applying the differences in order has to reproduce the solutions file, and the
+tool checks that it does. A blank that was missed, or applied in the wrong place,
 shows up as a file that did not arrive.
 
-It reads both files out of git at the commits keep.toml pins, the same as
-tools/answers.py, and it shares that file's rule for what counts as a blank.
+Both files are read out of git at the commits keep.toml pins, the same as
+tools/answers.py, and the rule for what counts as a blank is shared with it.
 
 The pages are generated and not committed: this is a view for reading, not part
 of the guide a student reads. `--build` runs Sphinx over them and prints where
@@ -39,26 +49,76 @@ myst_enable_extensions = ["colon_fence", "deflist"]
 html_theme = "furo"
 '''
 
+MARKER = re.compile(r"TODO(\s+(?P<number>\d+))?")
+LESSON_IN_MARKER = re.compile(r"\(L(\d+)([a-z]?)\)")
+LESSON_IN_JAVADOC = re.compile(r"^\s*\* (L\d+[a-z]?):")
+LESSON_IN_NAME = re.compile(r"^L(\d+)([a-z]*)")
+UNNAMED = "No lesson named"
 
-LESSON_NAME = re.compile(r"^L(\d+)([a-z]*)")
 
-
-def order(path: str) -> tuple[int, int, str, str]:
-    """Lesson order, which is not the alphabetical order git lists files in.
-
-    L2 before L10, and L17a before L17b. A file whose name is not a lesson
-    number, like LessonsDriveTrain, sorts after the lessons.
-    """
-    stem = Path(path).stem
-    found = LESSON_NAME.match(stem)
+def lesson_order(label: str) -> tuple[int, int, str]:
+    """L2 before L10, L17a before L17b, and anything unnumbered last."""
+    found = LESSON_IN_NAME.match(label)
     if not found:
-        return (1, 0, "", stem)
-    return (0, int(found.group(1)), found.group(2), stem)
+        return (1, 0, label)
+    return (0, int(found.group(1)), found.group(2))
 
 
-def steps(blank: list[str], filled: list[str],
-          found: list[tuple[int, int, int, int, bool]]) -> tuple[list[dict], list[str]]:
-    """Each blank filled in turn, with the file before and after it.
+def file_lesson(path: str, text: list[str]) -> str | None:
+    """The lesson a whole file belongs to, or None if it serves several.
+
+    A file named L4ArcadeDriveTrain belongs to L4. A shared file says so in the
+    first line of its class javadoc, the way MecanumEncoderLocalizer opens `L8:`.
+    LessonsDriveTrain serves L2, L4 and L6 and so answers None: its markers carry
+    the lesson one at a time.
+    """
+    named = LESSON_IN_NAME.match(Path(path).stem)
+    if named:
+        return "L" + named.group(1) + named.group(2)
+    for line in text:
+        found = LESSON_IN_JAVADOC.match(line)
+        if found:
+            return found.group(1)
+    return None
+
+
+def blank_lesson(block: list[str], fallback: str | None) -> str:
+    """The lesson one run of blank lines names, or the file's own."""
+    for line in block:
+        found = LESSON_IN_MARKER.search(line)
+        if found:
+            return "L" + found.group(1) + found.group(2)
+    return fallback or UNNAMED
+
+
+def heading(block: list[str]) -> str:
+    """Every TODO marker in one run of blank lines, for the section title.
+
+    tools/answers.py names a run after the first marker in it. Here the whole run
+    is one edit and a run can hold several markers, so all of them are named. A
+    marker is numbered in some files and bare in others, so a run can be named by
+    number or named without one. A run holding no marker at all is one difflib put
+    beside a blank rather than inside it.
+    """
+    numbers = []
+    bare = False
+    for line in block:
+        for found in MARKER.finditer(line):
+            number = found.group("number")
+            if number is None:
+                bare = True
+            elif number not in numbers:
+                numbers.append(number)
+    if not numbers:
+        return "TODO" if bare else "No TODO of its own"
+    if len(numbers) == 1:
+        return "TODO " + numbers[0]
+    return "TODO " + ", ".join(numbers[:-1]) + " and " + numbers[-1]
+
+
+def steps(blank: list[str], filled: list[str], found: list[tuple[int, int, int, int, bool]],
+          fallback: str | None) -> tuple[list[dict], list[str]]:
+    """Each blank filled in turn, with the diff that made and the lesson it is for.
 
     Every difference is applied, and only the blanks get a step: a javadoc line
     the lessons file carries and the solutions file does not is not something a
@@ -82,6 +142,7 @@ def steps(blank: list[str], filled: list[str],
         name = heading(blank[i1:i2])
         out.append({
             "name": name,
+            "lesson": blank_lesson(blank[i1:i2], fallback),
             "unmarked": name == "No TODO of its own",
             "deleted": i2 - i1,
             "written": j2 - j1,
@@ -92,93 +153,65 @@ def steps(blank: list[str], filled: list[str],
     return out, state
 
 
-MARKER = re.compile(r"TODO(\s+(?P<number>\d+))?")
-
-
-def heading(block: list[str]) -> str:
-    """Every TODO marker in one run of blank lines, for the section title.
-
-    tools/answers.py names a run after the first marker in it. Here the whole run
-    is one edit and a run can hold several markers, so all of them are named: the
-    50 markers on the lessons line fall into 46 runs.
-
-    A marker is numbered in some files and bare in others -- 33 read `TODO 3` and
-    17 read `TODO` -- so a run can be named by number, or named without one. A
-    run holding no marker at all is one difflib put beside a blank rather than
-    inside it, and it is titled as having no TODO of its own.
-    """
-    numbers = []
-    bare = False
-    for line in block:
-        for found in MARKER.finditer(line):
-            number = found.group("number")
-            if number is None:
-                bare = True
-            elif number not in numbers:
-                numbers.append(number)
-    if not numbers:
-        return "TODO" if bare else "No TODO of its own"
-    if len(numbers) == 1:
-        return "TODO " + numbers[0]
-    return "TODO " + ", ".join(numbers[:-1]) + " and " + numbers[-1]
-
-
 def lines(count: int, what: str) -> str:
     return f"{count} {what} line" + ("" if count == 1 else "s")
 
 
-def page(path: str, filled_steps: list[dict], comments: int) -> str:
-    written = sum(step["written"] for step in filled_steps)
-    out = [f"# {Path(path).stem}", ""]
-    out.append(f"`{path}`")
+def page(lesson: str, files: list[tuple[str, list[dict]]]) -> str:
+    blanks = sum(len(group) for _, group in files)
+    written = sum(step["written"] for _, group in files for step in group)
+    out = [f"# {lesson}", ""]
+    out.append(f"{blanks} blank(s) in {len(files)} file(s), "
+               f"{written} line(s) for the student to write.")
     out.append("")
-    out.append(f"{len(filled_steps)} blank(s), {written} line(s) for the student to write.")
-    out.append("")
-    for step in filled_steps:
-        out.append(f"## {step['name']}")
+    for path, group in files:
+        out.append(f"## {Path(path).stem}")
         out.append("")
-        out.append(f"Delete {lines(step['deleted'], 'blank')}, write "
-                   f"{lines(step['written'], 'real')}.")
+        out.append(f"`{path}`")
         out.append("")
-        if step["unmarked"]:
-            out.append("These lines sit beside a blank rather than inside one, so the marker that")
-            out.append("asks for them is in another edit on this page.")
+        for step in group:
+            out.append(f"### {step['name']}")
             out.append("")
-        out.append("```diff")
-        out.append(step["diff"])
-        out.append("```")
-        out.append("")
-    if not filled_steps:
-        out.append("Nothing here for a student to write: the two lines differ only in comments.")
-        out.append("")
-    if comments:
-        out.append(f"{comments} run(s) of comment lines differ as well, and are not blanks.")
-        out.append("")
+            out.append(f"Delete {lines(step['deleted'], 'blank')}, write "
+                       f"{lines(step['written'], 'real')}.")
+            out.append("")
+            if step["unmarked"]:
+                out.append("These lines sit beside a blank rather than inside one, so the marker")
+                out.append("that asks for them is in another edit on this page.")
+                out.append("")
+            out.append("```diff")
+            out.append(step["diff"])
+            out.append("```")
+            out.append("")
     return "\n".join(out)
 
 
-def index(rows: list[tuple[str, int, int]], lessons: str, solutions: str,
-          arrived: list[str]) -> str:
+def index(rows: list[tuple[str, int, int, int]], lessons: str, solutions: str,
+          wrong: list[str]) -> str:
     out = ["# What the student writes", ""]
     out.append(f"Every blank on the lessons line at `{lessons}`, filled one at a time from the")
-    out.append(f"solutions line at `{solutions}`. Each page is one file, each section one blank,")
-    out.append("and each diff is one edit a student makes.")
+    out.append(f"solutions line at `{solutions}`, and grouped by the lesson that asks for it. Each")
+    out.append("page is one lesson, each section one file, and each diff is one edit a student")
+    out.append("makes.")
+    out.append("")
+    out.append("A blank in a file not named for a lesson belongs to the lesson its marker names, so")
+    out.append("LessonsDriveTrain's five blanks land on three different pages.")
     out.append("")
     out.append("The edits are grouped by where the two files differ, not by the TODO numbering, so")
     out.append("a run holding three markers is one edit and is named after all three. Where the")
     out.append("alignment puts a blank line in a different place, a line can also arrive one edit")
     out.append("earlier than the TODO that asks for it.")
     out.append("")
-    out.append("| File | Blanks | Lines to write |")
-    out.append("| --- | --- | --- |")
-    for name, count, written in rows:
-        out.append(f"| [{name}]({name}.md) | {count} | {written} |")
-    out.append(f"| **Total** | **{sum(row[1] for row in rows)}** "
-               f"| **{sum(row[2] for row in rows)}** |")
+    out.append("| Lesson | Files | Blanks | Lines to write |")
+    out.append("| --- | --- | --- | --- |")
+    for lesson, files, blanks, written in rows:
+        out.append(f"| [{lesson}]({lesson}.md) | {files} | {blanks} | {written} |")
+    out.append(f"| **Total** | | **{sum(row[2] for row in rows)}** "
+               f"| **{sum(row[3] for row in rows)}** |")
     out.append("")
-    if arrived:
+    if wrong:
         out.append("These files did not come out the same as the solutions line after every blank")
-        out.append("was applied, so something below is wrong: " + ", ".join(arrived) + ".")
+        out.append("was applied, so something below is wrong: " + ", ".join(wrong) + ".")
     else:
         out.append("Applying every blank in order reproduces each solutions file exactly, which is")
         out.append("checked each time this is generated.")
@@ -187,31 +220,40 @@ def index(rows: list[tuple[str, int, int]], lessons: str, solutions: str,
     out.append(":maxdepth: 1")
     out.append(":hidden:")
     out.append("")
-    for name, _, _ in rows:
-        out.append(name)
+    for lesson, _, _, _ in rows:
+        out.append(lesson)
     out.append("```")
     out.append("")
     return "\n".join(out)
 
 
-def generate(lessons: str, solutions: str) -> tuple[dict[str, str], list[str]]:
-    pages = {}
-    rows = []
+def generate(lessons: str, solutions: str) -> tuple[dict[str, str], list[str], list[str]]:
+    by_lesson: dict[str, list[tuple[str, list[dict]]]] = {}
     wrong = []
-    for path in sorted(answers.lesson_files(lessons), key=order):
+    for path in answers.lesson_files(lessons):
         blank = answers.git("show", f"{lessons}:{path}").splitlines()
         filled = answers.git("show", f"{solutions}:{path}").splitlines()
         found = answers.differences(blank, filled)
-        comments = sum(1 for *_, is_blank in found if not is_blank)
-        filled_steps, arrived = steps(blank, filled, found)
-        name = Path(path).stem
+        filled_steps, arrived = steps(blank, filled, found, file_lesson(path, blank))
         if arrived != filled:
-            wrong.append(name)
-        pages[name + ".md"] = page(path, filled_steps, comments)
-        rows.append((name, len(filled_steps), sum(s["written"] for s in filled_steps)))
+            wrong.append(Path(path).stem)
+        for step in filled_steps:
+            group = by_lesson.setdefault(step["lesson"], [])
+            if not group or group[-1][0] != path:
+                group.append((path, []))
+            group[-1][1].append(step)
+
+    pages = {}
+    rows = []
+    for lesson in sorted(by_lesson, key=lesson_order):
+        files = by_lesson[lesson]
+        pages[lesson + ".md"] = page(lesson, files)
+        rows.append((lesson, len(files),
+                     sum(len(group) for _, group in files),
+                     sum(step["written"] for _, group in files for step in group)))
     pages["index.md"] = index(rows, lessons, solutions, wrong)
     pages["conf.py"] = CONF
-    return pages, wrong
+    return pages, wrong, [row[0] for row in rows if row[0] == UNNAMED]
 
 
 def main() -> int:
@@ -225,16 +267,23 @@ def main() -> int:
     args = parser.parse_args()
 
     out = book_root() / OUT / "source"
-    pages, wrong = generate(args.lessons, args.solutions)
+    pages, wrong, unnamed = generate(args.lessons, args.solutions)
     out.mkdir(parents=True, exist_ok=True)
+    for stale in out.glob("*.md"):
+        if stale.name not in pages:
+            stale.unlink()
     for name, text in pages.items():
         (out / name).write_text(text, encoding="utf-8")
-    written = sum(page.count("\n## ") for name, page in pages.items() if name != "index.md")
-    print(f"{written} blank(s) across {len(pages) - 2} file(s), into {OUT}/source")
+    blanks = sum(page.count("\n### ") for name, page in pages.items() if name != "index.md")
+    print(f"{blanks} blank(s) across {len(pages) - 2} lesson(s), into {OUT}/source")
 
     if wrong:
         print("\nApplying every blank did not reproduce the solutions file for: "
               + ", ".join(wrong))
+        return 1
+    if unnamed:
+        print(f"\nSome blanks name no lesson and are on the \"{UNNAMED}\" page. A shared file's"
+              " marker says which lesson wants it, as `// TODO (L2):`.")
         return 1
 
     if args.build:

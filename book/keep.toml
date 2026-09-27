@@ -18,6 +18,6 @@ words = 240
 # pin is deliberately moved.
 [answers]
 lessons = "lessons-sim-nt4"
-lessons_commit = "0054de9"
+lessons_commit = "e28bb70"
 solutions = "solutions-sim-nt4"
 solutions_commit = "5e7f23b"
