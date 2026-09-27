@@ -100,6 +100,27 @@ public class LessonsTest {
         assertEquals(0.0, h.motors.get(Constants.frontRightName).power, EPS);
     }
 
+    /**
+     * What a viewer watching the simulation sees when L2 is driven: the robot
+     * goes up the field. The simulator's own tests use a teleop out of
+     * {@code base}, so this is the one place a real lesson is asked to move it.
+     */
+    @Test
+    public void l2_theSticksMoveTheSimulatedRobot() {
+        OpModeHarness h = new OpModeHarness(new L2Sticks());
+        h.init();
+        h.start();
+
+        h.gamepad1.left_stick_y = -1.0f;      // both sticks fully forward
+        h.gamepad1.right_stick_y = -1.0f;
+        h.loops(200, 0);                      // 200 x 5 ms of simulated time
+
+        Pose pose = h.robot.localizer.state().pose();
+        assertTrue("drove forward, and got a fair way: " + pose.x(), pose.x() > 40);
+        assertEquals("no sideways drift", 0, pose.y(), EPS);
+        h.stop();
+    }
+
     // -------------------------------------------------------------- L3
 
     @Test

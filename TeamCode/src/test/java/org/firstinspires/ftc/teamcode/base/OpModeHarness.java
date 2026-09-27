@@ -18,7 +18,9 @@ import java.lang.reflect.Proxy;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -100,7 +102,29 @@ public final class OpModeHarness {
         return null;
     }
 
-    public final SimRobot robot = new SimRobot();
+    /**
+     * The simulated clock, in nanoseconds. It moves only when {@link #loop}
+     * runs, by {@link #stepMs} each time, so the motion a run integrates is the
+     * same every run. Nothing here reads the wall clock.
+     */
+    public static final class SimClock {
+        private long nanos;
+
+        public long nanos() {
+            return nanos;
+        }
+
+        public void advance(long ms) {
+            nanos += ms * 1_000_000L;
+        }
+    }
+
+    public final SimClock clock = new SimClock();
+
+    /** How long one {@link #loop} takes, in simulated milliseconds. */
+    public long stepMs = 5;
+
+    public final SimRobot robot = new SimRobot(clock::nanos);
     public final Gamepad gamepad1 = new Gamepad();
     public final Gamepad gamepad2 = new Gamepad();
     public final SimRobot.DriverStation driverStation = new SimRobot.DriverStation();
@@ -134,6 +158,12 @@ public final class OpModeHarness {
     /** Where this harness's flight logs go. */
     public File logFolder;
 
+    /**
+     * Every folder a harness in this JVM has logged into, oldest first. What
+     * {@link SimLogs} reads to say where a failing test left its log.
+     */
+    static final List<File> logFolders = new ArrayList<>();
+
     /** The .wpilog files written so far. */
     public File[] logs() {
         File[] files = logFolder.listFiles((d, n) -> n.endsWith(".wpilog"));
@@ -164,12 +194,27 @@ public final class OpModeHarness {
         opMode.telemetry = SimRobot.telemetry(driverStation);
         opMode.gamepad1 = gamepad1;
         opMode.gamepad2 = gamepad2;
-        RobotFactory.follower = (map, drivetrain) -> robot.follower;
+        // The simulated robot moves on what reached the motors, whoever wrote
+        // it: the lesson's own code in L2 to L5, the follower through the
+        // lesson's drivetrain from L6 on.
+        robot.localizer.driveFrom(() -> SimRobot.fromWheels(
+                motors.get(Constants.frontLeftName).power,
+                motors.get(Constants.frontRightName).power,
+                motors.get(Constants.backLeftName).power,
+                motors.get(Constants.backRightName).power));
+        // Pedro gets the simulated drivetrain, which passes what it is asked
+        // for on to the drivetrain the lesson built. Without that, nothing the
+        // follower computes ever reaches a motor.
+        RobotFactory.follower = (map, drivetrain) -> {
+            robot.drive.delegate = drivetrain;
+            return robot.follower;
+        };
         // Flight logs go to a temp folder, not the robot's storage or the
         // working directory. Each harness gets its own.
         try {
             logFolder = Files.createTempDirectory("corbelsflightlog-test").toFile();
             logFolder.deleteOnExit();
+            logFolders.add(logFolder);
             FtcFlightLog.useDirectory(logFolder);
         } catch (IOException e) {
             throw new IllegalStateException("could not make a temp log folder", e);
@@ -197,13 +242,15 @@ public final class OpModeHarness {
         opMode.start();
     }
 
+    /** One loop, {@link #stepMs} of simulated time later than the last. */
     public void loop() {
+        clock.advance(stepMs);
         opMode.loop();
     }
 
     public void loops(int count, long sleepMs) {
         for (int i = 0; i < count; i++) {
-            opMode.loop();
+            loop();
             sleep(sleepMs);
         }
     }

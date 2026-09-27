@@ -53,7 +53,25 @@ android {
 repositories {
     maven { url = "https://mymaven.bylazar.com/releases" }   // Panels
     maven { url = "https://repo.dairy.foundation/releases" } // Sloth
+    maven { url = "https://frcmaven.wpi.edu/artifactory/release/" } // WPILib ntcore, tests only
 }
+
+// NetworkTables for the laptop simulation. 2025.3.2 and not 2026.2.2: the java
+// halves are published at 2026.2.2, but every -jni artifact stops at 2025.3.2,
+// and the natives are what a server needs. Both halves move together when the
+// 2026 natives appear.
+def ntcoreVersion = '2025.3.2'
+
+// The natives ship one jar per platform, so the classifier is chosen here.
+// Only osxuniversal has been run.
+def wpilibClassifier = {
+    String os = System.getProperty('os.name').toLowerCase()
+    String arch = System.getProperty('os.arch').toLowerCase()
+    boolean arm = arch.contains('aarch64') || arch.contains('arm64')
+    if (os.contains('mac')) return 'osxuniversal'
+    if (os.contains('win')) return arm ? 'windowsarm64' : 'windowsx86-64'
+    return arm ? 'linuxarm64' : 'linuxx86-64'
+}()
 
 dependencies {
     implementation project(':FtcRobotController')
@@ -93,4 +111,31 @@ dependencies {
     implementation 'com.github.MikeStitt.corbelsflightlog:corbelsflightlog-pedro:v0.2.1'
 
     testImplementation 'junit:junit:4.13.2'
+
+    // --- NetworkTables, for the simulation ---------------------------------
+    // testImplementation throughout, so none of this can reach the robot.
+    // WPILib's published poms carry no dependencies, so wpiutil is named here
+    // rather than arriving with ntcore.
+    testImplementation "edu.wpi.first.ntcore:ntcore-java:$ntcoreVersion"
+    testImplementation "edu.wpi.first.wpiutil:wpiutil-java:$ntcoreVersion"
+    testImplementation "edu.wpi.first.ntcore:ntcore-jni:$ntcoreVersion:$wpilibClassifier"
+    testImplementation "edu.wpi.first.wpiutil:wpiutil-jni:$ntcoreVersion:$wpilibClassifier"
+}
+
+// Runs a lesson in the simulator, publishing to NetworkTables. The classpath is
+// the unit test one, because that is where the simulation lives and where
+// ntcore is declared; the Android test task is asked for it rather than rebuilt
+// here, so the two can never disagree.
+afterEvaluate {
+    tasks.register('simRun', JavaExec) {
+        group = 'verification'
+        description = 'Run a lesson in the simulator for AdvantageScope. --args="L2Sticks left_stick_y=-1"'
+        dependsOn 'compileDebugUnitTestJavaWithJavac'
+        mainClass = 'org.firstinspires.ftc.teamcode.base.SimRun'
+        classpath = tasks.named('testDebugUnitTest').get().classpath
+        // Ctrl-C is how this task ends, and a JVM killed by SIGINT exits
+        // 130. Without this, the intended way to stop it reports a build
+        // failure.
+        ignoreExitValue = true
+    }
 }
