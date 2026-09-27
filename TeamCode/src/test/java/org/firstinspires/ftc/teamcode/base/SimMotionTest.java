@@ -8,6 +8,7 @@ import com.pedropathing.math.Pose;
 
 import org.firstinspires.ftc.teamcode.lessons.L2Sticks;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -19,6 +20,10 @@ import org.junit.Test;
  * drew a robot standing still for the first four lessons.
  */
 public class SimMotionTest {
+
+    /** Where a failure left its flight log. */
+    @Rule
+    public final SimLogs logs = new SimLogs();
 
     private static double[] motorPowers(OpModeHarness h) {
         return new double[]{

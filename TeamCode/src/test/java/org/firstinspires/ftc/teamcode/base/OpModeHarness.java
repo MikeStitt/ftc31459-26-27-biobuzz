@@ -18,7 +18,9 @@ import java.lang.reflect.Proxy;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -156,6 +158,12 @@ public final class OpModeHarness {
     /** Where this harness's flight logs go. */
     public File logFolder;
 
+    /**
+     * Every folder a harness in this JVM has logged into, oldest first. What
+     * {@link SimLogs} reads to say where a failing test left its log.
+     */
+    static final List<File> logFolders = new ArrayList<>();
+
     /** The .wpilog files written so far. */
     public File[] logs() {
         File[] files = logFolder.listFiles((d, n) -> n.endsWith(".wpilog"));
@@ -206,6 +214,7 @@ public final class OpModeHarness {
         try {
             logFolder = Files.createTempDirectory("corbelsflightlog-test").toFile();
             logFolder.deleteOnExit();
+            logFolders.add(logFolder);
             FtcFlightLog.useDirectory(logFolder);
         } catch (IOException e) {
             throw new IllegalStateException("could not make a temp log folder", e);

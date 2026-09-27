@@ -9,6 +9,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import io.github.mikestitt.corbelsflightlog.FlightLog;
 
 import org.firstinspires.ftc.teamcode.lessons.L2Sticks;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.net.InetSocketAddress;
@@ -22,6 +23,10 @@ import java.net.Socket;
  * fights a server someone left running.
  */
 public class SimPublisherTest {
+
+    /** Where a failure left its flight log. */
+    @Rule
+    public final SimLogs logs = new SimLogs();
 
     private static final int NT3 = 1799;
     private static final int NT4 = 5899;
