@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.lessons;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.pedropathing.drivetrain.DrivePowers;
 
@@ -11,8 +12,9 @@ import org.junit.Test;
 
 /**
  * One test per blank in {@link LessonDriveTrain}: one for each wheel of the
- * mixing, and one for sending the four powers to the four motors. A student who
- * gets one wheel wrong sees which wheel.
+ * mixing, one for sending the four powers to the four motors, and one for the
+ * sticks commanding the wheels while the follower holds the drivetrain. A
+ * student who gets one wheel wrong sees which wheel.
  *
  * <p>These drive the class directly rather than through an OpMode, because that
  * is what the follower does: it hands over three numbers and expects four
@@ -126,6 +128,36 @@ public class LessonDriveTrainTest {
         follower(1, 0, 0.5);
         assertEquals(0.5 / 1.5, frontLeft.power, EPS);
         assertEquals(1.0, frontRight.power, EPS);
+    }
+
+    /**
+     * L6's own move: the driver's three numbers go through the same mixing the
+     * follower would have used, and the four wheels are commanded, so the
+     * follower's own answer is ignored while the driver has the sticks.
+     */
+    @Test
+    public void theSticksCommandTheWheelsSoTheDriverStillWins() {
+        wheels.sticks(1, 0, 0);
+        assertTrue("the wheels are commanded, not left to the follower",
+                wheels.commandedWheelsAreSet());
+
+        // Whatever the follower asks for next is ignored; the sticks decided.
+        follower(0, 0, 0);
+        assertEquals("driving forward runs all four forward", 1.0, frontLeft.power, EPS);
+        assertEquals(1.0, frontRight.power, EPS);
+        assertEquals(1.0, backLeft.power, EPS);
+        assertEquals(1.0, backRight.power, EPS);
+    }
+
+    @Test
+    public void theSticksAreScaledDownTogetherBeforeTheyAreCommanded() {
+        // Full forward and full left at once is a diagonal: one pair wants 2.
+        wheels.sticks(1, 1, 0);
+        follower(0, 0, 0);
+        assertEquals("the pair that wanted 2 gets 1", 1.0, frontRight.power, EPS);
+        assertEquals(1.0, backLeft.power, EPS);
+        assertEquals("the other pair wanted 0 and still gets 0", 0.0, frontLeft.power, EPS);
+        assertEquals(0.0, backRight.power, EPS);
     }
 
     @Test
