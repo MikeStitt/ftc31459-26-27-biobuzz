@@ -8,7 +8,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 
 import io.github.mikestitt.corbelsflightlog.FlightLog;
 
-import org.firstinspires.ftc.teamcode.lessons.L2Sticks;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -42,7 +41,7 @@ public class SimPublisherTest {
 
     @Test
     public void theServerStartsAndListens() {
-        OpModeHarness h = new OpModeHarness(new L2Sticks());
+        OpModeHarness h = new OpModeHarness(new SimOpModes.Tank());
         h.init();
         try (SimPublisher out = new SimPublisher(h, NT3, NT4)) {
             out.publish();
@@ -57,7 +56,7 @@ public class SimPublisherTest {
     @Test
     public void theRobotIsPublishedWhereTheFieldViewWantsIt() {
         int savedTurns = FlightLog.fieldQuarterTurns;
-        OpModeHarness h = new OpModeHarness(new L2Sticks());
+        OpModeHarness h = new OpModeHarness(new SimOpModes.Tank());
         try {
             FlightLog.fieldQuarterTurns = 0;
             h.init();

@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.base;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.firstinspires.ftc.teamcode.lessons.L2Sticks;
 import org.junit.Test;
 
 /**
@@ -22,7 +21,7 @@ public class SimLogsTest {
     @Test
     public void aRunThatLoggedNamesTheFileAndItsSize() {
         int before = OpModeHarness.logFolders.size();
-        OpModeHarness h = new OpModeHarness(new L2Sticks());
+        OpModeHarness h = new OpModeHarness(new SimOpModes.Tank());
         h.run(20, 0);
         String note = SimLogs.note(before);
         assertTrue(note, note.contains("AdvantageScope can open what ran:"));

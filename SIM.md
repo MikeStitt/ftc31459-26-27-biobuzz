@@ -61,6 +61,17 @@ None of the struct topics the flight log writes are here: no `Speeds`, no `Twist
 `AimPose`. A struct topic has to publish a schema alongside it, and the three `sim/vel` numbers say
 what `Twist` would have said. That is `sim.struct.topics` in `open-work.md`.
 
+## Which teleop a test drives
+
+The simulator's own tests drive `SimOpModes.Tank` and `SimOpModes.Driven`, which are built only out
+of `base`. That is deliberate: on the lessons branch the lessons are blanks, and a test of the
+simulator that drove one would fail there, where a failure outside the `lessons` package is a defect
+rather than the point.
+
+The one test that asks a real lesson to move the robot is
+`LessonsTest.l2_theSticksMoveTheSimulatedRobot`, and it lives in the `lessons` package, where a
+blank L2 failing is expected.
+
 ## Where a failing test leaves its log
 
 A test that fails names its flight log in the failure message:

@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import com.pedropathing.math.Pose;
 
-import org.firstinspires.ftc.teamcode.lessons.L2Sticks;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.junit.Rule;
 import org.junit.Test;
@@ -18,6 +17,9 @@ import org.junit.Test;
  * <p>Until this, {@code SimLocalizer} integrated what Pedro commanded, and L2
  * through L5 never command Pedro anything: a viewer pointed at the simulation
  * drew a robot standing still for the first four lessons.
+ *
+ * <p>The teleops here are {@link SimOpModes}, not lessons, so that what is
+ * being tested is the simulator and not whether a lesson is filled in.
  */
 public class SimMotionTest {
 
@@ -33,9 +35,9 @@ public class SimMotionTest {
                 h.motors.get(Constants.backRightName).power};
     }
 
-    /** L2 with both sticks pushed fully forward, for one simulated second. */
-    private static OpModeHarness driveL2Forward() {
-        OpModeHarness h = new OpModeHarness(new L2Sticks());
+    /** Both sticks pushed fully forward, for one simulated second. */
+    private static OpModeHarness driveForward() {
+        OpModeHarness h = new OpModeHarness(new SimOpModes.Tank());
         h.init();
         h.start();
         h.gamepad1.left_stick_y = -1.0f;    // the stick reads negative forward
@@ -51,8 +53,8 @@ public class SimMotionTest {
      * {@code no sideways drift expected:<0.0> but was:<18.53...>}.
      */
     @Test
-    public void theSticksInL2MoveTheSimulatedRobot() {
-        OpModeHarness h = driveL2Forward();
+    public void theSticksMoveTheSimulatedRobot() {
+        OpModeHarness h = driveForward();
         assertArrayEquals("all four wheels at full power",
                 new double[]{1, 1, 1, 1}, motorPowers(h), 1e-9);
 
@@ -65,21 +67,11 @@ public class SimMotionTest {
 
     @Test
     public void twoRunsOfTheSameLoopsIntegrateTheSameMotion() {
-        Pose first = driveL2Forward().robot.localizer.state().pose();
-        Pose again = driveL2Forward().robot.localizer.state().pose();
+        Pose first = driveForward().robot.localizer.state().pose();
+        Pose again = driveForward().robot.localizer.state().pose();
         assertEquals("x", first.x(), again.x(), 0);
         assertEquals("y", first.y(), again.y(), 0);
         assertEquals("heading", first.heading(), again.heading(), 0);
-    }
-
-    /** A teleop that hands the follower a drivetrain that reaches the motors. */
-    public static class Driven extends CorbelsTeleOp {
-        @Override public void init() {
-            initBefore();
-            initAfter(new CorbelsMecanum(hardware));
-        }
-
-        @Override public void loop() { loopBefore(); loopAfter(); }
     }
 
     /**
@@ -89,7 +81,7 @@ public class SimMotionTest {
      */
     @Test
     public void whatTheFollowerAsksForReachesTheMotors() {
-        OpModeHarness h = new OpModeHarness(new Driven());
+        OpModeHarness h = new OpModeHarness(new SimOpModes.Driven());
         h.init();
         h.start();
         h.robot.follower.manual(1, 0, 0);
