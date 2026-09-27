@@ -1,0 +1,14 @@
+# The guide's register: word ceilings, and the passages Mike has said he likes.
+#
+# A page's ceiling is set when the page is accepted, and raising one is a visible
+# line in a diff. tools/check_words.py fails a page over its ceiling, and a page
+# with no ceiling at all.
+#
+# A [[keep]] entry pins a passage Mike has accepted: the page, the first line of
+# the passage as an anchor, and the sha256 of the whole passage.
+# tools/check_keep.py fails when the words have moved. There are none yet: the
+# first arrive in phase.b, from Mike reading task.l2 and task.directions.
+
+[[page]]
+path = "source/index.md"
+words = 240

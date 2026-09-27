@@ -79,3 +79,8 @@ lint/generated/
 lint/outputs/
 lint/tmp/
 # lint/reports/
+
+# The book's Sphinx virtualenv, built from book/requirements.txt.
+book/.venv/
+book/tools/__pycache__/
+book/.ninja_log
