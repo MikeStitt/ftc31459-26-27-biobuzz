@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.base.odometry.HardwareWheelSource;
  * <p>Passes when: LessonsTest.l8_theEncoderLocalizerRunsAlongsideAndIsLogged
  */
 @TeleOp(name = "L8 Compare Localizers", group = "Lessons")
-public class L8CompareLocalizers extends CorbelsTeleOp {
+public class L8CompareLocalizersOpMode extends CorbelsTeleOp {
 
     @Override
     protected void shadows() {
@@ -26,13 +26,13 @@ public class L8CompareLocalizers extends CorbelsTeleOp {
         //                 new MecanumEncoderLocalizer(new HardwareWheelSource(hardware)));
     }
 
-    private L6FollowerDriveTrain wheels;
+    private L6FollowerDriveTrain drivetrain;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new L6FollowerDriveTrain(hardware);
-        initAfter(wheels);
+        drivetrain = new L6FollowerDriveTrain(hardware);
+        initAfter(drivetrain);
     }
 
     @Override
@@ -45,12 +45,13 @@ public class L8CompareLocalizers extends CorbelsTeleOp {
     public void loop() {
         loopBefore();
         // TODO 2: holonomic driving, same as lesson 5 -- but through the
-        //         follower now, the way lesson 6 handed the wheels over.
+        //         follower now, the way lesson 6 handed the drivetrain over.
         loopAfter();
     }
 
     @Override
     public void stop() {
+        drivetrain.stop();
         stopAfter();
     }
 }

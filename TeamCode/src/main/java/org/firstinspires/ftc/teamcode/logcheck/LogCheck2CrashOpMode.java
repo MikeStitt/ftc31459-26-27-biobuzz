@@ -18,7 +18,7 @@ import io.github.mikestitt.corbelsflightlog.ftc.FtcFlightLog;
  * FAIL: the file is missing, empty, or unreadable.
  */
 @TeleOp(name = "Log 2: crash mid-run", group = "LogCheck")
-public class LogCheck2Crash extends OpMode {
+public class LogCheck2CrashOpMode extends OpMode {
 
     private static final double CRASH_AFTER_SECONDS = 3.0;
 
@@ -57,7 +57,7 @@ public class LogCheck2Crash extends OpMode {
         if (seconds > CRASH_AFTER_SECONDS) {
             FlightLog.event("crashing now, at loop " + loops);
             throw new IllegalStateException(
-                    "LogCheck2Crash: deliberate crash to test that the log still closes");
+                    "LogCheck2CrashOpMode: deliberate crash to test that the log still closes");
         }
     }
 

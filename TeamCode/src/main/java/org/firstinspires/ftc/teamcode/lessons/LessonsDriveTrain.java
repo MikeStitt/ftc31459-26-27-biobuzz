@@ -19,7 +19,7 @@ import java.util.Map;
  * robot. The rest arrives one lesson at a time.
  *
  * <ul>
- *   <li>L2 writes {@link #driveWheelsNow}, which sends four powers to the four
+ *   <li>L2p2 writes {@link #driveWheelsNow}, which sends four powers to the four
  *       motors right now.
  *   <li>L4 writes {@link #normalized}, so asking for more than full power slows
  *       every wheel down together instead of sending the robot somewhere else.
@@ -29,9 +29,10 @@ import java.util.Map;
  * </ul>
  *
  * <p>Every lesson also builds its own drivetrain on top of this one, and the
- * method it always writes is {@link #writeWheels}: four powers to four motors,
- * in the order front left, front right, back left, back right. That order is the
- * same everywhere, so it is worth learning once.
+ * method it always writes is {@link #writeWheels}, which sends {@link #wheelPowers}
+ * to the four motors. {@link #FL}, {@link #FR}, {@link #BL} and {@link #BR} say
+ * which wheel each slot belongs to, and they are the only way to index the array,
+ * so the order is written down once instead of in every method.
  *
  * <p><b>Which way is positive.</b> Forward runs along the robot's nose, strafe
  * goes towards the robot's left, and turn goes counter-clockwise seen from
@@ -45,13 +46,26 @@ import java.util.Map;
  */
 public abstract class LessonsDriveTrain implements Drivetrain {
 
-    protected final DcMotorEx frontLeft;
-    protected final DcMotorEx frontRight;
-    protected final DcMotorEx backLeft;
-    protected final DcMotorEx backRight;
+    /** Front left, in {@link #wheelPowers} and in every other four-wheel array. */
+    protected static final int FL = 0;
 
-    private final DcMotorEx[] motors;
-    private final double[] wheelPowers = new double[4];
+    /** Front right. */
+    protected static final int FR = 1;
+
+    /** Back left. */
+    protected static final int BL = 2;
+
+    /** Back right. */
+    protected static final int BR = 3;
+
+    /** The robot's motors, sensors and battery. The motors are read from here. */
+    protected final RobotHardware hardware;
+
+    /** The four motors in wheel order, for the settings that go to all of them. */
+    private final DcMotorEx[] motors = new DcMotorEx[4];
+
+    /** What the wheels were last told to do. Written by whatever drives them. */
+    protected final double[] wheelPowers = new double[4];
 
     /** Set by {@link #setCommandedWheels}, cleared by {@link #releaseCommandedWheels}. */
     private double[] commandedWheels;
@@ -60,35 +74,35 @@ public abstract class LessonsDriveTrain implements Drivetrain {
     private boolean drivenDirectly;
 
     /**
-     * Takes the four motors and gets them ready: the right side spins the
-     * opposite way to the left, because the two sides face opposite ways on the
-     * robot, and every wheel brakes when its power goes to 0.
+     * Takes the robot's hardware and gets the motors ready: the right side spins
+     * the opposite way to the left, because the two sides face opposite ways on
+     * the robot, and every wheel brakes when its power goes to 0.
      */
     protected LessonsDriveTrain(RobotHardware hardware) {
-        frontLeft = hardware.frontLeft;
-        frontRight = hardware.frontRight;
-        backLeft = hardware.backLeft;
-        backRight = hardware.backRight;
-        motors = new DcMotorEx[]{frontLeft, frontRight, backLeft, backRight};
+        this.hardware = hardware;
 
-        frontLeft.setDirection(Constants.frontLeftDirection);
-        frontRight.setDirection(Constants.frontRightDirection);
-        backLeft.setDirection(Constants.backLeftDirection);
-        backRight.setDirection(Constants.backRightDirection);
+        motors[FL] = hardware.frontLeft;
+        motors[FR] = hardware.frontRight;
+        motors[BL] = hardware.backLeft;
+        motors[BR] = hardware.backRight;
 
-        setZeroPowerBehavior(Constants.manualBrakeMode
-                ? DcMotor.ZeroPowerBehavior.BRAKE : DcMotor.ZeroPowerBehavior.FLOAT);
+        hardware.frontLeft.setDirection(Constants.frontLeftDirection);
+        hardware.frontRight.setDirection(Constants.frontRightDirection);
+        hardware.backLeft.setDirection(Constants.backLeftDirection);
+        hardware.backRight.setDirection(Constants.backRightDirection);
+
+        setZeroPowerBehavior(zeroPowerBrakeWhenTrue(Constants.manualBrakeMode));
     }
 
     // ------------------------------------------------- what every lesson writes
 
     /**
-     * Sends each of the four powers to its own motor, in the order front left,
-     * front right, back left, back right.
+     * Sends {@link #wheelPowers} to the motors, each slot to the motor
+     * {@link #FL} and the others name.
      */
-    protected abstract void writeWheels(double[] wheels);
+    protected abstract void writeWheels();
 
-    // ------------------------------------------------- L2 writes this
+    // ------------------------------------------------- L2p2 writes this
 
     /**
      * Drives each wheel at the power given, right now. Powers run from -1 to 1,
@@ -100,12 +114,14 @@ public abstract class LessonsDriveTrain implements Drivetrain {
     public final void driveWheelsNow(double frontLeftPower, double frontRightPower,
                                      double backLeftPower, double backRightPower) {
         drivenDirectly = true;
-        // TODO (L2): put the four powers into an array in the order front left, front
-        //       right, back left, back right, hand it to normalized(), then pass
-        //       what comes back to remember() and to writeWheels().
-        //       double[] wheels = normalized(new double[]{frontLeftPower, ...});
-        //       Works when: the wheels turn the way the sticks say, and
-        //       LessonsTest.l2_theSticksDriveTheWheelsLikeATank passes.
+
+        // TODO 1 (L2p2): put each power into its own slot of wheelPowers, using
+        //         FL, FR, BL and BR to say which slot is which. One line each.
+        //         wheelPowers[FL] = frontLeftPower;  and so on.
+        //         Then call normalized(wheelPowers), which is L4's job and does
+        //         nothing yet, and writeWheels(), which your drivetrain wrote.
+        //         Works when: the wheels turn the way the sticks say, and
+        //         LessonsTest.l2p2_theSticksDriveTheWheelsLikeATank passes.
     }
 
     // ------------------------------------------------- L4 writes this
@@ -115,16 +131,20 @@ public abstract class LessonsDriveTrain implements Drivetrain {
      * than full power. Dividing them all by the biggest one keeps the robot
      * going where the driver asked; chopping each one off on its own would send
      * it somewhere else.
+     *
+     * <p>Scales the array it is handed, and hands the same array back.
      */
     protected static double[] normalized(double[] powers) {
-        // TODO (L4): find the biggest of the four, ignoring minus signs, or 1 if none
-        //       of them reaches 1. Then divide every one of them by that number.
-        //       Math.abs takes the minus sign off; Math.max picks the bigger of
-        //       two. Handing them back untouched is what happens now, which is
-        //       why L2 drives fine and L4 pulls to one side at full turn.
-        //       Works when: LessonsTest.l4_arcadeUsesOneStickToDriveAndOneToTurn
-        //       passes, and the robot drives straight with the drive stick and
-        //       the turn stick both all the way forward.
+        // TODO 2 (L4): find the biggest of the four, ignoring minus signs, or 1 if
+        //         none of them reaches 1. Math.abs takes the minus sign off, and
+        //         Math.max picks the bigger of two: give the magnitude its own
+        //         variable. Then divide every power by that number, in a second
+        //         loop, and hand the array back.
+        //         Handing them back untouched is what happens now, which is why
+        //         L2p2 drives fine and L4 pulls to one side at full turn.
+        //         Works when: LessonsTest.l4_arcadeUsesOneStickToDriveAndOneToTurn
+        //         passes, and the robot drives straight with the drive stick and
+        //         the turn stick both all the way forward.
         return powers;
     }
 
@@ -140,16 +160,15 @@ public abstract class LessonsDriveTrain implements Drivetrain {
      */
     public void setCommandedWheels(double frontLeftPower, double frontRightPower,
                                    double backLeftPower, double backRightPower) {
-        // TODO (L6): remember the four powers in the commandedWheels field, in the
-        //       usual order. One line, and it looks like the array in
-        //       driveWheelsNow.
+        // TODO 3 (L6): make a new four-slot array in commandedWheels and put each
+        //         power in its own slot, the same way driveWheelsNow does.
     }
 
     /** Hands the wheels back to the follower. */
     public void releaseCommandedWheels() {
-        // TODO (L6): forget the four powers, so drive() goes back to asking mix().
-        //       Setting commandedWheels to null is how a field says "nothing
-        //       here".
+        // TODO 4 (L6): forget the four powers, so drive() goes back to asking mix().
+        //         Setting commandedWheels to null is how a field says "nothing
+        //         here".
     }
 
     /** True while a lesson is driving the wheels itself. */
@@ -171,13 +190,15 @@ public abstract class LessonsDriveTrain implements Drivetrain {
                     + " Either call initAfter() with no drivetrain, or use setCommandedWheels.");
         }
         applyBrakeMode(manual);
-        // TODO (L6): work out the four powers and send them on. If a lesson has
-        //       commanded the wheels, use a copy of those --
-        //       commandedWheels.clone() -- and if it has not, use
-        //       normalized(mix(powers)). Then hand the four to remember() and to
-        //       writeWheels(), the same two calls driveWheelsNow makes.
-        //       Works when: L6FollowerDriveTrainTest passes, the robot drives on the
-        //       sticks in L6, and L9 drives its 24 inches.
+
+        // TODO 5 (L6): work out the four powers and send them on. If a lesson has
+        //         not commanded the wheels, ask mix() for them and hand what comes
+        //         back to normalized(), each into its own variable, then
+        //         copyInto(wheelPowers, ...). If a lesson has commanded them,
+        //         copyInto(wheelPowers, commandedWheels) instead. An if and an
+        //         else, not a ?. Then writeWheels().
+        //         Works when: L6FollowerDriveTrainTest passes, the robot drives on
+        //         the sticks in L6, and L9 drives its 24 inches.
     }
 
     /**
@@ -198,30 +219,67 @@ public abstract class LessonsDriveTrain implements Drivetrain {
      * the wheels.
      */
     protected final void applyBrakeMode(boolean manual) {
-        setZeroPowerBehavior(manual && Constants.manualBrakeMode
-                ? DcMotor.ZeroPowerBehavior.BRAKE : DcMotor.ZeroPowerBehavior.FLOAT);
+        boolean brake = manual && Constants.manualBrakeMode;
+        setZeroPowerBehavior(zeroPowerBrakeWhenTrue(brake));
     }
 
     /**
      * How much of {@code delta} can be added to {@code current} before a wheel
-     * runs out of power. Pedro uses this so a path algorithm does not ask for
-     * more than the drivetrain can give; the maths is Pedro's.
+     * runs out of power.
+     *
+     * <p>Pedro uses this so a path algorithm does not ask for more than the
+     * drivetrain can give. How it works: each wheel is already at some power and
+     * is being asked to change by some amount, and a wheel runs out when it
+     * reaches 1 or -1. For one wheel, the fraction of the change that fits is
+     * the distance to whichever limit it is heading for, divided by the change.
+     * The answer for the drivetrain is the smallest of those fractions, because
+     * the first wheel to run out stops the others going further.
+     *
+     * <p>The maths is Pedro's, from its own {@code Mecanum}.
      */
     @Override
     public double maxScaling(DrivePowers current, DrivePowers delta) {
-        double lambda = 1.0;
         double[] currentPowers = mix(current);
-        double[] deltaPowers = mix(delta);
-        for (int i = 0; i < 4; i++) {
-            double a = currentPowers[i];
-            double b = deltaPowers[i];
-            if (Math.abs(b) < 1e-9) continue;
-            double t1 = (1.0 - a) / b;
-            double t2 = (-1.0 - a) / b;
-            if (t1 >= 0.0 && t1 < lambda) lambda = t1;
-            if (t2 >= 0.0 && t2 < lambda) lambda = t2;
+        double[] changes = mix(delta);
+        double fits = 1.0;
+
+        for (int wheel = 0; wheel < 4; wheel++) {
+            double power = currentPowers[wheel];
+            double change = changes[wheel];
+
+            if (movesThisWheel(change)) {
+                double towardsFull = fractionThatFits(power, change, 1.0);
+                double towardsFullReverse = fractionThatFits(power, change, -1.0);
+                fits = smallestThatFits(fits, towardsFull);
+                fits = smallestThatFits(fits, towardsFullReverse);
+            }
         }
-        return Math.max(0.0, Math.min(1.0, lambda));
+
+        return clampToFraction(fits);
+    }
+
+    /** A change too small to matter cannot use up a wheel's power. */
+    private static boolean movesThisWheel(double change) {
+        return Math.abs(change) >= 1e-9;
+    }
+
+    /** How much of {@code change} fits before {@code power} reaches {@code limit}. */
+    private static double fractionThatFits(double power, double change, double limit) {
+        return (limit - power) / change;
+    }
+
+    /** The smaller of the two, ignoring a fraction that heads the wrong way. */
+    private static double smallestThatFits(double smallest, double fraction) {
+        if (fraction >= 0.0 && fraction < smallest) {
+            return fraction;
+        }
+        return smallest;
+    }
+
+    /** No less than none of the change, and no more than all of it. */
+    private static double clampToFraction(double fraction) {
+        double atLeastNone = Math.max(0.0, fraction);
+        return Math.min(1.0, atLeastNone);
     }
 
     @Override
@@ -232,10 +290,13 @@ public abstract class LessonsDriveTrain implements Drivetrain {
     @Override
     public void stop(boolean brake) {
         commandedWheels = null;
-        setZeroPowerBehavior(brake ? DcMotor.ZeroPowerBehavior.BRAKE : DcMotor.ZeroPowerBehavior.FLOAT);
-        double[] zeros = new double[4];
-        remember(zeros);
-        writeWheels(zeros);
+        setZeroPowerBehavior(zeroPowerBrakeWhenTrue(brake));
+
+        for (int wheel = 0; wheel < wheelPowers.length; wheel++) {
+            wheelPowers[wheel] = 0.0;
+        }
+
+        writeWheels();
     }
 
     @Override
@@ -246,19 +307,31 @@ public abstract class LessonsDriveTrain implements Drivetrain {
     @Override
     public Map<String, Object> debug() {
         Map<String, Object> out = new LinkedHashMap<>();
-        out.put("frontLeft", wheelPowers[0]);
-        out.put("frontRight", wheelPowers[1]);
-        out.put("backLeft", wheelPowers[2]);
-        out.put("backRight", wheelPowers[3]);
+        out.put("frontLeft", wheelPowers[FL]);
+        out.put("frontRight", wheelPowers[FR]);
+        out.put("backLeft", wheelPowers[BL]);
+        out.put("backRight", wheelPowers[BR]);
         out.put("wheelsCommanded", commandedWheels != null);
         return out;
     }
 
-    private void remember(double[] wheels) {
-        System.arraycopy(wheels, 0, wheelPowers, 0, 4);
+    /** BRAKE when true, FLOAT when false. */
+    private static DcMotor.ZeroPowerBehavior zeroPowerBrakeWhenTrue(boolean given) {
+        if (given) {
+            return DcMotor.ZeroPowerBehavior.BRAKE;
+        }
+        return DcMotor.ZeroPowerBehavior.FLOAT;
+    }
+
+    private static void copyInto(double[] destination, double[] source) {
+        for (int wheel = 0; wheel < destination.length; wheel++) {
+            destination[wheel] = source[wheel];
+        }
     }
 
     private void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior) {
-        for (DcMotorEx motor : motors) motor.setZeroPowerBehavior(behavior);
+        for (DcMotorEx motor : motors) {
+            motor.setZeroPowerBehavior(behavior);
+        }
     }
 }

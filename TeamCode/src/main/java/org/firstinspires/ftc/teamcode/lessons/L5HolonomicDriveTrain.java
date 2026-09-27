@@ -40,25 +40,32 @@ public class L5HolonomicDriveTrain extends LessonsDriveTrain {
      *
      * <p>Asking for all three at once wants more than a motor can give, and
      * {@link LessonsDriveTrain#normalized} sorts that out.
+     *
+     * <p>Where the four signs come from, if the pattern is not obvious yet:
+     * <ul>
+     *   <li>Game Manual 0's Mecanum TeleOp tutorial, which writes the same four
+     *       lines for two sticks and a turn:
+     *       https://gm0.org/en/latest/docs/software/tutorials/mecanum-drive.html
+     *   <li>Pedro's coordinate frame, which is where forward, strafe and turn point:
+     *       https://pedropathing.com/docs/pathing/reference/coordinates
+     *   <li>WPILib's {@code MecanumDrive}, the same arithmetic in another library:
+     *       https://github.com/wpilibsuite/allwpilib
+     * </ul>
      */
     public void sticks(double forwardSpeed, double strafeLeftSpeed, double turnCcwSpeed) {
-        // TODO: call driveWheelsNow with the four lines from the comment above
-        //       this method, in the order front left, front right, back left,
-        //       back right. Each one is the three numbers added or subtracted --
-        //       the signs are what make a wheel push sideways one way or the
-        //       other.
+        // TODO: work out each wheel's power, one named variable at a time, then
+        //       hand the four to driveWheelsNow. Three numbers add up differently
+        //       at each corner; the sources in this class's javadoc draw it.
     }
 
     /**
-     * Sends each of the four powers to its own motor. They always arrive in the
-     * order front left, front right, back left, back right.
+     * Sends each of the four powers to its own motor, the slot named by {@link #FL}
+     * and the others to the motor of that name.
      */
     @Override
-    protected void writeWheels(double[] wheels) {
-        // TODO: send each of the four powers to its own motor, in the order they
-        //       arrive: frontLeft.setPower(wheels[0]); and so on for the other
-        //       three. Getting two of them the wrong way round makes the robot
-        //       turn when it should drive, and nothing says so out loud, which is
-        //       why this method has a test of its own.
+    protected void writeWheels() {
+        // TODO: send each slot of wheelPowers to its own motor, naming the slot
+        //       with FL, FR, BL or BR and the motor through hardware:
+        //       hardware.frontLeft.setPower(wheelPowers[FL]);  and the other three.
     }
 }

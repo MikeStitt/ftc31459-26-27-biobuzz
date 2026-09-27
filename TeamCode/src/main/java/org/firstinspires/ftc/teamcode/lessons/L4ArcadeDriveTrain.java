@@ -32,24 +32,20 @@ public class L4ArcadeDriveTrain extends LessonsDriveTrain {
      * directions {@link LessonsDriveTrain} sets out. Both are -1 to 1.
      */
     public void sticks(double forwardSpeed, double turnCcwSpeed) {
-        // TODO: work out what each side has to do, then call driveWheelsNow the
-        //       way L2 did. A counter-clockwise turn runs the left side
-        //       backwards, so the turn number is subtracted on the left and
-        //       added on the right.
-        double leftSpeed = 0;
-        double rightSpeed = 0;
+        // TODO: turn the two numbers into a left speed and a right speed, each
+        //       into its own variable, and hand them to driveWheelsNow the way
+        //       L2TankDriveTrain does. Turning counter-clockwise means the left
+        //       side goes slower and the right side faster.
     }
 
     /**
-     * Sends each of the four powers to its own motor. They always arrive in the
-     * order front left, front right, back left, back right.
+     * Sends each of the four powers to its own motor, the slot named by {@link #FL}
+     * and the others to the motor of that name.
      */
     @Override
-    protected void writeWheels(double[] wheels) {
-        // TODO: send each of the four powers to its own motor, in the order they
-        //       arrive: frontLeft.setPower(wheels[0]); and so on for the other
-        //       three. Getting two of them the wrong way round makes the robot
-        //       turn when it should drive, and nothing says so out loud, which is
-        //       why this method has a test of its own.
+    protected void writeWheels() {
+        // TODO: send each slot of wheelPowers to its own motor, naming the slot
+        //       with FL, FR, BL or BR and the motor through hardware:
+        //       hardware.frontLeft.setPower(wheelPowers[FL]);  and the other three.
     }
 }

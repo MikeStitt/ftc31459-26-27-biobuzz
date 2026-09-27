@@ -12,15 +12,15 @@ import org.firstinspires.ftc.teamcode.base.Drive;
  * <p>Passes when: LessonsTest.l11_fieldRelativeIgnoresWhichWayTheRobotFaces
  */
 @TeleOp(name = "L11 Field Relative", group = "Lessons")
-public class L11FieldRelative extends CorbelsTeleOp {
+public class L11FieldRelativeOpMode extends CorbelsTeleOp {
 
-    private L6FollowerDriveTrain wheels;
+    private L6FollowerDriveTrain drivetrain;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new L6FollowerDriveTrain(hardware);
-        initAfter(wheels);
+        drivetrain = new L6FollowerDriveTrain(hardware);
+        initAfter(drivetrain);
     }
 
     @Override
@@ -41,6 +41,7 @@ public class L11FieldRelative extends CorbelsTeleOp {
 
     @Override
     public void stop() {
+        drivetrain.stop();
         stopAfter();
     }
 }

@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.firstinspires.ftc.teamcode.lessons.L2Sticks;
+import org.firstinspires.ftc.teamcode.lessons.L2p2TankOpMode;
 import org.junit.Test;
 
 /**
@@ -15,12 +15,12 @@ public class SimRunTest {
 
     @Test
     public void aLessonIsNamedWithoutItsPackage() throws Exception {
-        assertTrue("L2Sticks", SimRun.lesson("L2Sticks") instanceof L2Sticks);
+        assertTrue("L2p2TankOpMode", SimRun.lesson("L2p2TankOpMode") instanceof L2p2TankOpMode);
     }
 
     @Test
     public void aStickIsSetByItsGamepadName() throws Exception {
-        OpModeHarness h = new OpModeHarness(new L2Sticks());
+        OpModeHarness h = new OpModeHarness(new L2p2TankOpMode());
         SimRun.set(h, "left_stick_y=-1");
         SimRun.set(h, "right_stick_y=-0.5");
         assertEquals(-1.0f, h.gamepad1.left_stick_y, 0);
@@ -29,14 +29,14 @@ public class SimRunTest {
 
     @Test
     public void aButtonIsSetTheSameWay() throws Exception {
-        OpModeHarness h = new OpModeHarness(new L2Sticks());
+        OpModeHarness h = new OpModeHarness(new L2p2TankOpMode());
         SimRun.set(h, "a=true");
         assertTrue("a is pressed", h.gamepad1.a);
     }
 
     @Test
     public void aMisspeltFieldSaysWhatTheSticksAreCalled() throws Exception {
-        OpModeHarness h = new OpModeHarness(new L2Sticks());
+        OpModeHarness h = new OpModeHarness(new L2p2TankOpMode());
         try {
             SimRun.set(h, "leftY=-1");
             fail("a field that does not exist should not be silently ignored");
@@ -47,7 +47,7 @@ public class SimRunTest {
 
     @Test
     public void anArgumentWithNoValueIsRejected() throws Exception {
-        OpModeHarness h = new OpModeHarness(new L2Sticks());
+        OpModeHarness h = new OpModeHarness(new L2p2TankOpMode());
         try {
             SimRun.set(h, "left_stick_y");
             fail("name=value is the only shape there is");

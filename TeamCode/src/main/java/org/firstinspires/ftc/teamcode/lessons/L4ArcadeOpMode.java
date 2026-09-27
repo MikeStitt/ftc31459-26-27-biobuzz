@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.base.CorbelsTeleOp;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 
 /**
- * L4: arcade drive. One stick drives, the other turns. Still no strafing.
+ * L4: drivetrain drive. One stick drives, the other turns. Still no strafing.
  *
  * <p>The left stick says how fast to go. The right stick, pushed sideways, says
  * how fast to spin. {@link L4ArcadeDriveTrain#sticks} works out the four wheel
@@ -21,14 +21,14 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * <p>Passes when: LessonsTest.l4_arcadeUsesOneStickToDriveAndOneToTurn
  */
 @TeleOp(name = "L4 Arcade", group = "Lessons")
-public class L4Arcade extends CorbelsTeleOp {
+public class L4ArcadeOpMode extends CorbelsTeleOp {
 
-    private L4ArcadeDriveTrain arcade;
+    private L4ArcadeDriveTrain drivetrain;
 
     @Override
     public void init() {
         initBefore();
-        arcade = new L4ArcadeDriveTrain(hardware);
+        drivetrain = new L4ArcadeDriveTrain(hardware);
         initAfter();
     }
 
@@ -42,21 +42,21 @@ public class L4Arcade extends CorbelsTeleOp {
     public void loop() {
         loopBefore();
 
-        // TODO: read the two sticks and hand them to arcade.sticks(forwardSpeed, turnCcwSpeed).
+        // TODO: read the two sticks and hand them to drivetrain.sticks(forwardSpeed, turnCcwSpeed).
         //       forward comes from the left stick's y axis, turn from the right
         //       stick's x axis, and BOTH need a minus sign -- the note above says
         //       why the turn one does. Log them as command/forward and
         //       command/turn_ccw so Panels can draw them.
         double forwardSpeed = 0;
         double turnCcwSpeed = 0;
-        arcade.sticks(forwardSpeed, turnCcwSpeed);
+        drivetrain.sticks(forwardSpeed, turnCcwSpeed);
 
         loopAfter();
     }
 
     @Override
     public void stop() {
-        arcade.sticks(0, 0);
+        drivetrain.stop();
         stopAfter();
     }
 }

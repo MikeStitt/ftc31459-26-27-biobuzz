@@ -15,12 +15,12 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * <p>Until now a stick has meant "power": push it half way and the motor gets
  * 0.5, whatever that turns out to be. The robot goes slower on a full battery
  * at the end of a match, slower again up a ramp, and faster on blocks with its
- * wheels off the ground. Nothing in the code knows how fast the robot is going.
+ * drivetrain off the ground. Nothing in the code knows how fast the robot is going.
  *
  * <p>Here a stick means a <b>speed</b>. Full forward asks for
  * {@link Constants#maxWheelInchesPerSecond} inches per second, and the robot
  * goes that fast whether the battery is full or flat -- because the code
- * measures what the wheels are doing and corrects.
+ * measures what the drivetrain are doing and corrects.
  *
  * <p>Two parts to that, and both are in {@link #loop}:
  *
@@ -42,7 +42,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * LessonsTest.l16_turningAskesEachSideForOppositeSpeeds
  */
 @TeleOp(name = "L16 Velocity Drive", group = "Lessons")
-public class L16VelocityDrive extends CorbelsTeleOp {
+public class L16VelocityDriveOpMode extends CorbelsTeleOp {
 
     /** How fast full stick asks for, forward and sideways. Inches per second. */
     private static final double MAX_IPS = 40;
@@ -56,15 +56,15 @@ public class L16VelocityDrive extends CorbelsTeleOp {
     /** Power per inch per second of error. The feedback correction. */
     private static final double kP = 0.008;
 
-    private L6FollowerDriveTrain wheels;
+    private L6FollowerDriveTrain drivetrain;
     private WheelVelocities measured;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new L6FollowerDriveTrain(hardware);
+        drivetrain = new L6FollowerDriveTrain(hardware);
         measured = new WheelVelocities(hardware);
-        initAfter(wheels);
+        initAfter(drivetrain);
     }
 
     @Override
@@ -75,9 +75,9 @@ public class L16VelocityDrive extends CorbelsTeleOp {
 
     @Override
     public void stop() {
-        // Hand the wheels back before the follower's last update, or they keep
+        // Hand the drivetrain back before the follower's last update, or they keep
         // whatever power the last loop commanded.
-        wheels.releaseCommandedWheels();
+        drivetrain.stop();
         stopAfter();
     }
 
@@ -97,12 +97,12 @@ public class L16VelocityDrive extends CorbelsTeleOp {
         //         does the arithmetic; the radius is Constants.turnRadiusInches.
         double[] target = new double[4];
 
-        // TODO 3: ask the motors how fast their wheels are actually going.
+        // TODO 3: ask the motors how fast their drivetrain are actually going.
         //         measured.all() hands back all four, in inches per second.
         double[] actual = new double[4];
 
         // TODO 4: guess a power for each wheel, then correct it by the error, and
-        //         send all four with wheels.setCommandedWheels(...):
+        //         send all four with drivetrain.setCommandedWheels(...):
         //             power = kV * target + kP * (target - actual)
         //         clamp(...) below keeps the answer inside -1 to 1.
         double[] power = new double[4];

@@ -28,7 +28,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * <p>Passes when: LessonsTest.l15_everythingTogether
  */
 @TeleOp(name = "L15 Combined", group = "Lessons")
-public class L15Combined extends CorbelsTeleOp {
+public class L15CombinedOpMode extends CorbelsTeleOp {
 
     private static final PoseFactory POSES = PoseFactory.degrees();
 
@@ -63,13 +63,13 @@ public class L15Combined extends CorbelsTeleOp {
         }));
     }
 
-    private L6FollowerDriveTrain wheels;
+    private L6FollowerDriveTrain drivetrain;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new L6FollowerDriveTrain(hardware);
-        initAfter(wheels);
+        drivetrain = new L6FollowerDriveTrain(hardware);
+        initAfter(drivetrain);
     }
 
     @Override
@@ -87,6 +87,7 @@ public class L15Combined extends CorbelsTeleOp {
 
     @Override
     public void stop() {
+        drivetrain.stop();
         stopAfter();
     }
 

@@ -9,11 +9,11 @@ import java.lang.reflect.Field;
  * NetworkTables every loop so AdvantageScope can watch it.
  *
  * <p>{@code ./gradlew :TeamCode:simRun} with no arguments runs
- * {@code L15Combined} standing still. Arguments name a lesson and then set
+ * {@code L15CombinedOpMode} standing still. Arguments name a lesson and then set
  * gamepad fields by their own names:
  *
  * <pre>
- * ./gradlew :TeamCode:simRun --args="L2Sticks left_stick_y=-1 right_stick_y=-1"
+ * ./gradlew :TeamCode:simRun --args="L2p2TankOpMode left_stick_y=-1 right_stick_y=-1"
  * </pre>
  *
  * <p>Any field of {@code Gamepad} can be set, so buttons work the same way as
@@ -31,17 +31,17 @@ public final class SimRun {
     private static volatile boolean running = true;
 
     public static void main(String[] args) throws Exception {
-        String lesson = args.length > 0 ? args[0] : "L15Combined";
+        String lesson = args.length > 0 ? args[0] : "L15CombinedOpMode";
         OpModeHarness harness = new OpModeHarness(lesson(lesson));
         for (int i = 1; i < args.length; i++) {
             set(harness, args[i]);
         }
 
-        Thread loop = Thread.currentThread();
+        Thread loopThread = Thread.currentThread();
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             running = false;
             try {
-                loop.join(2000);
+                loopThread.join(2000);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

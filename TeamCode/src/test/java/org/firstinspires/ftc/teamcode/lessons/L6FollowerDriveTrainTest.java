@@ -13,7 +13,7 @@ import org.junit.Test;
 /**
  * One test per blank in {@link L6FollowerDriveTrain}: one for each wheel of the
  * mixing, one for sending the four powers to the four motors, and one for the
- * sticks commanding the wheels while the follower holds the drivetrain. A
+ * sticks commanding the drivetrain while the follower holds the drivetrain. A
  * student who gets one wheel wrong sees which wheel.
  *
  * <p>These drive the class directly rather than through an OpMode, because that
@@ -28,7 +28,7 @@ public class L6FollowerDriveTrainTest {
     private OpModeHarness.FakeMotor frontRight;
     private OpModeHarness.FakeMotor backLeft;
     private OpModeHarness.FakeMotor backRight;
-    private L6FollowerDriveTrain wheels;
+    private L6FollowerDriveTrain drivetrain;
 
     @Before
     public void setUp() {
@@ -36,14 +36,14 @@ public class L6FollowerDriveTrainTest {
         frontRight = new OpModeHarness.FakeMotor();
         backLeft = new OpModeHarness.FakeMotor();
         backRight = new OpModeHarness.FakeMotor();
-        wheels = new L6FollowerDriveTrain(new RobotHardware(
-                frontLeft.device, frontRight.device, backLeft.device, backRight.device,
-                new OpModeHarness.FakeImu().device));
+        drivetrain = new L6FollowerDriveTrain(new RobotHardware(
+                frontLeft.motor, frontRight.motor, backLeft.motor, backRight.motor,
+                new OpModeHarness.FakeImu().imu));
     }
 
     /** What the follower does every update: three numbers in, four powers out. */
     private void follower(double forward, double left, double turn) {
-        wheels.drive(new DrivePowers(forward, left, turn), true);
+        drivetrain.drive(new DrivePowers(forward, left, turn), true);
     }
 
     @Test
@@ -89,8 +89,8 @@ public class L6FollowerDriveTrainTest {
     @Test
     public void writeWheelsSendsEachPowerToItsOwnMotor() {
         // Four different numbers, so a swapped pair cannot pass. Commanding the
-        // wheels skips the mixing, which is the other blank.
-        wheels.setCommandedWheels(0.1, 0.2, 0.3, 0.4);
+        // drivetrain skips the mixing, which is the other blank.
+        drivetrain.setCommandedWheels(0.1, 0.2, 0.3, 0.4);
         follower(0, 0, 0);
         assertEquals(0.1, frontLeft.power, EPS);
         assertEquals(0.2, frontRight.power, EPS);
@@ -100,11 +100,11 @@ public class L6FollowerDriveTrainTest {
 
     @Test
     public void releasingTheWheelsHandsThemBackToTheFollower() {
-        wheels.setCommandedWheels(0.1, 0.2, 0.3, 0.4);
+        drivetrain.setCommandedWheels(0.1, 0.2, 0.3, 0.4);
         follower(0, 0, 0);
         assertEquals("commanded, so the follower's zero is ignored", 0.1, frontLeft.power, EPS);
 
-        wheels.releaseCommandedWheels();
+        drivetrain.releaseCommandedWheels();
         follower(0, 0, 0);
         assertEquals("released, so the follower's zero reaches the motor",
                 0.0, frontLeft.power, EPS);
@@ -116,7 +116,7 @@ public class L6FollowerDriveTrainTest {
     @Test
     public void askingForMoreThanAMotorCanGiveScalesEveryWheelDownTogether() {
         // Full forward and full left at once is a diagonal, and a mecanum drives
-        // a diagonal on one pair of wheels. Unscaled the pair wants 2.
+        // a diagonal on one pair of drivetrain. Unscaled the pair wants 2.
         follower(1, 1, 0);
         assertEquals("the pair that wanted 2 gets 1", 1.0, frontRight.power, EPS);
         assertEquals(1.0, backLeft.power, EPS);
@@ -132,14 +132,14 @@ public class L6FollowerDriveTrainTest {
 
     /**
      * L6's own move: the driver's three numbers go through the same mixing the
-     * follower would have used, and the four wheels are commanded, so the
+     * follower would have used, and the four drivetrain are commanded, so the
      * follower's own answer is ignored while the driver has the sticks.
      */
     @Test
     public void theSticksCommandTheWheelsSoTheDriverStillWins() {
-        wheels.sticks(1, 0, 0);
-        assertTrue("the wheels are commanded, not left to the follower",
-                wheels.commandedWheelsAreSet());
+        drivetrain.sticks(1, 0, 0);
+        assertTrue("the drivetrain are commanded, not left to the follower",
+                drivetrain.commandedWheelsAreSet());
 
         // Whatever the follower asks for next is ignored; the sticks decided.
         follower(0, 0, 0);
@@ -152,7 +152,7 @@ public class L6FollowerDriveTrainTest {
     @Test
     public void theSticksAreScaledDownTogetherBeforeTheyAreCommanded() {
         // Full forward and full left at once is a diagonal: one pair wants 2.
-        wheels.sticks(1, 1, 0);
+        drivetrain.sticks(1, 1, 0);
         follower(0, 0, 0);
         assertEquals("the pair that wanted 2 gets 1", 1.0, frontRight.power, EPS);
         assertEquals(1.0, backLeft.power, EPS);
@@ -163,7 +163,7 @@ public class L6FollowerDriveTrainTest {
     @Test
     public void stoppingZeroesEveryWheel() {
         follower(1, 0, 0);
-        wheels.stop();
+        drivetrain.stop();
         assertEquals(0.0, frontLeft.power, EPS);
         assertEquals(0.0, frontRight.power, EPS);
         assertEquals(0.0, backLeft.power, EPS);

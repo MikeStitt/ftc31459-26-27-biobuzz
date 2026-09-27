@@ -20,7 +20,7 @@ import java.nio.file.StandardCopyOption;
  * {@code CombinedRuntimeLoader} reads a {@code ResourceInformation} json that
  * GradleRIO generates and these jars do not contain, failing with
  * {@code argument "src" is null}. So the library is copied out of the jar to a
- * temporary file and loaded by name, which is all either of those would have
+ * temporary libraryFilePath and loaded by name, which is all either of those would have
  * done.
  *
  * <p>Order matters: ntcore's library needs wpiutil's to be loaded already.
@@ -52,10 +52,10 @@ final class NtNatives {
                 throw new IllegalStateException("not on the test classpath: " + resource
                         + " -- check the classifier in TeamCode/build.gradle matches this machine");
             }
-            Path file = Files.createTempDirectory("ntjni").resolve(fileName(name));
-            file.toFile().deleteOnExit();
-            Files.copy(in, file, StandardCopyOption.REPLACE_EXISTING);
-            System.load(file.toAbsolutePath().toString());
+            Path libraryFilePath = Files.createTempDirectory("ntjni").resolve(fileName(name));
+            libraryFilePath.toFile().deleteOnExit();
+            Files.copy(in, libraryFilePath, StandardCopyOption.REPLACE_EXISTING);
+            System.load(libraryFilePath.toAbsolutePath().toString());
         } catch (IOException e) {
             throw new UncheckedIOException("could not unpack " + resource, e);
         }

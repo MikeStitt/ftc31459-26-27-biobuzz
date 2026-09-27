@@ -20,7 +20,7 @@ import org.firstinspires.ftc.teamcode.base.CorbelsTeleOp;
  * robot's Wi-Fi. Loop rate, pose and velocity all plot live.
  */
 @TeleOp(name = "TeleOp + Panels", group = "Corbels")
-public class TeleOpWithPanels extends CorbelsTeleOp {
+public class TeleOpWithPanelsOpMode extends CorbelsTeleOp {
 
     @Override
     public void init() {

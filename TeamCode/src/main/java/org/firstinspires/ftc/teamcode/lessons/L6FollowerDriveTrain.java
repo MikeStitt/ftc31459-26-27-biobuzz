@@ -22,11 +22,6 @@ import org.firstinspires.ftc.teamcode.base.RobotHardware;
  * <p>Both go through the same four lines, so the robot that strafes correctly
  * with the sticks is the robot that follows a path correctly.
  *
- * <p>{@link LessonsDriveTrain} needs three more parts before either works:
- * {@code drive}, which is what the follower calls, and
- * {@code setCommandedWheels} and {@code releaseCommandedWheels}, which are how
- * the sticks take the wheels and give them back.
- *
  * <p>Passes when: L6FollowerDriveTrainTest (all of it)
  */
 public class L6FollowerDriveTrain extends LessonsDriveTrain {
@@ -41,11 +36,12 @@ public class L6FollowerDriveTrain extends LessonsDriveTrain {
      * {@link LessonsDriveTrain} sets out.
      */
     public void sticks(double forwardSpeed, double strafeLeftSpeed, double turnCcwSpeed) {
-        // TODO 1: wrap the three numbers in a new DrivePowers(...), run them
-        //         through mix() and then normalized(), and hand the four powers
-        //         that come back to setCommandedWheels(). Going through mix() is
-        //         the point: the sticks and the follower then agree about which
-        //         wheel does what.
+        // TODO 1: wrap the three numbers in a new DrivePowers(...) in its own
+        //         variable, hand that to mix() into a second variable, hand that
+        //         to normalized() into a third, and pass the four slots to
+        //         setCommandedWheels(). One call to a line; nothing nested.
+        //         Going through mix() is the point: the sticks and the follower
+        //         then agree about which wheel does what.
     }
 
     /**
@@ -61,22 +57,17 @@ public class L6FollowerDriveTrain extends LessonsDriveTrain {
         double strafeLeftSpeed = powers.strafe();
         double turnCcwSpeed = powers.turn();
 
-        return new double[]{
-                // TODO 2: front left
-                0,
-                // TODO 3: front right
-                0,
-                // TODO 4: back left
-                0,
-                // TODO 5: back right
-                0};
+        double[] wheels = new double[4];
+        // TODO 2: fill each slot in, one line each, naming it with FL, FR, BL or
+        //         BR. The four sums are the same ones L5HolonomicDriveTrain uses.
+        return wheels;
     }
 
-    /** Sends each of the four powers to its own motor, in that same order. */
+    /** Sends each of the four powers to its own motor, by the slot's own name. */
     @Override
-    protected void writeWheels(double[] wheels) {
-        // TODO 6: send each of the four powers to its own motor, in the same
-        //         order mix() put them in:
-        //         frontLeft.setPower(wheels[0]);  and so on for the other three.
+    protected void writeWheels() {
+        // TODO: send each slot of wheelPowers to its own motor, naming the slot
+        //       with FL, FR, BL or BR and the motor through hardware:
+        //       hardware.frontLeft.setPower(wheelPowers[FL]);  and the other three.
     }
 }

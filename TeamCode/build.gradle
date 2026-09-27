@@ -129,7 +129,7 @@ dependencies {
 afterEvaluate {
     tasks.register('simRun', JavaExec) {
         group = 'verification'
-        description = 'Run a lesson in the simulator for AdvantageScope. --args="L2Sticks left_stick_y=-1"'
+        description = 'Run a lesson in the simulator for AdvantageScope. --args="L2p2TankOpMode left_stick_y=-1"'
         dependsOn 'compileDebugUnitTestJavaWithJavac'
         mainClass = 'org.firstinspires.ftc.teamcode.base.SimRun'
         classpath = tasks.named('testDebugUnitTest').get().classpath

@@ -41,7 +41,7 @@ public class SharedLifecycleTest {
     }
 
     /** A minimal auto. */
-    public static class SampleAuto extends CorbelsAuto {
+    public static class SampleAutoOpMode extends CorbelsAuto {
         public final List<String> calls = new ArrayList<>();
         public boolean ran;
 
@@ -87,7 +87,7 @@ public class SharedLifecycleTest {
 
     @Test
     public void anAutoGetsTheSameTreatmentPlusItsStartPoseAndRoutine() {
-        SampleAuto opMode = new SampleAuto();
+        SampleAutoOpMode opMode = new SampleAutoOpMode();
         OpModeHarness h = new OpModeHarness(opMode);
 
         h.init();
@@ -115,7 +115,7 @@ public class SharedLifecycleTest {
         teleop.loops(5, 0);
         assertEquals("once, at init", 1, teleop.lookups);
 
-        OpModeHarness auto = new OpModeHarness(new SampleAuto());
+        OpModeHarness auto = new OpModeHarness(new SampleAutoOpMode());
         auto.init();
         auto.start();
         auto.loops(5, 0);

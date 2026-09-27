@@ -45,11 +45,11 @@ public class LessonsTest {
         return ((Number) v).doubleValue();
     }
 
-    // -------------------------------------------------------------- L2
+    // -------------------------------------------------------------- L2p1
 
     @Test
-    public void l2_logsEveryStickAndTheAButton() {
-        OpModeHarness h = new OpModeHarness(new L2Sticks());
+    public void l2p1_logsEveryStickAndTheAButton() {
+        OpModeHarness h = new OpModeHarness(new L2p1SticksOpMode());
         h.init();
         h.start();
         h.gamepad1.left_stick_y = -1.0f;      // pushed away from the driver
@@ -68,11 +68,39 @@ public class LessonsTest {
         assertTrue(values.containsKey("stick/rightY"));
         assertTrue("pressing A sends something to Panels: " + values.keySet(),
                 values.keySet().stream().anyMatch(k -> k.contains("pressed A")));
+        assertEquals("two loops ran, and the lesson counted them",
+                2.0, number(values, "lesson/loop_count"), EPS);
+        assertTrue("the lesson logged how long it had been running",
+                values.containsKey("lesson/seconds_running"));
     }
 
     @Test
-    public void l2_theSticksDriveTheWheelsLikeATank() {
-        OpModeHarness h = new OpModeHarness(new L2Sticks());
+    public void l2p1_saysWhenTheButtonIsPressedAndReleased() {
+        OpModeHarness h = new OpModeHarness(new L2p1SticksOpMode());
+        h.init();
+        h.start();
+
+        h.gamepad1.a = true;
+        h.loop();
+        assertEquals("the loop the button went down on says so",
+                "button A pressed", Tracker.values().get("lesson/event"));
+
+        h.loop();
+        assertEquals("holding it says nothing new",
+                "button A pressed", Tracker.values().get("lesson/event"));
+
+        h.gamepad1.a = false;
+        h.loop();
+        assertEquals("letting go says so",
+                "button A released", Tracker.values().get("lesson/event"));
+        h.stop();
+    }
+
+    // -------------------------------------------------------------- L2p2
+
+    @Test
+    public void l2p2_theSticksDriveTheWheelsLikeATank() {
+        OpModeHarness h = new OpModeHarness(new L2p2TankOpMode());
         h.init();
         h.start();
 
@@ -101,13 +129,13 @@ public class LessonsTest {
     }
 
     /**
-     * What a viewer watching the simulation sees when L2 is driven: the robot
+     * What a viewer watching the simulation sees when L2p2 is driven: the robot
      * goes up the field. The simulator's own tests use a teleop out of
      * {@code base}, so this is the one place a real lesson is asked to move it.
      */
     @Test
-    public void l2_theSticksMoveTheSimulatedRobot() {
-        OpModeHarness h = new OpModeHarness(new L2Sticks());
+    public void l2p2_theSticksMoveTheSimulatedRobot() {
+        OpModeHarness h = new OpModeHarness(new L2p2TankOpMode());
         h.init();
         h.start();
 
@@ -121,11 +149,11 @@ public class LessonsTest {
         h.stop();
     }
 
-    // -------------------------------------------------------------- L3
+    // -------------------------------------------------------------- L3p1
 
     @Test
-    public void l3_aLetGoStickIsIgnoredAndHalfStickIsQuarterPower() {
-        OpModeHarness h = new OpModeHarness(new L3SmoothSticks());
+    public void l3p1_aNearlyCentredStickCountsAsCentred() {
+        OpModeHarness h = new OpModeHarness(new L3p1DeadbandOpMode());
         h.init();
         h.start();
 
@@ -137,6 +165,27 @@ public class LessonsTest {
         assertEquals(0.0, h.motors.get(Constants.frontRightName).power, EPS);
         assertNotEquals("the raw stick was not 0 though", 0.0,
                 number(Tracker.values(), "stick/left_raw"), EPS);
+
+        h.gamepad1.left_stick_y = -0.5f;      // half forward
+        h.loop();
+        assertEquals("outside the band, the stick is passed through untouched",
+                0.5, h.motors.get(Constants.frontLeftName).power, EPS);
+
+        h.stop();
+        assertEquals(0.0, h.motors.get(Constants.frontLeftName).power, EPS);
+    }
+
+    // -------------------------------------------------------------- L3p2
+
+    @Test
+    public void l3p2_halfAStickIsAQuarterOfThePower() {
+        OpModeHarness h = new OpModeHarness(new L3p2SquaredOpMode());
+        h.init();
+        h.start();
+
+        h.gamepad1.left_stick_y = -0.03f;     // the deadband is still there
+        h.loop();
+        assertEquals(0.0, h.motors.get(Constants.frontLeftName).power, EPS);
 
         h.gamepad1.left_stick_y = -0.5f;      // half forward
         h.gamepad1.right_stick_y = 0.5f;      // half back
@@ -160,7 +209,7 @@ public class LessonsTest {
 
     @Test
     public void l4_arcadeUsesOneStickToDriveAndOneToTurn() {
-        OpModeHarness h = new OpModeHarness(new L4Arcade());
+        OpModeHarness h = new OpModeHarness(new L4ArcadeOpMode());
         h.init();
         h.start();
 
@@ -190,7 +239,7 @@ public class LessonsTest {
 
     @Test
     public void l5_holonomicCanStrafe() {
-        OpModeHarness h = new OpModeHarness(new L5Holonomic());
+        OpModeHarness h = new OpModeHarness(new L5HolonomicOpMode());
         h.init();
         h.start();
 
@@ -236,7 +285,7 @@ public class LessonsTest {
      */
     @Test
     public void l6_theLoopReadsThreeSticksAndNegatesEachOne() {
-        OpModeHarness h = new OpModeHarness(new L6FollowerWheels());
+        OpModeHarness h = new OpModeHarness(new L6WheelsFollowerOpMode());
         h.init();
         h.start();
 
@@ -263,8 +312,8 @@ public class LessonsTest {
     @Test
     public void everyLessonTurnsClockwiseWhenTheRightStickGoesRight() {
         List<String> wrongWay = new ArrayList<>();
-        for (OpMode lesson : new OpMode[]{new L8CompareLocalizers(), new L11FieldRelative(),
-                new L12RobotRelativeButton(), new L14DriveToPose()}) {
+        for (OpMode lesson : new OpMode[]{new L8CompareLocalizersOpMode(), new L11FieldRelativeOpMode(),
+                new L12RobotRelativeButtonOpMode(), new L14DriveToPoseOpMode()}) {
             OpModeHarness h = new OpModeHarness(lesson);
             h.init();
             h.start();
@@ -284,7 +333,7 @@ public class LessonsTest {
 
     @Test
     public void l8_theEncoderLocalizerRunsAlongsideAndIsLogged() {
-        OpModeHarness h = new OpModeHarness(new L8CompareLocalizers());
+        OpModeHarness h = new OpModeHarness(new L8CompareLocalizersOpMode());
         h.init();
         h.start();
         h.loop();
@@ -305,7 +354,7 @@ public class LessonsTest {
 
     @Test
     public void l9_autoDrives24InchesForwardAndStops() {
-        OpModeHarness h = new OpModeHarness(new L9Drive24());
+        OpModeHarness h = new OpModeHarness(new L9Drive24OpMode());
         Follower follower = h.robot.follower;
         h.init();
         assertEquals("placed at the start pose", 72.0, follower.pose().x(), EPS);
@@ -321,7 +370,7 @@ public class LessonsTest {
 
     @Test
     public void l10_autoDrivesTwoLegsAndEndsTurned() {
-        OpModeHarness h = new OpModeHarness(new L10PathWithTurn());
+        OpModeHarness h = new OpModeHarness(new L10PathWithTurnOpMode());
         Follower follower = h.robot.follower;
         h.init();
         h.start();
@@ -338,7 +387,7 @@ public class LessonsTest {
 
     @Test
     public void l11_fieldRelativeIgnoresWhichWayTheRobotFaces() {
-        OpModeHarness h = new OpModeHarness(new L11FieldRelative());
+        OpModeHarness h = new OpModeHarness(new L11FieldRelativeOpMode());
         Follower follower = h.robot.follower;
         h.init();
         h.start();
@@ -360,7 +409,7 @@ public class LessonsTest {
 
     @Test
     public void l12_theBumperSwitchesToRobotRelative() {
-        OpModeHarness h = new OpModeHarness(new L12RobotRelativeButton());
+        OpModeHarness h = new OpModeHarness(new L12RobotRelativeButtonOpMode());
         Follower follower = h.robot.follower;
         h.init();
         h.start();
@@ -384,7 +433,7 @@ public class LessonsTest {
 
     @Test
     public void l13_theRobotHoldsItsHeadingWhenTheStickIsReleased() {
-        OpModeHarness h = new OpModeHarness(new L13HeadingHoldTeleOp());
+        OpModeHarness h = new OpModeHarness(new L13HeadingHoldOpMode());
         Follower follower = h.robot.follower;
         h.init();
         h.start();
@@ -408,7 +457,7 @@ public class LessonsTest {
 
     @Test
     public void l14_pressingYDrivesToAPoseAndTheDriverCanTakeOver() {
-        OpModeHarness h = new OpModeHarness(new L14DriveToPose());
+        OpModeHarness h = new OpModeHarness(new L14DriveToPoseOpMode());
         Follower follower = h.robot.follower;
         h.init();
         h.start();
@@ -432,7 +481,7 @@ public class LessonsTest {
 
     @Test
     public void l15_everythingTogether() {
-        OpModeHarness h = new OpModeHarness(new L15Combined());
+        OpModeHarness h = new OpModeHarness(new L15CombinedOpMode());
         Follower follower = h.robot.follower;
         h.init();
         h.start();
@@ -461,7 +510,7 @@ public class LessonsTest {
 
     @Test
     public void l15_aPointsAt45DegreesWhileTheDriverKeepsDriving() {
-        OpModeHarness h = new OpModeHarness(new L15Combined());
+        OpModeHarness h = new OpModeHarness(new L15CombinedOpMode());
         Follower follower = h.robot.follower;
         h.init();
         h.start();
@@ -481,7 +530,7 @@ public class LessonsTest {
 
     @Test
     public void l15_theTurnStickTakesAimingBack() {
-        OpModeHarness h = new OpModeHarness(new L15Combined());
+        OpModeHarness h = new OpModeHarness(new L15CombinedOpMode());
         h.robot.follower.setPose(POSES.of(72, 72, 0));
         h.init();
         h.start();
@@ -499,7 +548,7 @@ public class LessonsTest {
 
     @Test
     public void l15_yDrivesToTheStatedPoseAndAStickTakesItBack() {
-        OpModeHarness h = new OpModeHarness(new L15Combined());
+        OpModeHarness h = new OpModeHarness(new L15CombinedOpMode());
         Follower follower = h.robot.follower;
         h.init();
         h.start();
@@ -523,7 +572,7 @@ public class LessonsTest {
 
     @Test
     public void l16_theSticksCommandASpeedAndTheWheelsAreCorrectedTowardsIt() {
-        OpModeHarness h = new OpModeHarness(new L16VelocityDrive());
+        OpModeHarness h = new OpModeHarness(new L16VelocityDriveOpMode());
         h.init();
         h.start();
 
@@ -544,7 +593,7 @@ public class LessonsTest {
 
     @Test
     public void l16_whenTheWheelsAreUpToSpeedOnlyTheFeedforwardRemains() {
-        OpModeHarness h = new OpModeHarness(new L16VelocityDrive());
+        OpModeHarness h = new OpModeHarness(new L16VelocityDriveOpMode());
         h.init();
         h.start();
         // 40 in/s at the measured ticks per inch
@@ -565,7 +614,7 @@ public class LessonsTest {
 
     @Test
     public void l16_turningAskesEachSideForOppositeSpeeds() {
-        OpModeHarness h = new OpModeHarness(new L16VelocityDrive());
+        OpModeHarness h = new OpModeHarness(new L16VelocityDriveOpMode());
         h.init();
         h.start();
         h.gamepad1.right_stick_x = -1.0f;           // full counter-clockwise

@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * <p>Passes when: LessonsTest.l14_pressingYDrivesToAPoseAndTheDriverCanTakeOver
  */
 @TeleOp(name = "L14 Drive To Pose", group = "Lessons")
-public class L14DriveToPose extends CorbelsTeleOp {
+public class L14DriveToPoseOpMode extends CorbelsTeleOp {
 
     private static final PoseFactory POSES = PoseFactory.degrees();
     private static final Pose TARGET = POSES.of(120, 72, 90);
@@ -34,13 +34,13 @@ public class L14DriveToPose extends CorbelsTeleOp {
         //         The follower stays in HOLD until something calls manual().)
     }
 
-    private L6FollowerDriveTrain wheels;
+    private L6FollowerDriveTrain drivetrain;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new L6FollowerDriveTrain(hardware);
-        initAfter(wheels);
+        drivetrain = new L6FollowerDriveTrain(hardware);
+        initAfter(drivetrain);
     }
 
     @Override
@@ -58,6 +58,7 @@ public class L14DriveToPose extends CorbelsTeleOp {
 
     @Override
     public void stop() {
+        drivetrain.stop();
         stopAfter();
     }
 

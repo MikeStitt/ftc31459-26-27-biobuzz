@@ -27,18 +27,19 @@ public class CorbelsMecanum extends CorbelsDriveTrain {
         double forward = powers.forward();
         double strafe = powers.strafe();
         double turn = powers.turn();
-        return new double[]{
-                forward - strafe - turn,
-                forward + strafe + turn,
-                forward + strafe - turn,
-                forward - strafe + turn};
+        double[] wheels = new double[4];
+        wheels[FL] = forward - strafe - turn;
+        wheels[FR] = forward + strafe + turn;
+        wheels[BL] = forward + strafe - turn;
+        wheels[BR] = forward - strafe + turn;
+        return wheels;
     }
 
     @Override
-    protected void writeWheels(double[] wheels) {
-        frontLeft.setPower(wheels[0]);
-        frontRight.setPower(wheels[1]);
-        backLeft.setPower(wheels[2]);
-        backRight.setPower(wheels[3]);
+    protected void writeWheels() {
+        hardware.frontLeft.setPower(wheelPowers[FL]);
+        hardware.frontRight.setPower(wheelPowers[FR]);
+        hardware.backLeft.setPower(wheelPowers[BL]);
+        hardware.backRight.setPower(wheelPowers[BR]);
     }
 }

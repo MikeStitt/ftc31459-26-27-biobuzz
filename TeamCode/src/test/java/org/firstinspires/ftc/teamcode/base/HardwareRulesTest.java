@@ -6,7 +6,7 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import org.firstinspires.ftc.teamcode.lessons.L15Combined;
+import org.firstinspires.ftc.teamcode.lessons.L15CombinedOpMode;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ public class HardwareRulesTest {
 
     @Test
     public void everyDeviceIsLookedUpDuringInitAndNotAfter() {
-        OpModeHarness h = new OpModeHarness(new L15Combined());
+        OpModeHarness h = new OpModeHarness(new L15CombinedOpMode());
         assertEquals("nothing before init", 0, h.lookups);
 
         h.init();
@@ -47,7 +47,7 @@ public class HardwareRulesTest {
 
     @Test
     public void theHardwareIsResolvedExactlyOnce() {
-        OpModeHarness h = new OpModeHarness(new L15Combined());
+        OpModeHarness h = new OpModeHarness(new L15CombinedOpMode());
         h.init();
         h.start();
         h.loops(5, 0);
@@ -56,26 +56,26 @@ public class HardwareRulesTest {
 
     @Test
     public void theLocalizerReadsTheDevicesTheOpModeWasGiven() {
-        OpModeHarness h = new OpModeHarness(new L15Combined());
+        OpModeHarness h = new OpModeHarness(new L15CombinedOpMode());
         h.init();
-        L15Combined opMode = (L15Combined) h.opMode();
+        L15CombinedOpMode opMode = (L15CombinedOpMode) h.opMode();
         assertSame("the same motor object, not a second handle",
-                h.motors.get(Constants.frontLeftName).device, opMode.hardware.frontLeft);
-        assertSame(h.motors.get(Constants.frontRightName).device, opMode.hardware.frontRight);
-        assertSame(h.motors.get(Constants.backLeftName).device, opMode.hardware.backLeft);
-        assertSame(h.motors.get(Constants.backRightName).device, opMode.hardware.backRight);
-        assertSame(h.imu.device, opMode.hardware.imu);
+                h.motors.get(Constants.frontLeftName).motor, opMode.hardware.frontLeft);
+        assertSame(h.motors.get(Constants.frontRightName).motor, opMode.hardware.frontRight);
+        assertSame(h.motors.get(Constants.backLeftName).motor, opMode.hardware.backLeft);
+        assertSame(h.motors.get(Constants.backRightName).motor, opMode.hardware.backRight);
+        assertSame(h.imu.imu, opMode.hardware.imu);
     }
 
     @Test
     public void noDeviceNameAppearsOutsideConstants() throws Exception {
-        Path base = sourceRoot();
-        assertNotNull("could not find the sources to scan", base);
+        Path baseDirectory = sourceRoot();
+        assertNotNull("could not find the sources to scan", baseDirectory);
 
         String[] names = {Constants.frontLeftName, Constants.frontRightName,
                 Constants.backLeftName, Constants.backRightName, Constants.imuName};
         List<String> offenders = new ArrayList<>();
-        try (Stream<Path> files = Files.walk(base)) {
+        try (Stream<Path> files = Files.walk(baseDirectory)) {
             for (Path file : files.filter(f -> f.toString().endsWith(".java"))
                     .collect(Collectors.toList())) {
                 String name = file.getFileName().toString();

@@ -19,29 +19,33 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * all of it is what L8 onwards is about.
  *
  * <p>Handing the drivetrain over does not hand the driver's sticks over.
- * {@link L6FollowerDriveTrain#sticks} commands the four wheels, and a commanded
+ * {@link L6FollowerDriveTrain#sticks} commands the four drivetrain, and a commanded
  * wheel beats whatever the follower worked out, so the driver still wins. L8 is
- * where the wheels go back.
+ * where the drivetrain go back.
  *
  * <p>Two things to notice. {@code init} passes the drivetrain to
  * {@code initAfter}, which is how the follower gets it. And {@code stop} hands
- * the wheels back before the last follower update, or they keep whatever the
+ * the drivetrain back before the last follower update, or they keep whatever the
  * last loop commanded.
- *
- * <p>Nothing to fill in here. The work is four blanks: {@code sticks} in
- * {@link L6FollowerDriveTrain}, and {@code drive}, {@code setCommandedWheels} and
- * {@code releaseCommandedWheels} in {@link LessonsDriveTrain}.
  */
 @TeleOp(name = "L6 Follower Wheels", group = "Lessons")
-public class L6FollowerWheels extends CorbelsTeleOp {
+public class L6WheelsFollowerOpMode extends CorbelsTeleOp {
 
-    private L6FollowerDriveTrain wheels;
+    // TODO 1: L5 made an L5HolonomicDriveTrain. This lesson needs an
+    //         L6FollowerDriveTrain instead, here and on the line below that
+    //         builds it.
+    private L5HolonomicDriveTrain drivetrain;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new L6FollowerDriveTrain(hardware);
-        initAfter(wheels);
+        drivetrain = new L5HolonomicDriveTrain(hardware);
+        // TODO 2: hand the drivetrain to initAfter(), so the follower holds
+        //         it. L2 through L5 called initAfter() with nothing, because
+        //         they drove their own wheels.
+        //         Works when: L6FollowerDriveTrainTest passes and the robot
+        //         drives on the sticks.
+        initAfter();
     }
 
     @Override
@@ -57,7 +61,7 @@ public class L6FollowerWheels extends CorbelsTeleOp {
         double forwardSpeed = -gamepad1.left_stick_y;
         double strafeLeftSpeed = -gamepad1.left_stick_x;
         double turnCcwSpeed = -gamepad1.right_stick_x;
-        wheels.sticks(forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
+        drivetrain.sticks(forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
 
         Tracker.publish("command/forward", forwardSpeed);
         Tracker.publish("command/left", strafeLeftSpeed);
@@ -68,7 +72,7 @@ public class L6FollowerWheels extends CorbelsTeleOp {
 
     @Override
     public void stop() {
-        wheels.releaseCommandedWheels();
+        drivetrain.stop();
         stopAfter();
     }
 }

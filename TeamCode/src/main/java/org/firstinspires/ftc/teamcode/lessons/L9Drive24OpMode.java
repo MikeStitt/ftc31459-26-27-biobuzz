@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.lessons;
 import static com.pedropathing.api.Paths.line;
 import static com.pedropathing.ivy.groups.Groups.sequential;
 import static com.pedropathing.ivy.pedro.PedroCommands.follow;
-import static com.pedropathing.ivy.pedro.PedroCommands.hold;
 
 import com.pedropathing.api.PoseFactory;
 import com.pedropathing.ivy.Command;
@@ -14,31 +13,26 @@ import org.firstinspires.ftc.teamcode.base.CorbelsAuto;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 
 /**
- * L10: two moves in a row, and the second one turns.
+ * L9: the first autonomous -- drive 24 inches forward, and stop there.
  *
- * <p>Each leg holds a constant heading, so the robot turns while driving the
- * second leg. (Pedro 3.0.1 has a bug in .linear() heading interpolation --
- * issues #176 and #181 -- so we use .constant().)
- *
- * <p>Passes when: LessonsTest.l10_autoDrivesTwoLegsAndEndsTurned
+ * <p>Passes when: LessonsTest.l9_autoDrives24InchesForwardAndStops
  */
-@Autonomous(name = "L10 Path With Turn", group = "Lessons")
-public class L10PathWithTurn extends CorbelsAuto {
+@Autonomous(name = "L9 Drive 24", group = "Lessons")
+public class L9Drive24OpMode extends CorbelsAuto {
 
     private static final PoseFactory POSES = PoseFactory.degrees();
 
     private final Pose start = POSES.of(72, 72, 0);
-    private final Pose corner = POSES.of(96, 72, 0);
-    private final Pose end = POSES.of(96, 96, 90);
+    private final Pose end = POSES.of(96, 72, 0);
 
 
-    private L6FollowerDriveTrain wheels;
+    private L6FollowerDriveTrain drivetrain;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new L6FollowerDriveTrain(hardware);
-        initAfter(wheels);
+        drivetrain = new L6FollowerDriveTrain(hardware);
+        initAfter(drivetrain);
     }
 
     @Override
@@ -61,6 +55,7 @@ public class L10PathWithTurn extends CorbelsAuto {
 
     @Override
     public void stop() {
+        drivetrain.stop();
         stopAfter();
     }
 
@@ -71,10 +66,10 @@ public class L10PathWithTurn extends CorbelsAuto {
 
     @Override
     protected Command routine() {
-        // TODO 1: drive start -> corner holding heading 0.
-        // TODO 2: then corner -> end holding heading 90 degrees, so the robot
-        //         turns as it drives the second leg.
-        // TODO 3: finish with hold(follower, end) so it stays put.
+        // TODO: return a sequence with one step: follow a straight line from
+        //       start to end, holding heading 0.
+        //           return sequential(follow(follower, line(start, end).constant(0)));
+        //       Use .constant(), not .linear() -- Pedro 3.0.1 issues #176 and #181.
         return Command.NOOP;
     }
 }

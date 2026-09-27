@@ -157,7 +157,7 @@ public final class SimRobot {
 
     public static final class SimLocalizer implements Localizer {
         private final LongSupplier clock;
-        private Supplier<double[]> source;
+        private Supplier<double[]> chassisVelocitySupplier;
         private double x;
         private double y;
         private double heading;
@@ -169,7 +169,7 @@ public final class SimRobot {
 
         SimLocalizer(SimDrive drive, LongSupplier clock) {
             this.clock = clock;
-            this.source = () -> new double[]{
+            this.chassisVelocitySupplier = () -> new double[]{
                     drive.last.forward(), drive.last.strafe(), drive.last.turn()};
         }
 
@@ -178,8 +178,8 @@ public final class SimRobot {
          * through {@link SimRobot#fromWheels} to drive the simulation from what
          * the code actually wrote to the wheels.
          */
-        public void driveFrom(Supplier<double[]> source) {
-            this.source = source;
+        public void driveFrom(Supplier<double[]> chassisVelocitySupplier) {
+            this.chassisVelocitySupplier = chassisVelocitySupplier;
         }
 
         @Override
@@ -207,7 +207,7 @@ public final class SimRobot {
             double dt = lastNs == 0 ? 0 : (now - lastNs) / 1e9;
             lastNs = now;
             double k = Math.min(1, dt / LAG_S);
-            double[] c = source.get();
+            double[] c = chassisVelocitySupplier.get();
             vx += (c[0] * MAX_FORWARD_IPS - vx) * k;
             vy += (c[1] * MAX_STRAFE_IPS - vy) * k;
             omega += (c[2] * MAX_TURN_RADPS - omega) * k;

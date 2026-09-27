@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * <p>Lesson 16 turned "turn at one radian per second" into a wheel speed by
  * multiplying by a radius. This measures that radius, the same way as 17a: spin
  * the robot by hand, and compare what the Pinpoint says it turned with how far
- * the wheels travelled.
+ * the drivetrain travelled.
  *
  * <p>A wheel {@code r} inches from the middle travels {@code r} inches for every
  * radian the robot turns. So radius is wheel inches divided by radians.
@@ -28,7 +28,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * the number off the Driver Station.
  */
 @TeleOp(name = "L17b Measure turn radius", group = "Lessons")
-public class L17bMeasureTurnRadius extends CorbelsTeleOp {
+public class L17bMeasureTurnRadiusOpMode extends CorbelsTeleOp {
 
     private static final double NEEDED_TURNS = 2;
 
@@ -37,13 +37,13 @@ public class L17bMeasureTurnRadius extends CorbelsTeleOp {
     private double previousHeading;
     private double radians, wheelInches;
 
-    private L6FollowerDriveTrain wheels;
+    private L6FollowerDriveTrain drivetrain;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new L6FollowerDriveTrain(hardware);
-        initAfter(wheels);
+        drivetrain = new L6FollowerDriveTrain(hardware);
+        initAfter(drivetrain);
     }
 
     @Override
@@ -58,16 +58,16 @@ public class L17bMeasureTurnRadius extends CorbelsTeleOp {
 
     @Override
     public void stop() {
-        // Hand the wheels back before the follower's last update, or they keep
+        // Hand the drivetrain back before the follower's last update, or they keep
         // whatever power the last loop commanded.
-        wheels.releaseCommandedWheels();
+        drivetrain.stop();
         stopAfter();
     }
 
     @Override
     public void loop() {
         loopBefore();
-        wheels.setCommandedWheels(0, 0, 0, 0);
+        drivetrain.setCommandedWheels(0, 0, 0, 0);
 
         double heading = follower.pose().heading();
         radians += Calibration.unwrap(previousHeading, heading);
@@ -89,7 +89,7 @@ public class L17bMeasureTurnRadius extends CorbelsTeleOp {
         if (Math.abs(radians) >= NEEDED_TURNS * 2 * Math.PI) {
             Tracker.printToDs();
             Tracker.printToDs("turn radius  %.2f inches", measured);
-            Tracker.printToDs("Measure the diagonal between wheels and halve it; they should agree.");
+            Tracker.printToDs("Measure the diagonal between drivetrain and halve it; they should agree.");
         } else {
             Tracker.printToDs("Currently  %.2f inches", measured);
         }

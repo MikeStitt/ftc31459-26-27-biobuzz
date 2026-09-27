@@ -3,8 +3,8 @@ package org.firstinspires.ftc.teamcode.base;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.firstinspires.ftc.teamcode.sysid.SysIdDrive;
-import org.firstinspires.ftc.teamcode.sysid.VoltageResponse;
+import org.firstinspires.ftc.teamcode.sysid.SysIdDriveOpMode;
+import org.firstinspires.ftc.teamcode.sysid.VoltageResponseOpMode;
 import org.junit.Test;
 
 /**
@@ -47,49 +47,49 @@ public class SysIdTest {
     @Test
     public void theQuasistaticTestRampsAndTheDynamicOneSteps() {
         assertEquals("ramps from nothing", 0.0,
-                SysIdDrive.voltsFor(SysIdRecorder.State.QUASISTATIC_FORWARD, 0, 0.25, 4), 1e-9);
+                SysIdDriveOpMode.voltsFor(SysIdRecorder.State.QUASISTATIC_FORWARD, 0, 0.25, 4), 1e-9);
         assertEquals("a quarter volt per second", 2.5,
-                SysIdDrive.voltsFor(SysIdRecorder.State.QUASISTATIC_FORWARD, 10, 0.25, 4), 1e-9);
+                SysIdDriveOpMode.voltsFor(SysIdRecorder.State.QUASISTATIC_FORWARD, 10, 0.25, 4), 1e-9);
         assertEquals("backwards is the same ramp, negative", -2.5,
-                SysIdDrive.voltsFor(SysIdRecorder.State.QUASISTATIC_REVERSE, 10, 0.25, 4), 1e-9);
+                SysIdDriveOpMode.voltsFor(SysIdRecorder.State.QUASISTATIC_REVERSE, 10, 0.25, 4), 1e-9);
         assertEquals("the step is there from the first instant", 4.0,
-                SysIdDrive.voltsFor(SysIdRecorder.State.DYNAMIC_FORWARD, 0, 0.25, 4), 1e-9);
+                SysIdDriveOpMode.voltsFor(SysIdRecorder.State.DYNAMIC_FORWARD, 0, 0.25, 4), 1e-9);
         assertEquals(-4.0,
-                SysIdDrive.voltsFor(SysIdRecorder.State.DYNAMIC_REVERSE, 5, 0.25, 4), 1e-9);
+                SysIdDriveOpMode.voltsFor(SysIdRecorder.State.DYNAMIC_REVERSE, 5, 0.25, 4), 1e-9);
         assertEquals("nothing when no test is running", 0.0,
-                SysIdDrive.voltsFor(SysIdRecorder.State.NONE, 5, 0.25, 4), 1e-9);
+                SysIdDriveOpMode.voltsFor(SysIdRecorder.State.NONE, 5, 0.25, 4), 1e-9);
     }
 
     @Test
     public void theVoltageResponseTestWalksItsPhasesInOrder() {
-        assertEquals("idle first", 0, VoltageResponse.phaseAt(0));
-        assertEquals(0, VoltageResponse.phaseAt(2.9));
-        assertEquals("then 1 Hz", 1, VoltageResponse.phaseAt(3.1));
-        assertEquals("then 20 Hz", 5, VoltageResponse.phaseAt(16));
-        assertEquals("and past the end", 6, VoltageResponse.phaseAt(18.5));
+        assertEquals("idle first", 0, VoltageResponseOpMode.phaseAt(0));
+        assertEquals(0, VoltageResponseOpMode.phaseAt(2.9));
+        assertEquals("then 1 Hz", 1, VoltageResponseOpMode.phaseAt(3.1));
+        assertEquals("then 20 Hz", 5, VoltageResponseOpMode.phaseAt(16));
+        assertEquals("and past the end", 6, VoltageResponseOpMode.phaseAt(18.5));
     }
 
     @Test
     public void theSquareWaveAlternatesAtTheFrequencyForThatPhase() {
         // Phase 0 is idle, whatever the time.
-        assertEquals(0.0, VoltageResponse.powerAt(0, 1.0, 0.4), 1e-9);
+        assertEquals(0.0, VoltageResponseOpMode.powerAt(0, 1.0, 0.4), 1e-9);
 
         // Phase 1 is 1 Hz: high for the first half second of each second.
-        assertEquals(0.4, VoltageResponse.powerAt(1, 3.1, 0.4), 1e-9);
-        assertEquals(-0.4, VoltageResponse.powerAt(1, 3.6, 0.4), 1e-9);
-        assertEquals(0.4, VoltageResponse.powerAt(1, 4.1, 0.4), 1e-9);
+        assertEquals(0.4, VoltageResponseOpMode.powerAt(1, 3.1, 0.4), 1e-9);
+        assertEquals(-0.4, VoltageResponseOpMode.powerAt(1, 3.6, 0.4), 1e-9);
+        assertEquals(0.4, VoltageResponseOpMode.powerAt(1, 4.1, 0.4), 1e-9);
 
         // Phase 5 is 20 Hz: a full cycle every 50 ms.
-        assertEquals(0.4, VoltageResponse.powerAt(5, 15.0, 0.4), 1e-9);
-        assertEquals(-0.4, VoltageResponse.powerAt(5, 15.030, 0.4), 1e-9);
+        assertEquals(0.4, VoltageResponseOpMode.powerAt(5, 15.0, 0.4), 1e-9);
+        assertEquals(-0.4, VoltageResponseOpMode.powerAt(5, 15.030, 0.4), 1e-9);
 
         assertEquals("nothing after the last phase", 0.0,
-                VoltageResponse.powerAt(6, 20.0, 0.4), 1e-9);
+                VoltageResponseOpMode.powerAt(6, 20.0, 0.4), 1e-9);
     }
 
     @Test
     public void theVoltageResponseOpModeIsIdleUntilTheTriggerIsHeld() {
-        OpModeHarness h = new OpModeHarness(new VoltageResponse());
+        OpModeHarness h = new OpModeHarness(new VoltageResponseOpMode());
         h.init();
         h.start();
         h.loop();
@@ -113,7 +113,7 @@ public class SysIdTest {
 
     @Test
     public void theOpModeRunsOnlyWhileTheTriggerIsHeld() {
-        OpModeHarness h = new OpModeHarness(new SysIdDrive());
+        OpModeHarness h = new OpModeHarness(new SysIdDriveOpMode());
         h.init();
         h.start();
         h.loop();
@@ -134,7 +134,7 @@ public class SysIdTest {
 
     @Test
     public void aFlatterBatteryMeansMorePowerForTheSameVolts() {
-        OpModeHarness h = new OpModeHarness(new SysIdDrive());
+        OpModeHarness h = new OpModeHarness(new SysIdDriveOpMode());
         h.batteryVolts = 12.0;
         h.init();
         h.start();

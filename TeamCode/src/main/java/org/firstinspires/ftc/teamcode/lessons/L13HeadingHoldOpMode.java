@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * <p>Passes when: LessonsTest.l13_theRobotHoldsItsHeadingWhenTheStickIsReleased
  */
 @TeleOp(name = "L13 Heading Hold", group = "Lessons")
-public class L13HeadingHoldTeleOp extends CorbelsTeleOp {
+public class L13HeadingHoldOpMode extends CorbelsTeleOp {
 
     private HeadingHold heading;
 
@@ -25,13 +25,13 @@ public class L13HeadingHoldTeleOp extends CorbelsTeleOp {
         //         new HeadingHold(Constants.foresightConfig.headingFeedback.get())
     }
 
-    private L6FollowerDriveTrain wheels;
+    private L6FollowerDriveTrain drivetrain;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new L6FollowerDriveTrain(hardware);
-        initAfter(wheels);
+        drivetrain = new L6FollowerDriveTrain(hardware);
+        initAfter(drivetrain);
     }
 
     @Override
@@ -51,6 +51,7 @@ public class L13HeadingHoldTeleOp extends CorbelsTeleOp {
 
     @Override
     public void stop() {
+        drivetrain.stop();
         stopAfter();
     }
 }

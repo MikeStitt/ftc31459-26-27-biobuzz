@@ -33,22 +33,19 @@ public class L2TankDriveTrain extends LessonsDriveTrain {
      * one place so every lesson that drives this way says the same thing.
      */
     public void sticks(double leftSpeed, double rightSpeed) {
-        // TODO: call driveWheelsNow with four powers, in the order front left,
-        //       front right, back left, back right. Both left wheels get
-        //       leftSpeed and both right wheels get rightSpeed, so two of the
-        //       four are the same number twice.
+        // TODO (L2p2): call driveWheelsNow with four powers. The left stick runs both
+        //       left wheels and the right stick runs both right wheels, so two of
+        //       the four are the same number.
     }
 
     /**
-     * Sends each of the four powers to its own motor. They always arrive in the
-     * order front left, front right, back left, back right.
+     * Sends each of the four powers to its own motor, the slot named by {@link #FL}
+     * and the others to the motor of that name.
      */
     @Override
-    protected void writeWheels(double[] wheels) {
-        // TODO: send each of the four powers to its own motor, in the order they
-        //       arrive: frontLeft.setPower(wheels[0]); and so on for the other
-        //       three. Getting two of them the wrong way round makes the robot
-        //       turn when it should drive, and nothing says so out loud, which is
-        //       why this method has a test of its own.
+    protected void writeWheels() {
+        // TODO (L2p2): send each slot of wheelPowers to its own motor, naming the slot
+        //       with FL, FR, BL or BR and the motor through hardware:
+        //       hardware.frontLeft.setPower(wheelPowers[FL]);  and the other three.
     }
 }

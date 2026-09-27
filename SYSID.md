@@ -71,7 +71,7 @@ runs out of space; the dynamic runs take about a second.
 channels into the flight log, and computes applied voltage from power and
 battery voltage. No hardware of its own.
 
-**`SysIdDrive`** (new `sysid` package) -- one OpMode. The driver picks a test
+**`SysIdDriveOpMode`** (new `sysid` package) -- one OpMode. The driver picks a test
 with the D-pad, holds a trigger to run it, releases to stop. The state channel
 goes to `none` between tests, so one file can hold all four runs, which is what
 the analyzer expects.
