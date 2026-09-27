@@ -55,3 +55,18 @@ cd book && PATH="$PWD/.venv/bin:$PATH" ninja book
 
 `ninja -k 0 book` runs every check even when the first fails, which is what you want when fixing
 rather than gating. What each check does is in its own docstring.
+
+## Seeing what a blank asks a student to write
+
+```
+cd book && PATH="$PWD/.venv/bin:$PATH" ninja review
+```
+
+`ninja review` writes a separate Sphinx site under `review/` and prints where the HTML landed. One
+page per lesson file, one section per blank, and each section is the diff that filling that blank
+makes — starting from the file as a student sees it and applying one blank at a time, so the context
+carries the blanks already done.
+
+It is a view for reading, not a gate and not part of the guide: `ninja book` does not run it, and
+its pages are not committed. The answer pages under `source/answers/` say what fills each blank;
+this says how much work each one is.

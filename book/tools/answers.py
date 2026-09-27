@@ -74,6 +74,33 @@ def only_comment(block: list[str]) -> bool:
     return True
 
 
+def differences(blank: list[str],
+                filled: list[str]) -> list[tuple[int, int, int, int, bool]]:
+    """Every place the two lines differ, and whether each one is a blank.
+
+    A run of comment lines carrying no TODO is not a blank: the files differ in
+    javadoc too, and a `Passes when:` line is not something a student writes. It
+    is still a difference, and anything rebuilding one file from the other needs
+    it, which is why this reports all of them and labels them.
+    """
+    matcher = difflib.SequenceMatcher(None, blank, filled, autojunk=False)
+    out = []
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            continue
+        comment_only = ("TODO" not in "".join(blank[i1:i2])
+                        and only_comment(blank[i1:i2]) and only_comment(filled[j1:j2]))
+        out.append((i1, i2, j1, j2, not comment_only))
+    return out
+
+
+def blanks(blank: list[str], filled: list[str]) -> tuple[list[tuple[int, int, int, int]], int]:
+    """The differences that are blanks, and how many differences were not."""
+    found = differences(blank, filled)
+    kept = [(i1, i2, j1, j2) for i1, i2, j1, j2, is_blank in found if is_blank]
+    return kept, len(found) - len(kept)
+
+
 def fence(block: list[str]) -> str:
     body = "\n".join(line.rstrip() for line in block) or "(nothing)"
     return f"```java\n{body}\n```"
@@ -86,17 +113,8 @@ def page(path: str, blank: list[str], filled: list[str], solutions: str) -> str:
     out.append("")
     out.append(f"`{path}`")
     out.append("")
-    matcher = difflib.SequenceMatcher(None, blank, filled, autojunk=False)
-    count = 0
-    comments = 0
-    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
-        if tag == "equal":
-            continue
-        if ("TODO" not in "".join(blank[i1:i2])
-                and only_comment(blank[i1:i2]) and only_comment(filled[j1:j2])):
-            comments += 1
-            continue
-        count += 1
+    kept, comments = blanks(blank, filled)
+    for i1, i2, j1, j2 in kept:
         out.append(f"## {todo_numbers(blank[i1:i2])}")
         out.append("")
         out.append("What the lesson leaves blank:")
@@ -107,7 +125,7 @@ def page(path: str, blank: list[str], filled: list[str], solutions: str) -> str:
         out.append("")
         out.append(fence(filled[j1:j2]))
         out.append("")
-    if not count:
+    if not kept:
         out.append("No blank in this file: nothing but comments differs between the two lines.")
         out.append("")
     if comments:

@@ -63,3 +63,13 @@ build book: phony check-sphinx check-wrap check-reading check-keep check-words c
     check-answers
 
 default book
+
+# Not a check, and not part of `ninja book`: a view of what each blank asks a
+# student to write, for reading rather than gating. Its pages are generated and
+# not committed.
+rule diffs
+  command = $tools tools/diffs.py --build
+  description = what the student writes, one blank at a time
+  pool = console
+
+build review: diffs | tools/diffs.py tools/answers.py tools/register.py keep.toml
