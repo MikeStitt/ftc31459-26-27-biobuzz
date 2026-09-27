@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.base.CorbelsTeleOp;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 
 /**
- * L4: arcade drive. One stick drives, the other turns. Still no strafing.
+ * L4: drivetrain drive. One stick drives, the other turns. Still no strafing.
  *
  * <p>The left stick says how fast to go. The right stick, pushed sideways, says
  * how fast to spin. {@link L4ArcadeDriveTrain#sticks} works out the four wheel
@@ -21,12 +21,12 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
 @TeleOp(name = "L4 Arcade", group = "Lessons")
 public class L4Arcade extends CorbelsTeleOp {
 
-    private L4ArcadeDriveTrain arcade;
+    private L4ArcadeDriveTrain drivetrain;
 
     @Override
     public void init() {
         initBefore();
-        arcade = new L4ArcadeDriveTrain(hardware);
+        drivetrain = new L4ArcadeDriveTrain(hardware);
         initAfter();
     }
 
@@ -42,7 +42,7 @@ public class L4Arcade extends CorbelsTeleOp {
 
         double forwardSpeed = -gamepad1.left_stick_y;
         double turnCcwSpeed = -gamepad1.right_stick_x;
-        arcade.sticks(forwardSpeed, turnCcwSpeed);
+        drivetrain.sticks(forwardSpeed, turnCcwSpeed);
 
         Tracker.publish("command/forward", forwardSpeed);
         Tracker.publish("command/turn_ccw", turnCcwSpeed);
@@ -52,7 +52,7 @@ public class L4Arcade extends CorbelsTeleOp {
 
     @Override
     public void stop() {
-        arcade.sticks(0, 0);
+        drivetrain.stop();
         stopAfter();
     }
 }

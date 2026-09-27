@@ -45,11 +45,11 @@ public class LessonsTest {
         return ((Number) v).doubleValue();
     }
 
-    // -------------------------------------------------------------- L2
+    // -------------------------------------------------------------- L2p1
 
     @Test
-    public void l2_logsEveryStickAndTheAButton() {
-        OpModeHarness h = new OpModeHarness(new L2Sticks());
+    public void l2p1_logsEveryStickAndTheAButton() {
+        OpModeHarness h = new OpModeHarness(new L2p1SticksOpMode());
         h.init();
         h.start();
         h.gamepad1.left_stick_y = -1.0f;      // pushed away from the driver
@@ -68,11 +68,39 @@ public class LessonsTest {
         assertTrue(values.containsKey("stick/rightY"));
         assertTrue("pressing A sends something to Panels: " + values.keySet(),
                 values.keySet().stream().anyMatch(k -> k.contains("pressed A")));
+        assertEquals("two loops ran, and the lesson counted them",
+                2.0, number(values, "lesson/loop_count"), EPS);
+        assertTrue("the lesson logged how long it had been running",
+                values.containsKey("lesson/seconds_running"));
     }
 
     @Test
-    public void l2_theSticksDriveTheWheelsLikeATank() {
-        OpModeHarness h = new OpModeHarness(new L2Sticks());
+    public void l2p1_saysWhenTheButtonIsPressedAndReleased() {
+        OpModeHarness h = new OpModeHarness(new L2p1SticksOpMode());
+        h.init();
+        h.start();
+
+        h.gamepad1.a = true;
+        h.loop();
+        assertEquals("the loop the button went down on says so",
+                "button A pressed", Tracker.values().get("lesson/event"));
+
+        h.loop();
+        assertEquals("holding it says nothing new",
+                "button A pressed", Tracker.values().get("lesson/event"));
+
+        h.gamepad1.a = false;
+        h.loop();
+        assertEquals("letting go says so",
+                "button A released", Tracker.values().get("lesson/event"));
+        h.stop();
+    }
+
+    // -------------------------------------------------------------- L2p2
+
+    @Test
+    public void l2p2_theSticksDriveTheWheelsLikeATank() {
+        OpModeHarness h = new OpModeHarness(new L2p2TankOpMode());
         h.init();
         h.start();
 
@@ -101,13 +129,13 @@ public class LessonsTest {
     }
 
     /**
-     * What a viewer watching the simulation sees when L2 is driven: the robot
+     * What a viewer watching the simulation sees when L2p2 is driven: the robot
      * goes up the field. The simulator's own tests use a teleop out of
      * {@code base}, so this is the one place a real lesson is asked to move it.
      */
     @Test
-    public void l2_theSticksMoveTheSimulatedRobot() {
-        OpModeHarness h = new OpModeHarness(new L2Sticks());
+    public void l2p2_theSticksMoveTheSimulatedRobot() {
+        OpModeHarness h = new OpModeHarness(new L2p2TankOpMode());
         h.init();
         h.start();
 
@@ -121,11 +149,11 @@ public class LessonsTest {
         h.stop();
     }
 
-    // -------------------------------------------------------------- L3
+    // -------------------------------------------------------------- L3p1
 
     @Test
-    public void l3_aLetGoStickIsIgnoredAndHalfStickIsQuarterPower() {
-        OpModeHarness h = new OpModeHarness(new L3SmoothSticks());
+    public void l3p1_aNearlyCentredStickCountsAsCentred() {
+        OpModeHarness h = new OpModeHarness(new L3p1DeadbandOpMode());
         h.init();
         h.start();
 
@@ -137,6 +165,27 @@ public class LessonsTest {
         assertEquals(0.0, h.motors.get(Constants.frontRightName).power, EPS);
         assertNotEquals("the raw stick was not 0 though", 0.0,
                 number(Tracker.values(), "stick/left_raw"), EPS);
+
+        h.gamepad1.left_stick_y = -0.5f;      // half forward
+        h.loop();
+        assertEquals("outside the band, the stick is passed through untouched",
+                0.5, h.motors.get(Constants.frontLeftName).power, EPS);
+
+        h.stop();
+        assertEquals(0.0, h.motors.get(Constants.frontLeftName).power, EPS);
+    }
+
+    // -------------------------------------------------------------- L3p2
+
+    @Test
+    public void l3p2_halfAStickIsAQuarterOfThePower() {
+        OpModeHarness h = new OpModeHarness(new L3p2SquaredOpMode());
+        h.init();
+        h.start();
+
+        h.gamepad1.left_stick_y = -0.03f;     // the deadband is still there
+        h.loop();
+        assertEquals(0.0, h.motors.get(Constants.frontLeftName).power, EPS);
 
         h.gamepad1.left_stick_y = -0.5f;      // half forward
         h.gamepad1.right_stick_y = 0.5f;      // half back

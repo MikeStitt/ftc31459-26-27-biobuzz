@@ -36,9 +36,10 @@ public class L6FollowerDriveTrain extends LessonsDriveTrain {
      * {@link LessonsDriveTrain} sets out.
      */
     public void sticks(double forwardSpeed, double strafeLeftSpeed, double turnCcwSpeed) {
-        double[] wheels = normalized(
-                mix(new DrivePowers(forwardSpeed, strafeLeftSpeed, turnCcwSpeed)));
-        setCommandedWheels(wheels[0], wheels[1], wheels[2], wheels[3]);
+        DrivePowers drivePowers = new DrivePowers(forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
+        double[] mixed = mix(drivePowers);
+        double[] scaled = normalized(mixed);
+        setCommandedWheels(scaled[FL], scaled[FR], scaled[BL], scaled[BR]);
     }
 
     /**
@@ -54,19 +55,20 @@ public class L6FollowerDriveTrain extends LessonsDriveTrain {
         double strafeLeftSpeed = powers.strafe();
         double turnCcwSpeed = powers.turn();
 
-        return new double[]{
-                forwardSpeed - strafeLeftSpeed - turnCcwSpeed,      // front left
-                forwardSpeed + strafeLeftSpeed + turnCcwSpeed,      // front right
-                forwardSpeed + strafeLeftSpeed - turnCcwSpeed,      // back left
-                forwardSpeed - strafeLeftSpeed + turnCcwSpeed};     // back right
+        double[] wheels = new double[4];
+        wheels[FL] = forwardSpeed - strafeLeftSpeed - turnCcwSpeed;
+        wheels[FR] = forwardSpeed + strafeLeftSpeed + turnCcwSpeed;
+        wheels[BL] = forwardSpeed + strafeLeftSpeed - turnCcwSpeed;
+        wheels[BR] = forwardSpeed - strafeLeftSpeed + turnCcwSpeed;
+        return wheels;
     }
 
-    /** Sends each of the four powers to its own motor, in that same order. */
+    /** Sends each of the four powers to its own motor, by the slot's own name. */
     @Override
-    protected void writeWheels(double[] wheels) {
-        frontLeft.setPower(wheels[0]);
-        frontRight.setPower(wheels[1]);
-        backLeft.setPower(wheels[2]);
-        backRight.setPower(wheels[3]);
+    protected void writeWheels() {
+        hardware.frontLeft.setPower(wheelPowers[FL]);
+        hardware.frontRight.setPower(wheelPowers[FR]);
+        hardware.backLeft.setPower(wheelPowers[BL]);
+        hardware.backRight.setPower(wheelPowers[BR]);
     }
 }

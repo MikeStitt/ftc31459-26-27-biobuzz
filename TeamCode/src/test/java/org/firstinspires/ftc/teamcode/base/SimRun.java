@@ -13,7 +13,7 @@ import java.lang.reflect.Field;
  * gamepad fields by their own names:
  *
  * <pre>
- * ./gradlew :TeamCode:simRun --args="L2Sticks left_stick_y=-1 right_stick_y=-1"
+ * ./gradlew :TeamCode:simRun --args="L2p2TankOpMode left_stick_y=-1 right_stick_y=-1"
  * </pre>
  *
  * <p>Any field of {@code Gamepad} can be set, so buttons work the same way as

@@ -42,11 +42,11 @@ public class LessonsDriveTrainTest {
         }
 
         @Override
-        protected void writeWheels(double[] wheels) {
-            frontLeft.setPower(wheels[0]);
-            frontRight.setPower(wheels[1]);
-            backLeft.setPower(wheels[2]);
-            backRight.setPower(wheels[3]);
+        protected void writeWheels() {
+            hardware.frontLeft.setPower(wheelPowers[FL]);
+            hardware.frontRight.setPower(wheelPowers[FR]);
+            hardware.backLeft.setPower(wheelPowers[BL]);
+            hardware.backRight.setPower(wheelPowers[BR]);
         }
     }
 

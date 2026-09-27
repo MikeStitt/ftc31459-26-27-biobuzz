@@ -22,13 +22,13 @@ public class L8CompareLocalizers extends CorbelsTeleOp {
         shadow.add("encoders", new MecanumEncoderLocalizer(new HardwareWheelSource(hardware)));
     }
 
-    private L6FollowerDriveTrain wheels;
+    private L6FollowerDriveTrain drivetrain;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new L6FollowerDriveTrain(hardware);
-        initAfter(wheels);
+        drivetrain = new L6FollowerDriveTrain(hardware);
+        initAfter(drivetrain);
     }
 
     @Override
@@ -47,6 +47,7 @@ public class L8CompareLocalizers extends CorbelsTeleOp {
 
     @Override
     public void stop() {
+        drivetrain.stop();
         stopAfter();
     }
 }

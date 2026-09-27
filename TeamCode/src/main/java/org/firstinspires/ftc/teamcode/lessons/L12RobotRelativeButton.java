@@ -13,13 +13,13 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
 @TeleOp(name = "L12 Robot Relative Button", group = "Lessons")
 public class L12RobotRelativeButton extends CorbelsTeleOp {
 
-    private L6FollowerDriveTrain wheels;
+    private L6FollowerDriveTrain drivetrain;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new L6FollowerDriveTrain(hardware);
-        initAfter(wheels);
+        drivetrain = new L6FollowerDriveTrain(hardware);
+        initAfter(drivetrain);
     }
 
     @Override
@@ -30,6 +30,7 @@ public class L12RobotRelativeButton extends CorbelsTeleOp {
 
     @Override
     public void stop() {
+        drivetrain.stop();
         stopAfter();
     }
 

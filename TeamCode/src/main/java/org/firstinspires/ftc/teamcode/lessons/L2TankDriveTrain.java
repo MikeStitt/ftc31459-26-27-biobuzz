@@ -37,14 +37,14 @@ public class L2TankDriveTrain extends LessonsDriveTrain {
     }
 
     /**
-     * Sends each of the four powers to its own motor. They always arrive in the
-     * order front left, front right, back left, back right.
+     * Sends each of the four powers to its own motor, the slot named by {@link #FL}
+     * and the others to the motor of that name.
      */
     @Override
-    protected void writeWheels(double[] wheels) {
-        frontLeft.setPower(wheels[0]);
-        frontRight.setPower(wheels[1]);
-        backLeft.setPower(wheels[2]);
-        backRight.setPower(wheels[3]);
+    protected void writeWheels() {
+        hardware.frontLeft.setPower(wheelPowers[FL]);
+        hardware.frontRight.setPower(wheelPowers[FR]);
+        hardware.backLeft.setPower(wheelPowers[BL]);
+        hardware.backRight.setPower(wheelPowers[BR]);
     }
 }

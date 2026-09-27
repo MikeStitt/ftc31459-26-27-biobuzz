@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * and the code was given a number to convert with. This measures it instead.
  *
  * <p>The trick is that the robot already knows how far it went: the Pinpoint
- * measures the floor with its own wheels, and it is already tuned. So push the
+ * measures the floor with its own drivetrain, and it is already tuned. So push the
  * robot and compare two accounts of the same journey -- the Pinpoint's, in
  * inches, and the drive encoders', in ticks. The ratio is the constant.
  *
@@ -37,19 +37,19 @@ public class L17aMeasureTicksPerInch extends CorbelsTeleOp {
     private double startX, startY;
     private double inches, ticks;
 
-    private L6FollowerDriveTrain wheels;
+    private L6FollowerDriveTrain drivetrain;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new L6FollowerDriveTrain(hardware);
-        initAfter(wheels);
+        drivetrain = new L6FollowerDriveTrain(hardware);
+        initAfter(drivetrain);
     }
 
     @Override
     public void start() {
         startBefore();
-        // The wheels must roll freely, so no braking while we push.
+        // The drivetrain must roll freely, so no braking while we push.
         savedBrakeMode = Constants.manualBrakeMode;
         Constants.manualBrakeMode = false;
         startTicks = ticks();
@@ -60,16 +60,16 @@ public class L17aMeasureTicksPerInch extends CorbelsTeleOp {
 
     @Override
     public void stop() {
-        // Hand the wheels back before the follower's last update, or they keep
+        // Hand the drivetrain back before the follower's last update, or they keep
         // whatever power the last loop commanded.
-        wheels.releaseCommandedWheels();
+        drivetrain.stop();
         stopAfter();
     }
 
     @Override
     public void loop() {
         loopBefore();
-        wheels.setCommandedWheels(0, 0, 0, 0);       // no power: we are pushing
+        drivetrain.setCommandedWheels(0, 0, 0, 0);       // no power: we are pushing
 
         double[] now = ticks();
         ticks = Calibration.forwardPart(now[0] - startTicks[0], now[1] - startTicks[1],

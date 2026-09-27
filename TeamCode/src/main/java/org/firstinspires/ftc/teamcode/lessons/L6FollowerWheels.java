@@ -19,25 +19,25 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * all of it is what L8 onwards is about.
  *
  * <p>Handing the drivetrain over does not hand the driver's sticks over.
- * {@link L6FollowerDriveTrain#sticks} commands the four wheels, and a commanded
+ * {@link L6FollowerDriveTrain#sticks} commands the four drivetrain, and a commanded
  * wheel beats whatever the follower worked out, so the driver still wins. L8 is
- * where the wheels go back.
+ * where the drivetrain go back.
  *
  * <p>Two things to notice. {@code init} passes the drivetrain to
  * {@code initAfter}, which is how the follower gets it. And {@code stop} hands
- * the wheels back before the last follower update, or they keep whatever the
+ * the drivetrain back before the last follower update, or they keep whatever the
  * last loop commanded.
  */
 @TeleOp(name = "L6 Follower Wheels", group = "Lessons")
 public class L6FollowerWheels extends CorbelsTeleOp {
 
-    private L6FollowerDriveTrain wheels;
+    private L6FollowerDriveTrain drivetrain;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new L6FollowerDriveTrain(hardware);
-        initAfter(wheels);
+        drivetrain = new L6FollowerDriveTrain(hardware);
+        initAfter(drivetrain);
     }
 
     @Override
@@ -53,7 +53,7 @@ public class L6FollowerWheels extends CorbelsTeleOp {
         double forwardSpeed = -gamepad1.left_stick_y;
         double strafeLeftSpeed = -gamepad1.left_stick_x;
         double turnCcwSpeed = -gamepad1.right_stick_x;
-        wheels.sticks(forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
+        drivetrain.sticks(forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
 
         Tracker.publish("command/forward", forwardSpeed);
         Tracker.publish("command/left", strafeLeftSpeed);
@@ -64,7 +64,7 @@ public class L6FollowerWheels extends CorbelsTeleOp {
 
     @Override
     public void stop() {
-        wheels.releaseCommandedWheels();
+        drivetrain.stop();
         stopAfter();
     }
 }

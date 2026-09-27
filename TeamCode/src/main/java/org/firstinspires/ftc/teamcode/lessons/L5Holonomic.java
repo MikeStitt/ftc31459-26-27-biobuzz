@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.base.CorbelsTeleOp;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 
 /**
- * L5: holonomic drive. Now the robot can strafe.
+ * L5: drivetrain drive. Now the robot can strafe.
  *
  * <p>Arcade used two numbers, forward and turn, and both sides of the robot did
  * the same thing. Mecanum wheels can do a third: slide sideways without turning.
@@ -22,12 +22,12 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
 @TeleOp(name = "L5 Holonomic", group = "Lessons")
 public class L5Holonomic extends CorbelsTeleOp {
 
-    private L5HolonomicDriveTrain holonomic;
+    private L5HolonomicDriveTrain drivetrain;
 
     @Override
     public void init() {
         initBefore();
-        holonomic = new L5HolonomicDriveTrain(hardware);
+        drivetrain = new L5HolonomicDriveTrain(hardware);
         initAfter();
     }
 
@@ -44,7 +44,7 @@ public class L5Holonomic extends CorbelsTeleOp {
         double forwardSpeed = -gamepad1.left_stick_y;
         double strafeLeftSpeed = -gamepad1.left_stick_x;
         double turnCcwSpeed = -gamepad1.right_stick_x;
-        holonomic.sticks(forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
+        drivetrain.sticks(forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
 
         Tracker.publish("command/forward", forwardSpeed);
         Tracker.publish("command/left", strafeLeftSpeed);
@@ -55,7 +55,7 @@ public class L5Holonomic extends CorbelsTeleOp {
 
     @Override
     public void stop() {
-        holonomic.sticks(0, 0, 0);
+        drivetrain.stop();
         stopAfter();
     }
 }
