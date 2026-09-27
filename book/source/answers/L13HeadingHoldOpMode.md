@@ -1,8 +1,8 @@
-# L13HeadingHoldTeleOp
+# L13HeadingHoldOpMode
 
-The blanks in this file, filled in from `5e7f23b`:
+The blanks in this file, filled in from `7475a49`:
 
-`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L13HeadingHoldTeleOp.java`
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L13HeadingHoldOpMode.java`
 
 ## TODO 1
 

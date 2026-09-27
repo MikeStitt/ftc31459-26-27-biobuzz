@@ -17,7 +17,7 @@ words = 240
 # commits, not the branch names, so regenerating gives the same pages until this
 # pin is deliberately moved.
 [answers]
-lessons = "lessons-sim-nt4"
-lessons_commit = "e28bb70"
-solutions = "solutions-sim-nt4"
-solutions_commit = "5e7f23b"
+lessons = "lessons-lesson-changes"
+lessons_commit = "969498d"
+solutions = "solutions-lesson-changes"
+solutions_commit = "7475a49"

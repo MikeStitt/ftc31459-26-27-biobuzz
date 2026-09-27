@@ -1,8 +1,8 @@
-# L15Combined
+# L15CombinedOpMode
 
-The blanks in this file, filled in from `5e7f23b`:
+The blanks in this file, filled in from `7475a49`:
 
-`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L15Combined.java`
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L15CombinedOpMode.java`
 
 ## TODO 1
 

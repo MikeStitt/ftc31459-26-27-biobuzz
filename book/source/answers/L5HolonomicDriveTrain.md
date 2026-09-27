@@ -1,6 +1,6 @@
 # L5HolonomicDriveTrain
 
-The blanks in this file, filled in from `5e7f23b`:
+The blanks in this file, filled in from `7475a49`:
 
 `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L5HolonomicDriveTrain.java`
 
@@ -9,21 +9,19 @@ The blanks in this file, filled in from `5e7f23b`:
 What the lesson leaves blank:
 
 ```java
-        // TODO: call driveWheelsNow with the four lines from the comment above
-        //       this method, in the order front left, front right, back left,
-        //       back right. Each one is the three numbers added or subtracted --
-        //       the signs are what make a wheel push sideways one way or the
-        //       other.
+        // TODO: work out each wheel's power, one named variable at a time, then
+        //       hand the four to driveWheelsNow. Three numbers add up differently
+        //       at each corner; the sources in this class's javadoc draw it.
 ```
 
 What the solutions line has there:
 
 ```java
-        driveWheelsNow(
-                forwardSpeed - strafeLeftSpeed - turnCcwSpeed,
-                forwardSpeed + strafeLeftSpeed + turnCcwSpeed,
-                forwardSpeed + strafeLeftSpeed - turnCcwSpeed,
-                forwardSpeed - strafeLeftSpeed + turnCcwSpeed);
+        double frontLeftPower = forwardSpeed - strafeLeftSpeed - turnCcwSpeed;
+        double frontRightPower = forwardSpeed + strafeLeftSpeed + turnCcwSpeed;
+        double backLeftPower = forwardSpeed + strafeLeftSpeed - turnCcwSpeed;
+        double backRightPower = forwardSpeed - strafeLeftSpeed + turnCcwSpeed;
+        driveWheelsNow(frontLeftPower, frontRightPower, backLeftPower, backRightPower);
 ```
 
 ## TODO 
@@ -31,18 +29,16 @@ What the solutions line has there:
 What the lesson leaves blank:
 
 ```java
-        // TODO: send each of the four powers to its own motor, in the order they
-        //       arrive: frontLeft.setPower(wheels[0]); and so on for the other
-        //       three. Getting two of them the wrong way round makes the robot
-        //       turn when it should drive, and nothing says so out loud, which is
-        //       why this method has a test of its own.
+        // TODO: send each slot of wheelPowers to its own motor, naming the slot
+        //       with FL, FR, BL or BR and the motor through hardware:
+        //       hardware.frontLeft.setPower(wheelPowers[FL]);  and the other three.
 ```
 
 What the solutions line has there:
 
 ```java
-        frontLeft.setPower(wheels[0]);
-        frontRight.setPower(wheels[1]);
-        backLeft.setPower(wheels[2]);
-        backRight.setPower(wheels[3]);
+        hardware.frontLeft.setPower(wheelPowers[FL]);
+        hardware.frontRight.setPower(wheelPowers[FR]);
+        hardware.backLeft.setPower(wheelPowers[BL]);
+        hardware.backRight.setPower(wheelPowers[BR]);
 ```

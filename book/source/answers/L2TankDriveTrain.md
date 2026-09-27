@@ -1,18 +1,17 @@
 # L2TankDriveTrain
 
-The blanks in this file, filled in from `5e7f23b`:
+The blanks in this file, filled in from `7475a49`:
 
 `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L2TankDriveTrain.java`
 
-## TODO 
+## TODO (L2p2)
 
 What the lesson leaves blank:
 
 ```java
-        // TODO: call driveWheelsNow with four powers, in the order front left,
-        //       front right, back left, back right. Both left wheels get
-        //       leftSpeed and both right wheels get rightSpeed, so two of the
-        //       four are the same number twice.
+        // TODO (L2p2): call driveWheelsNow with four powers. The left stick runs both
+        //       left wheels and the right stick runs both right wheels, so two of
+        //       the four are the same number.
 ```
 
 What the solutions line has there:
@@ -21,23 +20,21 @@ What the solutions line has there:
         driveWheelsNow(leftSpeed, rightSpeed, leftSpeed, rightSpeed);
 ```
 
-## TODO 
+## TODO (L2p2)
 
 What the lesson leaves blank:
 
 ```java
-        // TODO: send each of the four powers to its own motor, in the order they
-        //       arrive: frontLeft.setPower(wheels[0]); and so on for the other
-        //       three. Getting two of them the wrong way round makes the robot
-        //       turn when it should drive, and nothing says so out loud, which is
-        //       why this method has a test of its own.
+        // TODO (L2p2): send each slot of wheelPowers to its own motor, naming the slot
+        //       with FL, FR, BL or BR and the motor through hardware:
+        //       hardware.frontLeft.setPower(wheelPowers[FL]);  and the other three.
 ```
 
 What the solutions line has there:
 
 ```java
-        frontLeft.setPower(wheels[0]);
-        frontRight.setPower(wheels[1]);
-        backLeft.setPower(wheels[2]);
-        backRight.setPower(wheels[3]);
+        hardware.frontLeft.setPower(wheelPowers[FL]);
+        hardware.frontRight.setPower(wheelPowers[FR]);
+        hardware.backLeft.setPower(wheelPowers[BL]);
+        hardware.backRight.setPower(wheelPowers[BR]);
 ```

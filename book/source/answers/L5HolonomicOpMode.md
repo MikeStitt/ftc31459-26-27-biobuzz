@@ -1,8 +1,8 @@
-# L5Holonomic
+# L5HolonomicOpMode
 
-The blanks in this file, filled in from `5e7f23b`:
+The blanks in this file, filled in from `7475a49`:
 
-`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L5Holonomic.java`
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L5HolonomicOpMode.java`
 
 ## TODO 
 

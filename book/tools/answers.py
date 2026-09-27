@@ -192,9 +192,14 @@ def main() -> int:
         return 0
 
     out.mkdir(parents=True, exist_ok=True)
+    # A lesson that was renamed leaves a page behind, and Sphinx fails on a page
+    # in no toctree, so anything not generated any more goes.
+    stale = [path for path in out.glob("*.md") if path.name not in pages]
+    for path in stale:
+        path.unlink()
     for name, text in pages.items():
         (out / name).write_text(text, encoding="utf-8")
-    print(f"wrote {len(pages)} page(s) into {OUT}")
+    print(f"wrote {len(pages)} page(s) into {OUT}, removed {len(stale)} that moved")
     return 0
 
 

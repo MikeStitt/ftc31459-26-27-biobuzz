@@ -1,8 +1,8 @@
-# L9Drive24
+# L9Drive24OpMode
 
-The blanks in this file, filled in from `5e7f23b`:
+The blanks in this file, filled in from `7475a49`:
 
-`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L9Drive24.java`
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L9Drive24OpMode.java`
 
 ## TODO 
 

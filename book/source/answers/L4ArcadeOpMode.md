@@ -1,15 +1,15 @@
-# L4Arcade
+# L4ArcadeOpMode
 
-The blanks in this file, filled in from `5e7f23b`:
+The blanks in this file, filled in from `7475a49`:
 
-`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L4Arcade.java`
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L4ArcadeOpMode.java`
 
 ## TODO 
 
 What the lesson leaves blank:
 
 ```java
-        // TODO: read the two sticks and hand them to arcade.sticks(forwardSpeed, turnCcwSpeed).
+        // TODO: read the two sticks and hand them to drivetrain.sticks(forwardSpeed, turnCcwSpeed).
         //       forward comes from the left stick's y axis, turn from the right
         //       stick's x axis, and BOTH need a minus sign -- the note above says
         //       why the turn one does. Log them as command/forward and

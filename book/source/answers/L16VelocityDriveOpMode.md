@@ -1,8 +1,36 @@
-# L16VelocityDrive
+# L16VelocityDriveOpMode
 
-The blanks in this file, filled in from `5e7f23b`:
+The blanks in this file, filled in from `7475a49`:
 
-`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L16VelocityDrive.java`
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L16VelocityDriveOpMode.java`
+
+## An unmarked difference
+
+What the lesson leaves blank:
+
+```java
+    private WheelVelocities measured;
+```
+
+What the solutions line has there:
+
+```java
+    private WheelVelocities measuredVelocities;
+```
+
+## An unmarked difference
+
+What the lesson leaves blank:
+
+```java
+        measured = new WheelVelocities(hardware);
+```
+
+What the solutions line has there:
+
+```java
+        measuredVelocities = new WheelVelocities(hardware);
+```
 
 ## TODO 1
 
@@ -51,7 +79,7 @@ What the solutions line has there:
 What the lesson leaves blank:
 
 ```java
-        // TODO 3: ask the motors how fast their wheels are actually going.
+        // TODO 3: ask the motors how fast their drivetrain are actually going.
         //         measured.all() hands back all four, in inches per second.
         double[] actual = new double[4];
 ```
@@ -60,7 +88,7 @@ What the solutions line has there:
 
 ```java
         // 3. What each wheel is actually doing.
-        double[] actual = measured.all();
+        double[] actual = measuredVelocities.all();
 ```
 
 ## TODO 4
@@ -69,7 +97,7 @@ What the lesson leaves blank:
 
 ```java
         // TODO 4: guess a power for each wheel, then correct it by the error, and
-        //         send all four with wheels.setCommandedWheels(...):
+        //         send all four with drivetrain.setCommandedWheels(...):
         //             power = kV * target + kP * (target - actual)
         //         clamp(...) below keeps the answer inside -1 to 1.
 ```
@@ -96,8 +124,8 @@ What the solutions line has there:
             double feedback = kP * (target[i] - actual[i]);
             power[i] = clamp(feedforward + feedback);
         }
-        wheels.setCommandedWheels(power[0], power[1], power[2], power[3]);
+        drivetrain.setCommandedWheels(power[0], power[1], power[2], power[3]);
 ```
 
-The two lines also differ in 1 run(s) of comment lines, which are not
+The two lines also differ in 3 run(s) of comment lines, which are not
 blanks and are not shown.

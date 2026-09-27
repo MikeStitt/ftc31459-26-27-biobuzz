@@ -50,14 +50,14 @@ html_theme = "furo"
 '''
 
 MARKER = re.compile(r"TODO(\s+(?P<number>\d+))?")
-LESSON_IN_MARKER = re.compile(r"\(L(\d+)([a-z]?)\)")
-LESSON_IN_JAVADOC = re.compile(r"^\s*\* (L\d+[a-z]?):")
-LESSON_IN_NAME = re.compile(r"^L(\d+)([a-z]*)")
+LESSON_IN_MARKER = re.compile(r"\(L(\d+)(p\d+|[a-z]?)\)")
+LESSON_IN_JAVADOC = re.compile(r"^\s*\* (L\d+(?:p\d+|[a-z]?)):")
+LESSON_IN_NAME = re.compile(r"^L(\d+)(p\d+|[a-z]*?)(?=[A-Z]|$)")
 UNNAMED = "No lesson named"
 
 
 def lesson_order(label: str) -> tuple[int, int, str]:
-    """L2 before L10, L17a before L17b, and anything unnumbered last."""
+    """L2 before L10, L2p1 before L2p2, L17a before L17b, anything unnumbered last."""
     found = LESSON_IN_NAME.match(label)
     if not found:
         return (1, 0, label)

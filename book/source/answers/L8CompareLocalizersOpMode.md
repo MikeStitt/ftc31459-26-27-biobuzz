@@ -1,8 +1,8 @@
-# L8CompareLocalizers
+# L8CompareLocalizersOpMode
 
-The blanks in this file, filled in from `5e7f23b`:
+The blanks in this file, filled in from `7475a49`:
 
-`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L8CompareLocalizers.java`
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L8CompareLocalizersOpMode.java`
 
 ## TODO 1
 
@@ -26,7 +26,7 @@ What the lesson leaves blank:
 
 ```java
         // TODO 2: holonomic driving, same as lesson 5 -- but through the
-        //         follower now, the way lesson 6 handed the wheels over.
+        //         follower now, the way lesson 6 handed the drivetrain over.
 ```
 
 What the solutions line has there:

@@ -1,6 +1,6 @@
 # L4ArcadeDriveTrain
 
-The blanks in this file, filled in from `5e7f23b`:
+The blanks in this file, filled in from `7475a49`:
 
 `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L4ArcadeDriveTrain.java`
 
@@ -9,12 +9,10 @@ The blanks in this file, filled in from `5e7f23b`:
 What the lesson leaves blank:
 
 ```java
-        // TODO: work out what each side has to do, then call driveWheelsNow the
-        //       way L2 did. A counter-clockwise turn runs the left side
-        //       backwards, so the turn number is subtracted on the left and
-        //       added on the right.
-        double leftSpeed = 0;
-        double rightSpeed = 0;
+        // TODO: turn the two numbers into a left speed and a right speed, each
+        //       into its own variable, and hand them to driveWheelsNow the way
+        //       L2TankDriveTrain does. Turning counter-clockwise means the left
+        //       side goes slower and the right side faster.
 ```
 
 What the solutions line has there:
@@ -30,18 +28,16 @@ What the solutions line has there:
 What the lesson leaves blank:
 
 ```java
-        // TODO: send each of the four powers to its own motor, in the order they
-        //       arrive: frontLeft.setPower(wheels[0]); and so on for the other
-        //       three. Getting two of them the wrong way round makes the robot
-        //       turn when it should drive, and nothing says so out loud, which is
-        //       why this method has a test of its own.
+        // TODO: send each slot of wheelPowers to its own motor, naming the slot
+        //       with FL, FR, BL or BR and the motor through hardware:
+        //       hardware.frontLeft.setPower(wheelPowers[FL]);  and the other three.
 ```
 
 What the solutions line has there:
 
 ```java
-        frontLeft.setPower(wheels[0]);
-        frontRight.setPower(wheels[1]);
-        backLeft.setPower(wheels[2]);
-        backRight.setPower(wheels[3]);
+        hardware.frontLeft.setPower(wheelPowers[FL]);
+        hardware.frontRight.setPower(wheelPowers[FR]);
+        hardware.backLeft.setPower(wheelPowers[BL]);
+        hardware.backRight.setPower(wheelPowers[BR]);
 ```
