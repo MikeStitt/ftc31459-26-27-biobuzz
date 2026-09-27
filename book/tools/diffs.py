@@ -79,8 +79,10 @@ def steps(blank: list[str], filled: list[str],
         offset += (j2 - j1) - (i2 - i1)
         if not is_blank:
             continue
+        name = heading(blank[i1:i2])
         out.append({
-            "name": heading(blank[i1:i2]),
+            "name": name,
+            "unmarked": name == "No TODO of its own",
             "deleted": i2 - i1,
             "written": j2 - j1,
             "diff": "\n".join(difflib.unified_diff(
@@ -90,23 +92,32 @@ def steps(blank: list[str], filled: list[str],
     return out, state
 
 
+MARKER = re.compile(r"TODO(\s+(?P<number>\d+))?")
+
+
 def heading(block: list[str]) -> str:
     """Every TODO marker in one run of blank lines, for the section title.
 
     tools/answers.py names a run after the first marker in it. Here the whole run
-    is one edit, and a run can hold three markers, so all of them are named: the
+    is one edit and a run can hold several markers, so all of them are named: the
     50 markers on the lessons line fall into 46 runs.
+
+    A marker is numbered in some files and bare in others -- 33 read `TODO 3` and
+    17 read `TODO` -- so a run can be named by number, or named without one. A
+    run holding no marker at all is one difflib put beside a blank rather than
+    inside it, and it is titled as having no TODO of its own.
     """
     numbers = []
+    bare = False
     for line in block:
-        marker = line.find("TODO")
-        if marker < 0:
-            continue
-        rest = line[marker + 4:].strip().rstrip(":").split(":")[0].strip()
-        if rest and rest not in numbers:
-            numbers.append(rest)
+        for found in MARKER.finditer(line):
+            number = found.group("number")
+            if number is None:
+                bare = True
+            elif number not in numbers:
+                numbers.append(number)
     if not numbers:
-        return "A difference the lesson does not mark"
+        return "TODO" if bare else "No TODO of its own"
     if len(numbers) == 1:
         return "TODO " + numbers[0]
     return "TODO " + ", ".join(numbers[:-1]) + " and " + numbers[-1]
@@ -129,6 +140,10 @@ def page(path: str, filled_steps: list[dict], comments: int) -> str:
         out.append(f"Delete {lines(step['deleted'], 'blank')}, write "
                    f"{lines(step['written'], 'real')}.")
         out.append("")
+        if step["unmarked"]:
+            out.append("These lines sit beside a blank rather than inside one, so the marker that")
+            out.append("asks for them is in another edit on this page.")
+            out.append("")
         out.append("```diff")
         out.append(step["diff"])
         out.append("```")
