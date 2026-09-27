@@ -29,7 +29,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  *       from the fact that power and speed are roughly proportional. Gets most
  *       of the way there immediately.</li>
  *   <li><b>Feedback</b> -- a correction proportional to the error between the
- *       speed asked for and the speed measured. Cleans up what the guess got
+ *       speed asked for and the speed measuredVelocities. Cleans up what the guess got
  *       wrong: battery, friction, carpet, a ramp.</li>
  * </ul>
  *
@@ -38,7 +38,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * velocity controller works.
  */
 @TeleOp(name = "L16 Velocity Drive", group = "Lessons")
-public class L16VelocityDrive extends CorbelsTeleOp {
+public class L16VelocityDriveOpMode extends CorbelsTeleOp {
 
     /** How fast full stick asks for, forward and sideways. Inches per second. */
     private static final double MAX_IPS = 40;
@@ -46,20 +46,20 @@ public class L16VelocityDrive extends CorbelsTeleOp {
     /** How fast full stick asks for in turn. Radians per second. */
     private static final double MAX_TURN_RADPS = Math.PI;
 
-    /** Power per inch per second. The feedforward guess, measured by AutoTune. */
+    /** Power per inch per second. The feedforward guess, measuredVelocities by AutoTune. */
     private static final double kV = Constants.powerPerInchPerSecond;
 
     /** Power per inch per second of error. The feedback correction. */
     private static final double kP = 0.008;
 
     private L6FollowerDriveTrain drivetrain;
-    private WheelVelocities measured;
+    private WheelVelocities measuredVelocities;
 
     @Override
     public void init() {
         initBefore();
         drivetrain = new L6FollowerDriveTrain(hardware);
-        measured = new WheelVelocities(hardware);
+        measuredVelocities = new WheelVelocities(hardware);
         initAfter(drivetrain);
     }
 
@@ -90,7 +90,7 @@ public class L16VelocityDrive extends CorbelsTeleOp {
                 turnCcwSpeedRadPerS, Constants.turnRadiusInches);
 
         // 3. What each wheel is actually doing.
-        double[] actual = measured.all();
+        double[] actual = measuredVelocities.all();
 
         // 4. Guess the power, then correct it by the error.
         double[] power = new double[4];

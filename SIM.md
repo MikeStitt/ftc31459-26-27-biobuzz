@@ -26,7 +26,7 @@ Start the simulator:
 ```
 
 The first argument is a lesson's class name without its package; leave it off and you get
-`L15Combined`. Everything after it sets a field of `gamepad1` by that field's own name, so
+`L15CombinedOpMode`. Everything after it sets a field of `gamepad1` by that field's own name, so
 `left_stick_y=-1` is the left stick pushed fully forward, and `a=true` is the A button held. The
 values are set once and held for the whole run. Driving the sticks while it runs is
 `sim.sticks.input` in the workspace's `open-work.md`, and is not built yet.

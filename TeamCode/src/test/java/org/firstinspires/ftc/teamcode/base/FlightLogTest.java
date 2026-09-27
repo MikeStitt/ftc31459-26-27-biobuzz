@@ -34,7 +34,7 @@ public class FlightLogTest {
         }
     }
 
-    public static class SampleAuto extends CorbelsAuto {
+    public static class SampleAutoOpMode extends CorbelsAuto {
         @Override public void init() { initBefore(); initAfter(); }
         @Override public void loop() { loopBefore(); loopAfter(); }
 
@@ -63,7 +63,7 @@ public class FlightLogTest {
 
     @Test
     public void anAutoWritesOneToo() {
-        OpModeHarness h = new OpModeHarness(new SampleAuto());
+        OpModeHarness h = new OpModeHarness(new SampleAutoOpMode());
         h.init();
         h.start();
         h.loops(3, 0);

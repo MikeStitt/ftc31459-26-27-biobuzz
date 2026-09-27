@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * heading it was left at, using the SAME controller the autonomous uses.
  */
 @TeleOp(name = "L13 Heading Hold", group = "Lessons")
-public class L13HeadingHoldTeleOp extends CorbelsTeleOp {
+public class L13HeadingHoldOpMode extends CorbelsTeleOp {
 
     private HeadingHold heading;
 

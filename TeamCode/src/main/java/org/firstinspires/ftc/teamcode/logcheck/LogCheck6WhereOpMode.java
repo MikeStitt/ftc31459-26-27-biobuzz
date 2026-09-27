@@ -16,7 +16,7 @@ import java.io.File;
  * and the address of the download page.
  */
 @TeleOp(name = "Log 6: where are the logs?", group = "LogCheck")
-public class LogCheck6Where extends LinearOpMode {
+public class LogCheck6WhereOpMode extends LinearOpMode {
 
     @Override
     public void runOpMode() {

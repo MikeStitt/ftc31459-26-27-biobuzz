@@ -26,7 +26,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * both answers.
  */
 @TeleOp(name = "L15 Combined", group = "Lessons")
-public class L15Combined extends CorbelsTeleOp {
+public class L15CombinedOpMode extends CorbelsTeleOp {
 
     private static final PoseFactory POSES = PoseFactory.degrees();
 

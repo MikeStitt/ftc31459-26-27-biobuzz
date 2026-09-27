@@ -45,7 +45,7 @@ public final class OpModeHarness {
         public double velocity;
 
         /** The motor to hand to code that wants a DcMotorEx. */
-        public final DcMotorEx device = (DcMotorEx) Proxy.newProxyInstance(
+        public final DcMotorEx motor = (DcMotorEx) Proxy.newProxyInstance(
                 DcMotorEx.class.getClassLoader(), new Class<?>[]{DcMotorEx.class}, this);
 
         @Override
@@ -70,7 +70,7 @@ public final class OpModeHarness {
     public static final class FakeImu implements InvocationHandler {
         public double yawRadians;
 
-        public final IMU device = (IMU) Proxy.newProxyInstance(
+        public final IMU imu = (IMU) Proxy.newProxyInstance(
                 IMU.class.getClassLoader(), new Class<?>[]{IMU.class}, this);
 
         @Override
@@ -184,11 +184,11 @@ public final class OpModeHarness {
         RobotFactory.hardware = map -> {
             lookups++;
             return new RobotHardware(
-                    motors.get(Constants.frontLeftName).device,
-                    motors.get(Constants.frontRightName).device,
-                    motors.get(Constants.backLeftName).device,
-                    motors.get(Constants.backRightName).device,
-                    imu.device,
+                    motors.get(Constants.frontLeftName).motor,
+                    motors.get(Constants.frontRightName).motor,
+                    motors.get(Constants.backLeftName).motor,
+                    motors.get(Constants.backRightName).motor,
+                    imu.imu,
                     battery);
         };
         opMode.telemetry = SimRobot.telemetry(driverStation);

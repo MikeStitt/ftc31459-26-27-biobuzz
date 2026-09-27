@@ -28,7 +28,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * the number off the Driver Station.
  */
 @TeleOp(name = "L17b Measure turn radius", group = "Lessons")
-public class L17bMeasureTurnRadius extends CorbelsTeleOp {
+public class L17bMeasureTurnRadiusOpMode extends CorbelsTeleOp {
 
     private static final double NEEDED_TURNS = 2;
 

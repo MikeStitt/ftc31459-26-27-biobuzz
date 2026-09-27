@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.base.odometry.HardwareWheelSource;
  * with a tape and see which one was right.
  */
 @TeleOp(name = "L8 Compare Localizers", group = "Lessons")
-public class L8CompareLocalizers extends CorbelsTeleOp {
+public class L8CompareLocalizersOpMode extends CorbelsTeleOp {
 
     @Override
     protected void shadows() {

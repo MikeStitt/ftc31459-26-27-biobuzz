@@ -162,7 +162,7 @@ is written for Pedro 2.
 field spanning 0–144 inches. Both OpModes start the robot at `(0, 0)`, so it
 draws in the corner with most of the square off the field. That's expected.
 
-To start the autonomous mid-field, change these in `DriveForward24`:
+To start the autonomous mid-field, change these in `DriveForward24OpMode`:
 
 ```java
 private final Pose start = poses.of(72, 72, 0);
@@ -220,7 +220,7 @@ To sample faster than every 75 ms, call `panels.setUpdateInterval(20);` in
 
 ## The autonomous
 
-`DriveForward24` drives 24 inches forward holding heading, built with Ivy:
+`DriveForward24OpMode` drives 24 inches forward holding heading, built with Ivy:
 
 ```java
 private Command routine() {

@@ -15,16 +15,16 @@ final class SimOpModes {
     private SimOpModes() {
     }
 
-    /** Tank sticks onto the wheels: left stick to the left pair. */
+    /** Tank sticks onto the drivetrain: left stick to the left pair. */
     public static class Tank extends CorbelsTeleOp {
 
-        private CorbelsMecanum wheels;
+        private CorbelsMecanum drivetrain;
 
         @Override
         public void init() {
             initBefore();
-            wheels = new CorbelsMecanum(hardware);
-            initAfter(wheels);
+            drivetrain = new CorbelsMecanum(hardware);
+            initAfter(drivetrain);
         }
 
         @Override
@@ -32,7 +32,7 @@ final class SimOpModes {
             loopBefore();
             double left = -gamepad1.left_stick_y;
             double right = -gamepad1.right_stick_y;
-            wheels.setCommandedWheels(left, right, left, right);
+            drivetrain.setCommandedWheels(left, right, left, right);
             loopAfter();
         }
     }

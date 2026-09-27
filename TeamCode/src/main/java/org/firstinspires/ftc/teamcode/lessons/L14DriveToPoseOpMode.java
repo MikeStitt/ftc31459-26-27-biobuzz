@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * its hands off -- unless the driver moves a stick, which cancels the command.
  */
 @TeleOp(name = "L14 Drive To Pose", group = "Lessons")
-public class L14DriveToPose extends CorbelsTeleOp {
+public class L14DriveToPoseOpMode extends CorbelsTeleOp {
 
     private static final PoseFactory POSES = PoseFactory.degrees();
     private static final Pose TARGET = POSES.of(120, 72, 90);

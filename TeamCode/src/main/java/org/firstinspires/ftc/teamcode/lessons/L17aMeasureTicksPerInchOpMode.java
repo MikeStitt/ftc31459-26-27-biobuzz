@@ -28,7 +28,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * same answer.
  */
 @TeleOp(name = "L17a Measure ticks per inch", group = "Lessons")
-public class L17aMeasureTicksPerInch extends CorbelsTeleOp {
+public class L17aMeasureTicksPerInchOpMode extends CorbelsTeleOp {
 
     private static final double NEEDED_INCHES = 36;
 

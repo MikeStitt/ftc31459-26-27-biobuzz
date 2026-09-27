@@ -29,7 +29,7 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * last loop commanded.
  */
 @TeleOp(name = "L6 Follower Wheels", group = "Lessons")
-public class L6FollowerWheels extends CorbelsTeleOp {
+public class L6WheelsFollowerOpMode extends CorbelsTeleOp {
 
     private L6FollowerDriveTrain drivetrain;
 

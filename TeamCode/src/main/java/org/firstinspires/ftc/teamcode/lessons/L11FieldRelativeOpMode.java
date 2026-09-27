@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.base.Drive;
  * from you, whichever way it happens to be facing.
  */
 @TeleOp(name = "L11 Field Relative", group = "Lessons")
-public class L11FieldRelative extends CorbelsTeleOp {
+public class L11FieldRelativeOpMode extends CorbelsTeleOp {
 
     private L6FollowerDriveTrain drivetrain;
 

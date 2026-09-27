@@ -20,7 +20,7 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * driver's left instead comes in L11.
  */
 @TeleOp(name = "L5 Holonomic", group = "Lessons")
-public class L5Holonomic extends CorbelsTeleOp {
+public class L5HolonomicOpMode extends CorbelsTeleOp {
 
     private L5HolonomicDriveTrain drivetrain;
 

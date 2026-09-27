@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * also how the path follower counts.
  */
 @TeleOp(name = "L4 Arcade", group = "Lessons")
-public class L4Arcade extends CorbelsTeleOp {
+public class L4ArcadeOpMode extends CorbelsTeleOp {
 
     private L4ArcadeDriveTrain drivetrain;
 

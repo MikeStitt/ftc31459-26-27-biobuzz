@@ -86,12 +86,12 @@ public class DriverStationTest {
      */
     @Test
     public void nothingButTheTrackerReachesTheDriverStationDirectly() throws Exception {
-        Path base = HardwareRulesTest.sourceRoot();
-        assertNotNull("could not find the sources to scan", base);
+        Path baseDirectory = HardwareRulesTest.sourceRoot();
+        assertNotNull("could not find the sources to scan", baseDirectory);
 
-        Pattern direct = Pattern.compile("(^|[^\\w.])telemetry\\s*[.=]");
+        Pattern directTelemetryPattern = Pattern.compile("(^|[^\\w.])telemetry\\s*[.=]");
         List<String> offenders = new ArrayList<>();
-        try (Stream<Path> files = Files.walk(base)) {
+        try (Stream<Path> files = Files.walk(baseDirectory)) {
             for (Path file : files.filter(f -> f.toString().endsWith(".java"))
                     .collect(Collectors.toList())) {
                 String path = file.toString();
@@ -102,7 +102,7 @@ public class DriverStationTest {
                         new String(Files.readAllBytes(file), "UTF-8"));
                 for (String line : code.split("\n")) {
                     if (line.trim().startsWith("import ")) continue;
-                    Matcher m = direct.matcher(line);
+                    Matcher m = directTelemetryPattern.matcher(line);
                     if (m.find()) {
                         offenders.add(file.getFileName() + ": " + line.trim());
                     }

@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * -- which is what a driver wants when lining up against a wall.
  */
 @TeleOp(name = "L12 Robot Relative Button", group = "Lessons")
-public class L12RobotRelativeButton extends CorbelsTeleOp {
+public class L12RobotRelativeButtonOpMode extends CorbelsTeleOp {
 
     private L6FollowerDriveTrain drivetrain;
 

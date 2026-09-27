@@ -29,7 +29,7 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * avoids that code path. Do not "fix" this to .linear().
  */
 @Autonomous(name = "Auto: Drive 24in", group = "Corbels")
-public class DriveForward24 extends CorbelsAuto {
+public class DriveForward24OpMode extends CorbelsAuto {
 
     /** How far to drive, in inches. */
     private static final double DISTANCE_IN = 24.0;
