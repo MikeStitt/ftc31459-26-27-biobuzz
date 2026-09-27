@@ -43,6 +43,14 @@ public abstract class CorbelsOpMode extends OpMode {
 
     protected Follower follower;
 
+    /**
+     * The drivetrain handed to {@link #initAfter(Drivetrain)}, kept so that
+     * {@link #stopAfter} can stop it. A lesson that drives its own wheels passes
+     * none, and gets the {@link PassiveDriveTrain} that {@link #initAfter()}
+     * makes, whose {@code stop()} does nothing.
+     */
+    private Drivetrain driven;
+
     protected Shadow shadow;
 
     // ------------------------------------------------------------ hooks
@@ -93,6 +101,7 @@ public abstract class CorbelsOpMode extends OpMode {
 
     /** The follower, driving the drivetrain given. The last thing a lesson's init() calls. */
     protected final void initAfter(Drivetrain driven) {
+        this.driven = driven;
         follower = RobotFactory.follower.apply(hardwareMap, driven);
         onInit();
         follower.update();
@@ -152,6 +161,10 @@ public abstract class CorbelsOpMode extends OpMode {
     protected final void stopAfter() {
         follower.manual(0, 0, 0);
         follower.update();
+        // The drivetrain, not the follower: a lesson that commanded the wheels
+        // has them ignoring the follower, so the zero above never reaches a
+        // motor. stop() hands them back and writes four zeros.
+        driven.stop();
         Tracker.close();
     }
 }

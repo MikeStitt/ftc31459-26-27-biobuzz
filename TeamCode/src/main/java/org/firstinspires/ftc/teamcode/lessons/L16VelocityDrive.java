@@ -56,13 +56,13 @@ public class L16VelocityDrive extends CorbelsTeleOp {
     /** Power per inch per second of error. The feedback correction. */
     private static final double kP = 0.008;
 
-    private LessonDriveTrain wheels;
+    private L6FollowerDriveTrain wheels;
     private WheelVelocities measured;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new LessonDriveTrain(hardware);
+        wheels = new L6FollowerDriveTrain(hardware);
         measured = new WheelVelocities(hardware);
         initAfter(wheels);
     }

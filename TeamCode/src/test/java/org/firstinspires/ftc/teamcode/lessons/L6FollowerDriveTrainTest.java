@@ -11,7 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * One test per blank in {@link LessonDriveTrain}: one for each wheel of the
+ * One test per blank in {@link L6FollowerDriveTrain}: one for each wheel of the
  * mixing, one for sending the four powers to the four motors, and one for the
  * sticks commanding the wheels while the follower holds the drivetrain. A
  * student who gets one wheel wrong sees which wheel.
@@ -20,7 +20,7 @@ import org.junit.Test;
  * is what the follower does: it hands over three numbers and expects four
  * powers on the motors.
  */
-public class LessonDriveTrainTest {
+public class L6FollowerDriveTrainTest {
 
     private static final double EPS = 1e-6;
 
@@ -28,7 +28,7 @@ public class LessonDriveTrainTest {
     private OpModeHarness.FakeMotor frontRight;
     private OpModeHarness.FakeMotor backLeft;
     private OpModeHarness.FakeMotor backRight;
-    private LessonDriveTrain wheels;
+    private L6FollowerDriveTrain wheels;
 
     @Before
     public void setUp() {
@@ -36,7 +36,7 @@ public class LessonDriveTrainTest {
         frontRight = new OpModeHarness.FakeMotor();
         backLeft = new OpModeHarness.FakeMotor();
         backRight = new OpModeHarness.FakeMotor();
-        wheels = new LessonDriveTrain(new RobotHardware(
+        wheels = new L6FollowerDriveTrain(new RobotHardware(
                 frontLeft.device, frontRight.device, backLeft.device, backRight.device,
                 new OpModeHarness.FakeImu().device));
     }

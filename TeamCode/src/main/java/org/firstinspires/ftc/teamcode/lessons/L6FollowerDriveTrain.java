@@ -22,23 +22,23 @@ import org.firstinspires.ftc.teamcode.base.RobotHardware;
  * <p>Both go through the same four lines, so the robot that strafes correctly
  * with the sticks is the robot that follows a path correctly.
  *
- * <p>{@link CorbelsDriveTrain} needs three more parts before either works:
+ * <p>{@link LessonsDriveTrain} needs three more parts before either works:
  * {@code drive}, which is what the follower calls, and
  * {@code setCommandedWheels} and {@code releaseCommandedWheels}, which are how
  * the sticks take the wheels and give them back.
  *
- * <p>Passes when: LessonDriveTrainTest (all of it)
+ * <p>Passes when: L6FollowerDriveTrainTest (all of it)
  */
-public class LessonDriveTrain extends CorbelsDriveTrain {
+public class L6FollowerDriveTrain extends LessonsDriveTrain {
 
-    public LessonDriveTrain(RobotHardware hardware) {
+    public L6FollowerDriveTrain(RobotHardware hardware) {
         super(hardware);
     }
 
     /**
      * The driver's three numbers, mixed and sent to the wheels, while the
      * follower is holding this drivetrain. All -1 to 1, in the directions
-     * {@link CorbelsDriveTrain} sets out.
+     * {@link LessonsDriveTrain} sets out.
      */
     public void sticks(double forwardSpeed, double strafeLeftSpeed, double turnCcwSpeed) {
         // TODO 1: wrap the three numbers in a new DrivePowers(...), run them
@@ -53,7 +53,7 @@ public class LessonDriveTrain extends CorbelsDriveTrain {
      *
      * <p>{@code powers.strafe()} is positive towards the robot's left and
      * {@code powers.turn()} is positive counter-clockwise, the same as L5. See
-     * {@link CorbelsDriveTrain} for where those directions come from.
+     * {@link LessonsDriveTrain} for where those directions come from.
      */
     @Override
     protected double[] mix(DrivePowers powers) {

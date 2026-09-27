@@ -99,6 +99,25 @@ public class CorbelsMecanumTest {
         assertArrayEquals(new double[]{0, 0, 0, 0}, motorPowers(), 1e-9);
     }
 
+    /**
+     * The lesson that forgets. {@code Idle} never calls
+     * {@link CorbelsDriveTrain#releaseCommandedWheels}, so the only thing that can
+     * let go of the wheels when the OpMode ends is {@code stopAfter}.
+     */
+    @Test
+    public void endingTheOpModeStopsTheWheelsEvenIfTheLessonForgot() {
+        h.start();
+        drivetrain.setCommandedWheels(1, 1, 1, 1);
+        // What the follower does on every update, and what puts power on a motor.
+        drivetrain.drive(new DrivePowers(0, 0, 0), true);
+        assertArrayEquals("running, at the last power the lesson commanded",
+                new double[]{1, 1, 1, 1}, motorPowers(), 1e-9);
+
+        h.stop();
+        assertFalse("the wheels are handed back", drivetrain.commandedWheelsAreSet());
+        assertArrayEquals("and every wheel is at 0", new double[]{0, 0, 0, 0}, motorPowers(), 1e-9);
+    }
+
     @Test
     public void maxScalingMatchesWhatPedroExpects() {
         // From a standstill, a full-forward delta can be applied entirely.

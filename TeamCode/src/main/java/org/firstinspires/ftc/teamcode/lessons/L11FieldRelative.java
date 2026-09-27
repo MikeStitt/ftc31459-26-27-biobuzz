@@ -14,12 +14,12 @@ import org.firstinspires.ftc.teamcode.base.Drive;
 @TeleOp(name = "L11 Field Relative", group = "Lessons")
 public class L11FieldRelative extends CorbelsTeleOp {
 
-    private LessonDriveTrain wheels;
+    private L6FollowerDriveTrain wheels;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new LessonDriveTrain(hardware);
+        wheels = new L6FollowerDriveTrain(hardware);
         initAfter(wheels);
     }
 

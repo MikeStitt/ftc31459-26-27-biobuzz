@@ -63,12 +63,12 @@ public class L15Combined extends CorbelsTeleOp {
         }));
     }
 
-    private LessonDriveTrain wheels;
+    private L6FollowerDriveTrain wheels;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new LessonDriveTrain(hardware);
+        wheels = new L6FollowerDriveTrain(hardware);
         initAfter(wheels);
     }
 

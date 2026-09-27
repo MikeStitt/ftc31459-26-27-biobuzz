@@ -15,12 +15,12 @@ import org.firstinspires.ftc.teamcode.base.RobotHardware;
  * subtracted from the left side and added to the right.
  *
  * <p>Full forward and full turn together add up to more than a motor can give.
- * {@link CorbelsDriveTrain#normalized} is where that gets sorted out, and this
+ * {@link LessonsDriveTrain#normalized} is where that gets sorted out, and this
  * lesson writes it.
  *
  * <p>Passes when: LessonsTest.l4_arcadeUsesOneStickToDriveAndOneToTurn
  */
-public class L4ArcadeDriveTrain extends CorbelsDriveTrain {
+public class L4ArcadeDriveTrain extends LessonsDriveTrain {
 
     public L4ArcadeDriveTrain(RobotHardware hardware) {
         super(hardware);
@@ -29,7 +29,7 @@ public class L4ArcadeDriveTrain extends CorbelsDriveTrain {
     /**
      * Arcade drive. {@code forwardSpeed} is how fast to drive,
      * {@code turnCcwSpeed} is how fast to spin counter-clockwise, in the
-     * directions {@link CorbelsDriveTrain} sets out. Both are -1 to 1.
+     * directions {@link LessonsDriveTrain} sets out. Both are -1 to 1.
      */
     public void sticks(double forwardSpeed, double turnCcwSpeed) {
         // TODO: work out what each side has to do, then call driveWheelsNow the

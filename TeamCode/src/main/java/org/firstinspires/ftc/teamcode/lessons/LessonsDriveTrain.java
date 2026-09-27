@@ -43,7 +43,7 @@ import java.util.Map;
  * <p>The scaling in {@link #maxScaling} follows Pedro's own {@code Mecanum}
  * (BSD 3-Clause, Pedro Pathing).
  */
-public abstract class CorbelsDriveTrain implements Drivetrain {
+public abstract class LessonsDriveTrain implements Drivetrain {
 
     protected final DcMotorEx frontLeft;
     protected final DcMotorEx frontRight;
@@ -64,7 +64,7 @@ public abstract class CorbelsDriveTrain implements Drivetrain {
      * opposite way to the left, because the two sides face opposite ways on the
      * robot, and every wheel brakes when its power goes to 0.
      */
-    protected CorbelsDriveTrain(RobotHardware hardware) {
+    protected LessonsDriveTrain(RobotHardware hardware) {
         frontLeft = hardware.frontLeft;
         frontRight = hardware.frontRight;
         backLeft = hardware.backLeft;
@@ -176,7 +176,7 @@ public abstract class CorbelsDriveTrain implements Drivetrain {
         //       commandedWheels.clone() -- and if it has not, use
         //       normalized(mix(powers)). Then hand the four to remember() and to
         //       writeWheels(), the same two calls driveWheelsNow makes.
-        //       Works when: LessonDriveTrainTest passes, the robot drives on the
+        //       Works when: L6FollowerDriveTrainTest passes, the robot drives on the
         //       sticks in L6, and L9 drives its 24 inches.
     }
 
