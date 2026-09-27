@@ -40,6 +40,17 @@ public class L5HolonomicDriveTrain extends LessonsDriveTrain {
      *
      * <p>Asking for all three at once wants more than a motor can give, and
      * {@link LessonsDriveTrain#normalized} sorts that out.
+     *
+     * <p>Where the four signs come from, if the pattern is not obvious yet:
+     * <ul>
+     *   <li>Game Manual 0's Mecanum TeleOp tutorial, which writes the same four
+     *       lines for two sticks and a turn:
+     *       https://gm0.org/en/latest/docs/software/tutorials/mecanum-drive.html
+     *   <li>Pedro's coordinate frame, which is where forward, strafe and turn point:
+     *       https://pedropathing.com/docs/pathing/reference/coordinates
+     *   <li>WPILib's {@code MecanumDrive}, the same arithmetic in another library:
+     *       https://github.com/wpilibsuite/allwpilib
+     * </ul>
      */
     public void sticks(double forwardSpeed, double strafeLeftSpeed, double turnCcwSpeed) {
         double frontLeftPower = forwardSpeed - strafeLeftSpeed - turnCcwSpeed;

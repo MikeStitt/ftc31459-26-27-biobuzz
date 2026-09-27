@@ -42,26 +42,39 @@ import java.util.Map;
  */
 public abstract class CorbelsDriveTrain implements Drivetrain {
 
-    protected static final int FL = 0, FR = 1, BL = 2, BR = 3;
+    /** Front left, in {@link #wheelPowers} and in every other four-wheel array. */
+    protected static final int FL = 0;
 
-    protected final DcMotorEx frontLeft, frontRight, backLeft, backRight;
+    /** Front right. */
+    protected static final int FR = 1;
 
-    private final DcMotorEx[] motors;
-    private final double[] wheelPowers = new double[4];
+    /** Back left. */
+    protected static final int BL = 2;
+
+    /** Back right. */
+    protected static final int BR = 3;
+
+    /** The robot's motors, sensors and battery. The motors are read from here. */
+    protected final RobotHardware hardware;
+
+    private final DcMotorEx[] motors = new DcMotorEx[4];
+    protected final double[] wheelPowers = new double[4];
 
     /** Set by {@link #setCommandedWheels}, cleared by {@link #releaseCommandedWheels}. */
     private double[] commandedWheels;
 
     protected CorbelsDriveTrain(RobotHardware hardware) {
-        frontLeft = hardware.frontLeft;
-        frontRight = hardware.frontRight;
-        backLeft = hardware.backLeft;
-        backRight = hardware.backRight;
-        motors = new DcMotorEx[]{frontLeft, frontRight, backLeft, backRight};
-        frontLeft.setDirection(Constants.frontLeftDirection);
-        frontRight.setDirection(Constants.frontRightDirection);
-        backLeft.setDirection(Constants.backLeftDirection);
-        backRight.setDirection(Constants.backRightDirection);
+        this.hardware = hardware;
+
+        motors[FL] = hardware.frontLeft;
+        motors[FR] = hardware.frontRight;
+        motors[BL] = hardware.backLeft;
+        motors[BR] = hardware.backRight;
+
+        hardware.frontLeft.setDirection(Constants.frontLeftDirection);
+        hardware.frontRight.setDirection(Constants.frontRightDirection);
+        hardware.backLeft.setDirection(Constants.backLeftDirection);
+        hardware.backRight.setDirection(Constants.backRightDirection);
     }
 
     // ------------------------------------------------------- what a lesson writes
@@ -73,7 +86,7 @@ public abstract class CorbelsDriveTrain implements Drivetrain {
     protected abstract double[] mix(DrivePowers powers);
 
     /** Sends each of the four powers to its motor. */
-    protected abstract void writeWheels(double[] wheels);
+    protected abstract void writeWheels();
 
     // ------------------------------------------------------- wheel commands
 
@@ -86,8 +99,11 @@ public abstract class CorbelsDriveTrain implements Drivetrain {
      */
     public void setCommandedWheels(double frontLeftPower, double frontRightPower,
                                    double backLeftPower, double backRightPower) {
-        commandedWheels = new double[]{frontLeftPower, frontRightPower,
-                backLeftPower, backRightPower};
+        commandedWheels = new double[4];
+        commandedWheels[FL] = frontLeftPower;
+        commandedWheels[FR] = frontRightPower;
+        commandedWheels[BL] = backLeftPower;
+        commandedWheels[BR] = backRightPower;
     }
 
     /** Hands the wheels back to the follower. */
@@ -109,8 +125,12 @@ public abstract class CorbelsDriveTrain implements Drivetrain {
 
     /** What each encoder has counted, in ticks, in the same order. */
     public int[] wheelTicks() {
-        return new int[]{frontLeft.getCurrentPosition(), frontRight.getCurrentPosition(),
-                backLeft.getCurrentPosition(), backRight.getCurrentPosition()};
+        int[] ticks = new int[4];
+        ticks[FL] = hardware.frontLeft.getCurrentPosition();
+        ticks[FR] = hardware.frontRight.getCurrentPosition();
+        ticks[BL] = hardware.backLeft.getCurrentPosition();
+        ticks[BR] = hardware.backRight.getCurrentPosition();
+        return ticks;
     }
 
     // ------------------------------------------------------- Drivetrain
@@ -118,11 +138,16 @@ public abstract class CorbelsDriveTrain implements Drivetrain {
     @Override
     public final void drive(DrivePowers powers, boolean manual) {
         applyBrakeMode(manual);
-        double[] wheels = commandedWheels != null
-                ? commandedWheels.clone()
-                : normalized(mix(powers));
-        System.arraycopy(wheels, 0, wheelPowers, 0, 4);
-        writeWheels(wheels);
+
+        if (commandedWheels == null) {
+            double[] mixed = mix(powers);
+            double[] scaled = normalized(mixed);
+            copyInto(wheelPowers, scaled);
+        } else {
+            copyInto(wheelPowers, commandedWheels);
+        }
+
+        writeWheels();
     }
 
     /**
@@ -131,16 +156,20 @@ public abstract class CorbelsDriveTrain implements Drivetrain {
      * the wheels.
      */
     protected final void applyBrakeMode(boolean manual) {
-        setZeroPowerBehavior(manual && Constants.manualBrakeMode
-                ? DcMotor.ZeroPowerBehavior.BRAKE : DcMotor.ZeroPowerBehavior.FLOAT);
+        boolean brake = manual && Constants.manualBrakeMode;
+        setZeroPowerBehavior(zeroPowerBrakeWhenTrue(brake));
     }
 
     /** Scales everything down together if any wheel would exceed full power. */
     protected static double[] normalized(double[] powers) {
         double max = 1.0;
-        for (double p : powers) max = Math.max(max, Math.abs(p));
-        if (max == 1.0) return powers;
-        for (int i = 0; i < powers.length; i++) powers[i] /= max;
+        for (double power : powers) {
+            double magnitude = Math.abs(power);
+            max = Math.max(max, magnitude);
+        }
+        for (int wheel = 0; wheel < powers.length; wheel++) {
+            powers[wheel] /= max;
+        }
         return powers;
     }
 
@@ -151,19 +180,47 @@ public abstract class CorbelsDriveTrain implements Drivetrain {
      */
     @Override
     public double maxScaling(DrivePowers current, DrivePowers delta) {
-        double lambda = 1.0;
         double[] currentPowers = mix(current);
-        double[] deltaPowers = mix(delta);
-        for (int i = 0; i < 4; i++) {
-            double a = currentPowers[i];
-            double b = deltaPowers[i];
-            if (Math.abs(b) < 1e-9) continue;
-            double t1 = (1.0 - a) / b;
-            double t2 = (-1.0 - a) / b;
-            if (t1 >= 0.0 && t1 < lambda) lambda = t1;
-            if (t2 >= 0.0 && t2 < lambda) lambda = t2;
+        double[] changes = mix(delta);
+        double fits = 1.0;
+
+        for (int wheel = 0; wheel < 4; wheel++) {
+            double power = currentPowers[wheel];
+            double change = changes[wheel];
+
+            if (movesThisWheel(change)) {
+                double towardsFull = fractionThatFits(power, change, 1.0);
+                double towardsFullReverse = fractionThatFits(power, change, -1.0);
+                fits = smallestThatFits(fits, towardsFull);
+                fits = smallestThatFits(fits, towardsFullReverse);
+            }
         }
-        return Math.max(0.0, Math.min(1.0, lambda));
+
+        return clampToFraction(fits);
+    }
+
+    /** A change too small to matter cannot use up a wheel's power. */
+    private static boolean movesThisWheel(double change) {
+        return Math.abs(change) >= 1e-9;
+    }
+
+    /** How much of {@code change} fits before {@code power} reaches {@code limit}. */
+    private static double fractionThatFits(double power, double change, double limit) {
+        return (limit - power) / change;
+    }
+
+    /** The smaller of the two, ignoring a fraction that heads the wrong way. */
+    private static double smallestThatFits(double smallest, double fraction) {
+        if (fraction >= 0.0 && fraction < smallest) {
+            return fraction;
+        }
+        return smallest;
+    }
+
+    /** No less than none of the change, and no more than all of it. */
+    private static double clampToFraction(double fraction) {
+        double atLeastNone = Math.max(0.0, fraction);
+        return Math.min(1.0, atLeastNone);
     }
 
     @Override
@@ -174,10 +231,13 @@ public abstract class CorbelsDriveTrain implements Drivetrain {
     @Override
     public void stop(boolean brake) {
         commandedWheels = null;
-        setZeroPowerBehavior(brake ? DcMotor.ZeroPowerBehavior.BRAKE : DcMotor.ZeroPowerBehavior.FLOAT);
-        double[] zeros = new double[4];
-        System.arraycopy(zeros, 0, wheelPowers, 0, 4);
-        writeWheels(zeros);
+        setZeroPowerBehavior(zeroPowerBrakeWhenTrue(brake));
+
+        for (int wheel = 0; wheel < wheelPowers.length; wheel++) {
+            wheelPowers[wheel] = 0.0;
+        }
+
+        writeWheels();
     }
 
     @Override
@@ -196,7 +256,23 @@ public abstract class CorbelsDriveTrain implements Drivetrain {
         return out;
     }
 
+    /** BRAKE when true, FLOAT when false. */
+    private static DcMotor.ZeroPowerBehavior zeroPowerBrakeWhenTrue(boolean given) {
+        if (given) {
+            return DcMotor.ZeroPowerBehavior.BRAKE;
+        }
+        return DcMotor.ZeroPowerBehavior.FLOAT;
+    }
+
+    private static void copyInto(double[] destination, double[] source) {
+        for (int wheel = 0; wheel < destination.length; wheel++) {
+            destination[wheel] = source[wheel];
+        }
+    }
+
     private void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior) {
-        for (DcMotorEx motor : motors) motor.setZeroPowerBehavior(behavior);
+        for (DcMotorEx motor : motors) {
+            motor.setZeroPowerBehavior(behavior);
+        }
     }
 }

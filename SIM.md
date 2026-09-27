@@ -22,7 +22,7 @@ Two ways to run it:
 Start the simulator:
 
 ```
-./gradlew :TeamCode:simRun --args="L2Sticks left_stick_y=-1 right_stick_y=-1"
+./gradlew :TeamCode:simRun --args="L2p2TankOpMode left_stick_y=-1 right_stick_y=-1"
 ```
 
 The first argument is a lesson's class name without its package; leave it off and you get
@@ -35,7 +35,7 @@ It prints the port it is listening on and then runs:
 
 ```
 NT: Listening on NT3 port 1735, NT4 port 5810
-L2Sticks running. Connect AdvantageScope to 127.0.0.1 as NetworkTables 4, and Ctrl-C to stop.
+L2p2TankOpMode running. Connect AdvantageScope to 127.0.0.1 as NetworkTables 4, and Ctrl-C to stop.
 ```
 
 Point AdvantageScope at `127.0.0.1` and it will find the topics under `sim/`. Add a 2D field and
@@ -79,7 +79,7 @@ A test that fails names its flight log in the failure message:
 ```
 drove forward, and got a fair way: 54.75097300967889
 AdvantageScope can open what ran:
-  /var/folders/.../corbelsflightlog-test2706371408438583527/L2Sticks-20260927-032443.wpilog
+  /var/folders/.../corbelsflightlog-test2706371408438583527/L2p2TankOpMode-20260927-032443.wpilog
 ```
 
 Open that file in AdvantageScope and the run is there up to the moment the assertion went wrong.
