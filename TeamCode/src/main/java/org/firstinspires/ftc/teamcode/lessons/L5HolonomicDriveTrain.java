@@ -1,11 +1,6 @@
 package org.firstinspires.ftc.teamcode.lessons;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-
-import org.firstinspires.ftc.teamcode.base.CorbelsDriveTrain;
 import org.firstinspires.ftc.teamcode.base.RobotHardware;
-import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 /**
  * The drivetrain for L5: all four wheels mixed separately, so the robot can
@@ -28,29 +23,13 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  *
  * <p>Those are the same four lines the path follower uses, so a robot that
  * strafes correctly here will follow a path correctly later.
+ *
+ * <p>Passes when: LessonsTest.l5_holonomicCanStrafe
  */
-public class L5HolonomicDriveTrain {
-
-    public final DcMotorEx frontLeft;
-    public final DcMotorEx frontRight;
-    public final DcMotorEx backLeft;
-    public final DcMotorEx backRight;
+public class L5HolonomicDriveTrain extends CorbelsDriveTrain {
 
     public L5HolonomicDriveTrain(RobotHardware hardware) {
-        frontLeft = hardware.frontLeft;
-        frontRight = hardware.frontRight;
-        backLeft = hardware.backLeft;
-        backRight = hardware.backRight;
-
-        frontLeft.setDirection(Constants.frontLeftDirection);
-        frontRight.setDirection(Constants.frontRightDirection);
-        backLeft.setDirection(Constants.backLeftDirection);
-        backRight.setDirection(Constants.backRightDirection);
-
-        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        super(hardware);
     }
 
     /**
@@ -59,22 +38,26 @@ public class L5HolonomicDriveTrain {
      * robot's left, {@code turnCcwSpeed} spins counter-clockwise. All -1 to 1,
      * in the directions {@link CorbelsDriveTrain} sets out.
      *
-     * <p>Asking for all three at once wants more than a motor can give, so the
-     * four powers are scaled down together.
+     * <p>Asking for all three at once wants more than a motor can give, and
+     * {@link CorbelsDriveTrain#normalized} sorts that out.
      */
     public void sticks(double forwardSpeed, double strafeLeftSpeed, double turnCcwSpeed) {
-        double[] wheels = {
+        driveWheelsNow(
                 forwardSpeed - strafeLeftSpeed - turnCcwSpeed,
                 forwardSpeed + strafeLeftSpeed + turnCcwSpeed,
                 forwardSpeed + strafeLeftSpeed - turnCcwSpeed,
-                forwardSpeed - strafeLeftSpeed + turnCcwSpeed};
+                forwardSpeed - strafeLeftSpeed + turnCcwSpeed);
+    }
 
-        double max = 1.0;
-        for (double wheel : wheels) max = Math.max(max, Math.abs(wheel));
-
-        frontLeft.setPower(wheels[0] / max);
-        frontRight.setPower(wheels[1] / max);
-        backLeft.setPower(wheels[2] / max);
-        backRight.setPower(wheels[3] / max);
+    /**
+     * Sends each of the four powers to its own motor. They always arrive in the
+     * order front left, front right, back left, back right.
+     */
+    @Override
+    protected void writeWheels(double[] wheels) {
+        frontLeft.setPower(wheels[0]);
+        frontRight.setPower(wheels[1]);
+        backLeft.setPower(wheels[2]);
+        backRight.setPower(wheels[3]);
     }
 }
