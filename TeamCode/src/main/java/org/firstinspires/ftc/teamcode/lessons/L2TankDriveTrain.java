@@ -1,51 +1,27 @@
 package org.firstinspires.ftc.teamcode.lessons;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-
 import org.firstinspires.ftc.teamcode.base.RobotHardware;
-import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 /**
  * The drivetrain for L2: two sticks, four wheels.
  *
- * <p>This is an ordinary Java class. It holds the four motors and it has one
- * job: turn the two stick numbers into four motor powers. Nothing else in the
- * robot writes to these motors while L2 is running, so what {@link #sticks}
- * sends is what the wheels do.
+ * <p>This is the first drivetrain, and every later one is built the same way.
+ * {@code extends CorbelsDriveTrain} means it starts with everything
+ * {@link CorbelsDriveTrain} already has -- the four motors, which way each one
+ * spins, and braking when the power goes to 0 -- and adds what is special about
+ * this lesson. {@code super(hardware)} is how the motors get handed over.
  *
- * <p>The motors are public, so a lesson can read a position or a velocity off
- * them any time.
+ * <p>Two methods are this lesson's own. {@link #sticks} turns the two stick
+ * numbers into four wheel powers, and {@link #writeWheels} sends them to the
+ * motors. Nothing else writes to these motors while L2 is running, so what
+ * {@code sticks} asks for is what the wheels do.
  *
  * <p>Passes when: LessonsTest.l2_theSticksDriveTheWheelsLikeATank
  */
-public class L2TankDriveTrain {
+public class L2TankDriveTrain extends CorbelsDriveTrain {
 
-    public final DcMotorEx frontLeft;
-    public final DcMotorEx frontRight;
-    public final DcMotorEx backLeft;
-    public final DcMotorEx backRight;
-
-    /**
-     * Takes the four motors and gets them ready: the right side spins the
-     * opposite way to the left, because the two sides face opposite ways on the
-     * robot, and every wheel brakes when its power goes to 0.
-     */
     public L2TankDriveTrain(RobotHardware hardware) {
-        frontLeft = hardware.frontLeft;
-        frontRight = hardware.frontRight;
-        backLeft = hardware.backLeft;
-        backRight = hardware.backRight;
-
-        frontLeft.setDirection(Constants.frontLeftDirection);
-        frontRight.setDirection(Constants.frontRightDirection);
-        backLeft.setDirection(Constants.backLeftDirection);
-        backRight.setDirection(Constants.backRightDirection);
-
-        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        super(hardware);
     }
 
     /**
@@ -57,8 +33,22 @@ public class L2TankDriveTrain {
      * one place so every lesson that drives this way says the same thing.
      */
     public void sticks(double leftSpeed, double rightSpeed) {
-        // TODO: send leftSpeed to both left motors and rightSpeed to both right
-        //       motors. Four lines, one per wheel:
-        //       frontLeft.setPower(leftSpeed);
+        // TODO: call driveWheelsNow with four powers, in the order front left,
+        //       front right, back left, back right. Both left wheels get
+        //       leftSpeed and both right wheels get rightSpeed, so two of the
+        //       four are the same number twice.
+    }
+
+    /**
+     * Sends each of the four powers to its own motor. They always arrive in the
+     * order front left, front right, back left, back right.
+     */
+    @Override
+    protected void writeWheels(double[] wheels) {
+        // TODO: send each of the four powers to its own motor, in the order they
+        //       arrive: frontLeft.setPower(wheels[0]); and so on for the other
+        //       three. Getting two of them the wrong way round makes the robot
+        //       turn when it should drive, and nothing says so out loud, which is
+        //       why this method has a test of its own.
     }
 }

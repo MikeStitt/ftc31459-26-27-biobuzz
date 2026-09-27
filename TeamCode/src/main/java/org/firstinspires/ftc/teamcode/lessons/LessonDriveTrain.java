@@ -2,26 +2,32 @@ package org.firstinspires.ftc.teamcode.lessons;
 
 import com.pedropathing.drivetrain.DrivePowers;
 
-import org.firstinspires.ftc.teamcode.base.CorbelsDriveTrain;
 import org.firstinspires.ftc.teamcode.base.RobotHardware;
 
 /**
- * The drivetrain the path follower drives, from L6 onwards.
+ * The drivetrain the path follower holds, from L6 onwards.
  *
- * <p>Up to L5 the OpMode called {@code setPower} itself, every loop. From here
- * the path follower does the asking: it works out how fast the robot should go
- * forward, sideways and around, and hands those three numbers to this class
- * every time {@code follower.update()} runs. Everything the follower needs is
- * already written in {@link CorbelsDriveTrain}. Two things are not, and they are
- * the two below.
+ * <p>Up to L5 a drivetrain was the only thing writing to the motors, and it
+ * wrote them the moment the lesson asked. From here the follower is holding it,
+ * which is what lets the follower know where the robot is, hold a heading and
+ * run a path. Two numbers change hands rather than one:
  *
- * <p>{@link #mix} is the L5 mixing again, and {@link #writeWheels} is the four
- * {@code setPower} calls again. Nothing new to learn; what changes is who calls
- * them. That is the whole point of L6: the same four lines that drove the robot
- * by hand now drive it along a path.
+ * <ul>
+ *   <li>{@link #sticks} is the driver asking. It mixes the three numbers and
+ *       commands the four wheels, so the driver still wins.
+ *   <li>{@link #mix} is the follower asking, which is what happens from L8 once
+ *       the wheels are handed back.
+ * </ul>
  *
- * <p>Passes when: LessonDriveTrainTest -- one test for each of the five blanks,
- * so a wrong wheel says which wheel.
+ * <p>Both go through the same four lines, so the robot that strafes correctly
+ * with the sticks is the robot that follows a path correctly.
+ *
+ * <p>{@link CorbelsDriveTrain} needs three more parts before either works:
+ * {@code drive}, which is what the follower calls, and
+ * {@code setCommandedWheels} and {@code releaseCommandedWheels}, which are how
+ * the sticks take the wheels and give them back.
+ *
+ * <p>Passes when: LessonDriveTrainTest (all of it)
  */
 public class LessonDriveTrain extends CorbelsDriveTrain {
 
@@ -30,7 +36,20 @@ public class LessonDriveTrain extends CorbelsDriveTrain {
     }
 
     /**
-     * The follower's three numbers, as four wheel powers.
+     * The driver's three numbers, mixed and sent to the wheels, while the
+     * follower is holding this drivetrain. All -1 to 1, in the directions
+     * {@link CorbelsDriveTrain} sets out.
+     */
+    public void sticks(double forwardSpeed, double strafeLeftSpeed, double turnCcwSpeed) {
+        // TODO 1: wrap the three numbers in a new DrivePowers(...), run them
+        //         through mix() and then normalized(), and hand the four powers
+        //         that come back to setCommandedWheels(). Going through mix() is
+        //         the point: the sticks and the follower then agree about which
+        //         wheel does what.
+    }
+
+    /**
+     * Three numbers, as four wheel powers.
      *
      * <p>{@code powers.strafe()} is positive towards the robot's left and
      * {@code powers.turn()} is positive counter-clockwise, the same as L5. See
@@ -43,20 +62,20 @@ public class LessonDriveTrain extends CorbelsDriveTrain {
         double turnCcwSpeed = powers.turn();
 
         return new double[]{
-                // TODO 1: front left
+                // TODO 2: front left
                 0,
-                // TODO 2: front right
+                // TODO 3: front right
                 0,
-                // TODO 3: back left
+                // TODO 4: back left
                 0,
-                // TODO 4: back right
+                // TODO 5: back right
                 0};
     }
 
     /** Sends each of the four powers to its own motor, in that same order. */
     @Override
     protected void writeWheels(double[] wheels) {
-        // TODO 5: send each of the four powers to its own motor, in the same
+        // TODO 6: send each of the four powers to its own motor, in the same
         //         order mix() put them in:
         //         frontLeft.setPower(wheels[0]);  and so on for the other three.
     }

@@ -204,8 +204,17 @@ public class LessonsTest {
 
     // -------------------------------------------------------------- L6
 
+    /**
+     * L6 no longer asks the follower to drive, so there is no {@code h.forward()}
+     * to read: it commands its drivetrain's four wheels itself. The harness hands
+     * every OpMode its own follower and ignores the drivetrain passed to
+     * {@code initAfter}, so what L6 does to the wheels is tested in
+     * {@link LessonDriveTrainTest#theSticksCommandTheWheelsSoTheDriverStillWins}.
+     * What is left to check here is the OpMode's own job: three sticks read, and
+     * each one negated the right way.
+     */
     @Test
-    public void l6_theFollowerDrivesTheWheelsInsteadOfTheLoop() {
+    public void l6_theLoopReadsThreeSticksAndNegatesEachOne() {
         OpModeHarness h = new OpModeHarness(new L6FollowerWheels());
         h.init();
         h.start();
@@ -215,9 +224,12 @@ public class LessonsTest {
         h.gamepad1.right_stick_x = 0.25f;     // turning to the right
         h.loop();
 
-        assertEquals("the loop asks the follower to drive forward", 1.0, h.forward(), EPS);
-        assertEquals("and to slide left", 0.5, h.strafe(), EPS);
-        assertEquals("and to turn clockwise, which is a negative turn", -0.25, h.turn(), EPS);
+        assertEquals("away from the driver is forward",
+                1.0, (Double) Tracker.values().get("command/forward"), EPS);
+        assertEquals("and the stick pushed left asks to slide left",
+                0.5, (Double) Tracker.values().get("command/left"), EPS);
+        assertEquals("and turning right is clockwise, which is a negative turn",
+                -0.25, (Double) Tracker.values().get("command/turn_ccw"), EPS);
         h.stop();
     }
 

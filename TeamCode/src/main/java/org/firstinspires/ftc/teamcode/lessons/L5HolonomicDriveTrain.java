@@ -1,11 +1,6 @@
 package org.firstinspires.ftc.teamcode.lessons;
 
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-
-import org.firstinspires.ftc.teamcode.base.CorbelsDriveTrain;
 import org.firstinspires.ftc.teamcode.base.RobotHardware;
-import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 /**
  * The drivetrain for L5: all four wheels mixed separately, so the robot can
@@ -31,28 +26,10 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  *
  * <p>Passes when: LessonsTest.l5_holonomicCanStrafe
  */
-public class L5HolonomicDriveTrain {
-
-    public final DcMotorEx frontLeft;
-    public final DcMotorEx frontRight;
-    public final DcMotorEx backLeft;
-    public final DcMotorEx backRight;
+public class L5HolonomicDriveTrain extends CorbelsDriveTrain {
 
     public L5HolonomicDriveTrain(RobotHardware hardware) {
-        frontLeft = hardware.frontLeft;
-        frontRight = hardware.frontRight;
-        backLeft = hardware.backLeft;
-        backRight = hardware.backRight;
-
-        frontLeft.setDirection(Constants.frontLeftDirection);
-        frontRight.setDirection(Constants.frontRightDirection);
-        backLeft.setDirection(Constants.backLeftDirection);
-        backRight.setDirection(Constants.backRightDirection);
-
-        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        super(hardware);
     }
 
     /**
@@ -61,17 +38,27 @@ public class L5HolonomicDriveTrain {
      * robot's left, {@code turnCcwSpeed} spins counter-clockwise. All -1 to 1,
      * in the directions {@link CorbelsDriveTrain} sets out.
      *
-     * <p>Asking for all three at once wants more than a motor can give, so the
-     * four powers are scaled down together.
+     * <p>Asking for all three at once wants more than a motor can give, and
+     * {@link CorbelsDriveTrain#normalized} sorts that out.
      */
     public void sticks(double forwardSpeed, double strafeLeftSpeed, double turnCcwSpeed) {
-        // TODO 1: the four lines from the comment above this method, in the
-        //         order front left, front right, back left, back right.
-        double[] wheels = new double[4];
+        // TODO: call driveWheelsNow with the four lines from the comment above
+        //       this method, in the order front left, front right, back left,
+        //       back right. Each one is the three numbers added or subtracted --
+        //       the signs are what make a wheel push sideways one way or the
+        //       other.
+    }
 
-        // TODO 2: find the biggest of the four, or 1 if none of them reaches 1.
-        double max = 1.0;
-
-        // TODO 3: send each one, divided by max, to its own motor.
+    /**
+     * Sends each of the four powers to its own motor. They always arrive in the
+     * order front left, front right, back left, back right.
+     */
+    @Override
+    protected void writeWheels(double[] wheels) {
+        // TODO: send each of the four powers to its own motor, in the order they
+        //       arrive: frontLeft.setPower(wheels[0]); and so on for the other
+        //       three. Getting two of them the wrong way round makes the robot
+        //       turn when it should drive, and nothing says so out loud, which is
+        //       why this method has a test of its own.
     }
 }
