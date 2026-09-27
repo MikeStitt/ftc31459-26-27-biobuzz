@@ -20,6 +20,7 @@ the HTML landed.
 
 import argparse
 import difflib
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -37,6 +38,22 @@ extensions = ["myst_parser"]
 myst_enable_extensions = ["colon_fence", "deflist"]
 html_theme = "furo"
 '''
+
+
+LESSON_NAME = re.compile(r"^L(\d+)([a-z]*)")
+
+
+def order(path: str) -> tuple[int, int, str, str]:
+    """Lesson order, which is not the alphabetical order git lists files in.
+
+    L2 before L10, and L17a before L17b. A file whose name is not a lesson
+    number, like LessonsDriveTrain, sorts after the lessons.
+    """
+    stem = Path(path).stem
+    found = LESSON_NAME.match(stem)
+    if not found:
+        return (1, 0, "", stem)
+    return (0, int(found.group(1)), found.group(2), stem)
 
 
 def steps(blank: list[str], filled: list[str],
@@ -166,7 +183,7 @@ def generate(lessons: str, solutions: str) -> tuple[dict[str, str], list[str]]:
     pages = {}
     rows = []
     wrong = []
-    for path in answers.lesson_files(lessons):
+    for path in sorted(answers.lesson_files(lessons), key=order):
         blank = answers.git("show", f"{lessons}:{path}").splitlines()
         filled = answers.git("show", f"{solutions}:{path}").splitlines()
         found = answers.differences(blank, filled)
