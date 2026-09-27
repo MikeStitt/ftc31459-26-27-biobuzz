@@ -21,14 +21,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 
 /**
  * A real Pedro {@link Follower} driving a simulated robot, for tests.
  *
- * <p>The drivetrain keeps Pedro's commanded powers; the localizer turns them
- * into motion (power x max speed, with a short lag standing in for inertia)
- * and integrates a pose. Crude physics, but enough for the follower to finish
- * a path the way it does on the robot.
+ * <p>The localizer turns forward, strafe and turn into motion (power x max
+ * speed, with a short lag standing in for inertia) and integrates a pose.
+ * Crude physics, but enough for the follower to finish a path the way it does
+ * on the robot.
+ *
+ * <p>Where those three numbers come from is the caller's choice. On its own
+ * this class uses what Pedro last commanded, which is all a follower test
+ * needs. {@code OpModeHarness} points it at the four motor powers instead, so
+ * a lesson that writes the motors itself moves too -- see
+ * {@link #fromWheels}.
  */
 public final class SimRobot {
 
@@ -38,8 +46,41 @@ public final class SimRobot {
     public static final double LAG_S = 0.15;
 
     public final SimDrive drive = new SimDrive();
-    public final SimLocalizer localizer = new SimLocalizer(drive);
-    public final Follower follower = new Follower(localizer, drive, new Foresight(config()));
+    public final SimLocalizer localizer;
+    public final Follower follower;
+
+    /** Real time, which is what a test that does not hold a clock wants. */
+    public SimRobot() {
+        this(System::nanoTime);
+    }
+
+    /**
+     * A robot whose motion is integrated against {@code clock} rather than the
+     * wall clock, in nanoseconds. Two runs of the same loops then integrate the
+     * same motion.
+     */
+    public SimRobot(LongSupplier clock) {
+        localizer = new SimLocalizer(drive, clock);
+        follower = new Follower(localizer, drive, new Foresight(config()));
+    }
+
+    /**
+     * Four wheel powers back into forward, strafe and turn: the exact inverse
+     * of {@code CorbelsMecanum.mix}, which writes
+     * {@code fl = f - s - t, fr = f + s + t, bl = f + s - t, br = f - s + t}.
+     * Substituting those four here returns f, s and t unchanged.
+     *
+     * <p>Wheel powers, not wheel speeds, because the motion model's input is a
+     * power. A wheel at positive power drives the robot forward: the motor's
+     * own direction is set from {@code Constants} and is taken to be right.
+     */
+    public static double[] fromWheels(double frontLeft, double frontRight,
+                                      double backLeft, double backRight) {
+        return new double[]{
+                (frontLeft + frontRight + backLeft + backRight) / 4,
+                (-frontLeft + frontRight + backLeft - backRight) / 4,
+                (-frontLeft + frontRight - backLeft + backRight) / 4};
+    }
 
     public static final PoseFactory POSES = PoseFactory.degrees();
 
@@ -69,12 +110,21 @@ public final class SimRobot {
         });
     }
 
+    /**
+     * The drivetrain Pedro is given. It records what Pedro asked for and hands
+     * the same request on to {@link #delegate}, the drivetrain the lesson
+     * built, so the powers reach the motors the way they do on the robot.
+     */
     public static final class SimDrive implements Drivetrain {
         volatile DrivePowers last = DrivePowers.zero();
+
+        /** The lesson's own drivetrain, or null when nothing is behind this. */
+        public volatile Drivetrain delegate;
 
         @Override
         public void drive(DrivePowers powers, boolean manual) {
             last = powers;
+            if (delegate != null) delegate.drive(powers, manual);
         }
 
         @Override
@@ -85,11 +135,13 @@ public final class SimRobot {
         @Override
         public void stop() {
             last = DrivePowers.zero();
+            if (delegate != null) delegate.stop();
         }
 
         @Override
         public void stop(boolean brake) {
-            stop();
+            last = DrivePowers.zero();
+            if (delegate != null) delegate.stop(brake);
         }
 
         @Override
@@ -104,7 +156,8 @@ public final class SimRobot {
     }
 
     public static final class SimLocalizer implements Localizer {
-        private final SimDrive drive;
+        private final LongSupplier clock;
+        private Supplier<double[]> source;
         private double x;
         private double y;
         private double heading;
@@ -114,8 +167,19 @@ public final class SimRobot {
         private long lastNs;
         private MotionState state = MotionState.zero();
 
-        SimLocalizer(SimDrive drive) {
-            this.drive = drive;
+        SimLocalizer(SimDrive drive, LongSupplier clock) {
+            this.clock = clock;
+            this.source = () -> new double[]{
+                    drive.last.forward(), drive.last.strafe(), drive.last.turn()};
+        }
+
+        /**
+         * Where forward, strafe and turn come from. Pass the four motor powers
+         * through {@link SimRobot#fromWheels} to drive the simulation from what
+         * the code actually wrote to the wheels.
+         */
+        public void driveFrom(Supplier<double[]> source) {
+            this.source = source;
         }
 
         @Override
@@ -139,13 +203,14 @@ public final class SimRobot {
 
         @Override
         public void update() {
-            long now = System.nanoTime();
+            long now = clock.getAsLong();
             double dt = lastNs == 0 ? 0 : (now - lastNs) / 1e9;
             lastNs = now;
             double k = Math.min(1, dt / LAG_S);
-            vx += (drive.last.forward() * MAX_FORWARD_IPS - vx) * k;
-            vy += (drive.last.strafe() * MAX_STRAFE_IPS - vy) * k;
-            omega += (drive.last.turn() * MAX_TURN_RADPS - omega) * k;
+            double[] c = source.get();
+            vx += (c[0] * MAX_FORWARD_IPS - vx) * k;
+            vy += (c[1] * MAX_STRAFE_IPS - vy) * k;
+            omega += (c[2] * MAX_TURN_RADPS - omega) * k;
             x += (vx * Math.cos(heading) - vy * Math.sin(heading)) * dt;
             y += (vx * Math.sin(heading) + vy * Math.cos(heading)) * dt;
             heading += omega * dt;
