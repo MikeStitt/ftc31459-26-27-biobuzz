@@ -6,8 +6,8 @@ import org.firstinspires.ftc.teamcode.base.RobotHardware;
  * The drivetrain for L2: two sticks, four wheels.
  *
  * <p>This is the first drivetrain, and every later one is built the same way.
- * {@code extends CorbelsDriveTrain} means it starts with everything
- * {@link CorbelsDriveTrain} already has -- the four motors, which way each one
+ * {@code extends LessonsDriveTrain} means it starts with everything
+ * {@link LessonsDriveTrain} already has -- the four motors, which way each one
  * spins, and braking when the power goes to 0 -- and adds what is special about
  * this lesson. {@code super(hardware)} is how the motors get handed over.
  *
@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.base.RobotHardware;
  *
  * <p>Passes when: LessonsTest.l2_theSticksDriveTheWheelsLikeATank
  */
-public class L2TankDriveTrain extends CorbelsDriveTrain {
+public class L2TankDriveTrain extends LessonsDriveTrain {
 
     public L2TankDriveTrain(RobotHardware hardware) {
         super(hardware);

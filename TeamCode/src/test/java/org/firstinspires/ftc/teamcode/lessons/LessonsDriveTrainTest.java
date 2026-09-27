@@ -14,14 +14,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * One test per part the lessons add to {@link CorbelsDriveTrain}: the immediate
+ * One test per part the lessons add to {@link LessonsDriveTrain}: the immediate
  * write L2 fills in, the scaling L4 fills in, and the wheel sharing L6 fills in.
  *
  * <p>Two drivetrains stand in for the lessons' own. {@code Sides} is L2 through
  * L5: it drives its own wheels and has no {@code mix}, so the follower cannot
  * drive it. {@code Mecanum} is L6 onwards.
  */
-public class CorbelsDriveTrainTest {
+public class LessonsDriveTrainTest {
 
     private static final double EPS = 1e-9;
 
@@ -32,7 +32,7 @@ public class CorbelsDriveTrainTest {
     private RobotHardware hardware;
 
     /** A lesson drivetrain that owns its wheels, the way L2 through L5 do. */
-    private static class Sides extends CorbelsDriveTrain {
+    private static class Sides extends LessonsDriveTrain {
         Sides(RobotHardware hardware) {
             super(hardware);
         }

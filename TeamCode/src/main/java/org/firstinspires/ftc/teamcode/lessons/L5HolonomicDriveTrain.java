@@ -26,7 +26,7 @@ import org.firstinspires.ftc.teamcode.base.RobotHardware;
  *
  * <p>Passes when: LessonsTest.l5_holonomicCanStrafe
  */
-public class L5HolonomicDriveTrain extends CorbelsDriveTrain {
+public class L5HolonomicDriveTrain extends LessonsDriveTrain {
 
     public L5HolonomicDriveTrain(RobotHardware hardware) {
         super(hardware);
@@ -36,10 +36,10 @@ public class L5HolonomicDriveTrain extends CorbelsDriveTrain {
      * Holonomic drive, relative to the robot's own front.
      * {@code forwardSpeed} drives, {@code strafeLeftSpeed} slides towards the
      * robot's left, {@code turnCcwSpeed} spins counter-clockwise. All -1 to 1,
-     * in the directions {@link CorbelsDriveTrain} sets out.
+     * in the directions {@link LessonsDriveTrain} sets out.
      *
      * <p>Asking for all three at once wants more than a motor can give, and
-     * {@link CorbelsDriveTrain#normalized} sorts that out.
+     * {@link LessonsDriveTrain#normalized} sorts that out.
      */
     public void sticks(double forwardSpeed, double strafeLeftSpeed, double turnCcwSpeed) {
         driveWheelsNow(

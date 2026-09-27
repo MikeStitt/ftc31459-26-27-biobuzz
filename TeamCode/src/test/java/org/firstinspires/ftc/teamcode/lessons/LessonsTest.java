@@ -209,7 +209,7 @@ public class LessonsTest {
      * to read: it commands its drivetrain's four wheels itself. The harness hands
      * every OpMode its own follower and ignores the drivetrain passed to
      * {@code initAfter}, so what L6 does to the wheels is tested in
-     * {@link LessonDriveTrainTest#theSticksCommandTheWheelsSoTheDriverStillWins}.
+     * {@link L6FollowerDriveTrainTest#theSticksCommandTheWheelsSoTheDriverStillWins}.
      * What is left to check here is the OpMode's own job: three sticks read, and
      * each one negated the right way.
      */

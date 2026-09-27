@@ -19,7 +19,7 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * all of it is what L8 onwards is about.
  *
  * <p>Handing the drivetrain over does not hand the driver's sticks over.
- * {@link LessonDriveTrain#sticks} commands the four wheels, and a commanded
+ * {@link L6FollowerDriveTrain#sticks} commands the four wheels, and a commanded
  * wheel beats whatever the follower worked out, so the driver still wins. L8 is
  * where the wheels go back.
  *
@@ -31,12 +31,12 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
 @TeleOp(name = "L6 Follower Wheels", group = "Lessons")
 public class L6FollowerWheels extends CorbelsTeleOp {
 
-    private LessonDriveTrain wheels;
+    private L6FollowerDriveTrain wheels;
 
     @Override
     public void init() {
         initBefore();
-        wheels = new LessonDriveTrain(hardware);
+        wheels = new L6FollowerDriveTrain(hardware);
         initAfter(wheels);
     }
 
