@@ -121,3 +121,21 @@ dependencies {
     testImplementation "edu.wpi.first.ntcore:ntcore-jni:$ntcoreVersion:$wpilibClassifier"
     testImplementation "edu.wpi.first.wpiutil:wpiutil-jni:$ntcoreVersion:$wpilibClassifier"
 }
+
+// Runs a lesson in the simulator, publishing to NetworkTables. The classpath is
+// the unit test one, because that is where the simulation lives and where
+// ntcore is declared; the Android test task is asked for it rather than rebuilt
+// here, so the two can never disagree.
+afterEvaluate {
+    tasks.register('simRun', JavaExec) {
+        group = 'verification'
+        description = 'Run a lesson in the simulator for AdvantageScope. --args="L2Sticks left_stick_y=-1"'
+        dependsOn 'compileDebugUnitTestJavaWithJavac'
+        mainClass = 'org.firstinspires.ftc.teamcode.base.SimRun'
+        classpath = tasks.named('testDebugUnitTest').get().classpath
+        // Ctrl-C is how this task ends, and a JVM killed by SIGINT exits
+        // 130. Without this, the intended way to stop it reports a build
+        // failure.
+        ignoreExitValue = true
+    }
+}
