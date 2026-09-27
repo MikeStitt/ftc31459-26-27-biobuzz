@@ -13,6 +13,11 @@ import sys
 from bookpaths import relative, tracked
 from register import PATH, pages
 
+# Generated, and not prose: source/answers/ is what tools/answers.py writes out of
+# the two lesson lines. A ceiling on a page nobody writes by hand would be a
+# ceiling on how much code a lesson may have.
+GENERATED = "source/answers/"
+
 
 def words(path) -> int:
     """Words of prose: fenced code and MyST directives do not count."""
@@ -34,6 +39,8 @@ def main() -> int:
     problems = 0
     for path in tracked("source/*.md", "source/**/*.md"):
         page = relative(path)
+        if page.startswith(GENERATED):
+            continue
         count = words(path)
         if page not in ceilings:
             print(f"{page}: {count} words and no ceiling. Add one to {PATH}.")

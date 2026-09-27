@@ -41,6 +41,11 @@ rule words
   description = pages under their word ceilings
   pool = console
 
+rule answers
+  command = $tools tools/answers.py --check
+  description = answer pages match the two lesson lines
+  pool = console
+
 rule figures
   command = $tools tools/check_figures.py
   description = pencilled figures match FIGURES.md
@@ -52,7 +57,9 @@ build check-reading: reading | tools/check_reading_level.py tools/bookpaths.py
 build check-keep: keep | tools/check_keep.py tools/register.py keep.toml
 build check-words: words | tools/check_words.py tools/register.py keep.toml
 build check-figures: figures | tools/check_figures.py tools/bookpaths.py FIGURES.md
+build check-answers: answers | tools/answers.py tools/register.py keep.toml
 
-build book: phony check-sphinx check-wrap check-reading check-keep check-words check-figures
+build book: phony check-sphinx check-wrap check-reading check-keep check-words check-figures $
+    check-answers
 
 default book

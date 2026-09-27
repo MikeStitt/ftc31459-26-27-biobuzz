@@ -19,6 +19,10 @@ from bookpaths import relative, tracked
 THRESHOLD = 8.0
 MIN_WORDS = 20
 
+# Generated, and mostly Java: source/answers/ is what tools/answers.py writes.
+# Scoring code for reading level measures nothing.
+GENERATED = "source/answers/"
+
 MARKUP = re.compile(r"(``?[^`]*``?|\*\*?|__?|\[|\]\([^)]*\))")
 DIRECTIVE = re.compile(r"^\s*(:{3,}|`{3,}|:[a-z_]+:|\{[a-z]+\}|#|\||-{3,})")
 
@@ -52,6 +56,8 @@ def paragraphs(path):
 def main() -> int:
     hits = []
     for path in tracked("source/*.md", "source/**/*.md"):
+        if relative(path).startswith(GENERATED):
+            continue
         for line_no, text in paragraphs(path):
             plain = MARKUP.sub(" ", text).strip()
             if len(plain.split()) < MIN_WORDS:

@@ -27,3 +27,10 @@ in front of them to what the guide calls each part.
 ```
 
 Nothing here yet. The first task page is L2, and it arrives with the template it sets.
+
+```{toctree}
+:maxdepth: 1
+:caption: The answers
+
+answers/index
+```

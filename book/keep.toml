@@ -12,3 +12,12 @@
 [[page]]
 path = "source/index.md"
 words = 240
+
+# The two lines the answers are generated from. tools/answers.py reads the
+# commits, not the branch names, so regenerating gives the same pages until this
+# pin is deliberately moved.
+[answers]
+lessons = "lessons-sim-nt4"
+lessons_commit = "0054de9"
+solutions = "solutions-sim-nt4"
+solutions_commit = "5e7f23b"
