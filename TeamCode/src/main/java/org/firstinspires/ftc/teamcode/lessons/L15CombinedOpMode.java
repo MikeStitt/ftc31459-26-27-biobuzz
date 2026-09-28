@@ -6,7 +6,6 @@ import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.base.CorbelsTeleOp;
-import org.firstinspires.ftc.teamcode.base.Drive;
 import org.firstinspires.ftc.teamcode.base.HeadingHold;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 import org.firstinspires.ftc.teamcode.base.odometry.HardwareWheelSource;
@@ -95,18 +94,23 @@ public class L15CombinedOpMode extends CorbelsTeleOp {
      * that is where the follower updates and the flight log is written.
      */
     private void driveTheRobot() {
-        double forwardSpeed = Drive.squared(Drive.deadband(-gamepad1.left_stick_y, 0.05));
-        double strafeLeftSpeed = Drive.squared(Drive.deadband(-gamepad1.left_stick_x, 0.05));
-        double turnStick = Drive.deadband(-gamepad1.right_stick_x, 0.05);
+        double forwardSpeed = drivetrain.squared(drivetrain.deadband(-gamepad1.left_stick_y, 0.05));
+        double strafeLeftSpeed =
+                drivetrain.squared(drivetrain.deadband(-gamepad1.left_stick_x, 0.05));
+        double turnStick = drivetrain.deadband(-gamepad1.right_stick_x, 0.05);
         boolean driverWantsControl = forwardSpeed != 0 || strafeLeftSpeed != 0 || turnStick != 0;
 
         if (drivingItself) {
             if (!driverWantsControl) {
                 Tracker.publish("drive/mode", "AUTO");
                 Tracker.publish("drive/target_deg", Math.toDegrees(TARGET_POSE.heading()));
+                drivetrain.releaseCommandedWheels();
                 return;
             }
             drivingItself = false;      // a stick moved: the driver has it back
+            // Out of HOLD, which only manual() can do. The three zeros are
+            // never used -- the sticks command the wheels on the next line.
+            follower.manual(0, 0, 0);
             heading.release();
         }
 
@@ -117,10 +121,11 @@ public class L15CombinedOpMode extends CorbelsTeleOp {
 
         if (gamepad1.right_bumper) {
             Tracker.publish("drive/mode", "ROBOT");
-            Drive.holonomic(follower, forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
+            drivetrain.sticks(forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
         } else {
             Tracker.publish("drive/mode", "FIELD");
-            Drive.fieldRelative(follower, forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
+            drivetrain.fieldRelative(follower.pose().heading(),
+                    forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
         }
     }
 }

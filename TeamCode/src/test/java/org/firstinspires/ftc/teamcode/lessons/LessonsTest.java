@@ -275,7 +275,7 @@ public class LessonsTest {
     // -------------------------------------------------------------- L6
 
     /**
-     * L6 no longer asks the follower to drive, so there is no {@code h.forward()}
+     * L6 no longer asks the follower to drive, so there is no {@code h.wheelsForward()}
      * to read: it commands its drivetrain's four wheels itself. The harness hands
      * every OpMode its own follower and ignores the drivetrain passed to
      * {@code initAfter}, so what L6 does to the wheels is tested in
@@ -319,7 +319,7 @@ public class LessonsTest {
             h.start();
             h.gamepad1.right_stick_x = 1.0f;
             h.loop();
-            double turn = h.turn();
+            double turn = h.wheelsTurn();
             if (Math.abs(turn - -1.0) > 1e-6) {
                 wrongWay.add(lesson.getClass().getSimpleName() + " turned " + turn);
             }
@@ -345,7 +345,7 @@ public class LessonsTest {
         Map<String, Object> values = Tracker.values();
         assertTrue("the shadow localizer is logged: " + values.keySet(),
                 values.containsKey("Localizer/encoders/x_in"));
-        assertEquals("the shadow must not steer the robot", 0.0, h.forward(), EPS);
+        assertEquals("the shadow must not steer the robot", 0.0, h.wheelsForward(), EPS);
         assertNotEquals("it moved in its own estimate",
                 0.0, number(values, "Localizer/encoders/x_in"), 0.1);
     }
@@ -395,13 +395,13 @@ public class LessonsTest {
         follower.setPose(POSES.of(0, 0, 0));
         h.gamepad1.left_stick_y = -1.0f;          // away from the driver
         h.loop();
-        assertEquals(1.0, h.forward(), 1e-3);
+        assertEquals(1.0, h.wheelsForward(), 1e-3);
 
         follower.setPose(POSES.of(0, 0, 90));     // robot now faces +y
         h.loop();
         assertEquals("same stick, still moves away from the driver",
-                0.0, h.forward(), 1e-3);
-        assertEquals(-1.0, h.strafe(), 1e-3);
+                0.0, h.wheelsForward(), 1e-3);
+        assertEquals(-1.0, h.wheelsStrafe(), 1e-3);
         h.stop();
     }
 
@@ -417,15 +417,15 @@ public class LessonsTest {
         h.gamepad1.left_stick_y = -1.0f;
 
         h.loop();
-        assertEquals("field relative by default", 0.0, h.forward(), 1e-3);
+        assertEquals("field relative by default", 0.0, h.wheelsForward(), 1e-3);
 
         h.gamepad1.right_bumper = true;
         h.loop();
-        assertEquals("robot relative while held", 1.0, h.forward(), 1e-3);
+        assertEquals("robot relative while held", 1.0, h.wheelsForward(), 1e-3);
 
         h.gamepad1.right_bumper = false;
         h.loop();
-        assertEquals("and back again on release", 0.0, h.forward(), 1e-3);
+        assertEquals("and back again on release", 0.0, h.wheelsForward(), 1e-3);
         h.stop();
     }
 
@@ -441,15 +441,15 @@ public class LessonsTest {
         follower.setPose(POSES.of(0, 0, 0));
         h.gamepad1.right_stick_x = 0.5f;           // pushed right: clockwise
         h.loop();
-        assertEquals("while steering, the stick wins", -0.5, h.turn(), 1e-3);
+        assertEquals("while steering, the stick wins", -0.5, h.wheelsTurn(), 1e-3);
 
         h.gamepad1.right_stick_x = 0.0f;
         h.loop();                                  // releases: captures heading 0
-        assertEquals("on target, no correction", 0.0, h.turn(), 1e-3);
+        assertEquals("on target, no correction", 0.0, h.wheelsTurn(), 1e-3);
 
         follower.setPose(POSES.of(0, 0, -10));     // the robot drifts
         h.loop();
-        assertTrue("it steers back", h.turn() > 0.01);
+        assertTrue("it steers back", h.wheelsTurn() > 0.01);
         h.stop();
     }
 
@@ -473,7 +473,7 @@ public class LessonsTest {
         h.gamepad1.left_stick_y = -1.0f;           // the driver grabs the stick
         h.loop();
         assertEquals("manual control returns", Follower.Mode.MANUAL, follower.mode());
-        assertEquals(1.0, h.forward(), 1e-3);
+        assertEquals(1.0, h.wheelsForward(), 1e-3);
         h.stop();
     }
 
@@ -489,11 +489,11 @@ public class LessonsTest {
 
         h.gamepad1.left_stick_y = -1.0f;
         h.loop();
-        assertEquals("field relative with nothing held", 0.0, h.forward(), 1e-3);
+        assertEquals("field relative with nothing held", 0.0, h.wheelsForward(), 1e-3);
 
         h.gamepad1.right_bumper = true;
         h.loop();
-        assertEquals("robot relative on the bumper", 1.0, h.forward(), 1e-3);
+        assertEquals("robot relative on the bumper", 1.0, h.wheelsForward(), 1e-3);
         h.gamepad1.right_bumper = false;
 
         h.gamepad1.left_stick_y = 0.0f;
@@ -524,8 +524,8 @@ public class LessonsTest {
 
         assertEquals("aiming", true, Tracker.values().get("drive/aiming"));
         assertEquals("at 45 degrees", 45.0, (Double) Tracker.values().get("drive/target_deg"), 1e-6);
-        assertTrue("turning toward it", h.turn() > 0);
-        assertTrue("and still driving", Math.abs(h.forward()) + Math.abs(h.strafe()) > 0);
+        assertTrue("turning toward it", h.wheelsTurn() > 0);
+        assertTrue("and still driving", Math.abs(h.wheelsForward()) + Math.abs(h.wheelsStrafe()) > 0);
     }
 
     @Test
@@ -541,7 +541,7 @@ public class LessonsTest {
         h.gamepad1.right_stick_x = 0.8f;             // the driver steers, clockwise
         h.loop();
 
-        assertEquals("the stick wins", -0.8, h.turn(), 1e-3);
+        assertEquals("the stick wins", -0.8, h.wheelsTurn(), 1e-3);
         assertEquals("not aiming any more", false,
                 Tracker.values().get("drive/aiming"));
     }

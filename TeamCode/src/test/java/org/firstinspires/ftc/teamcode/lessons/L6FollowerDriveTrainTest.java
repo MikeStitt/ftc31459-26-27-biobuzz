@@ -116,7 +116,7 @@ public class L6FollowerDriveTrainTest {
     @Test
     public void askingForMoreThanAMotorCanGiveScalesEveryWheelDownTogether() {
         // Full forward and full left at once is a diagonal, and a mecanum drives
-        // a diagonal on one pair of drivetrain. Unscaled the pair wants 2.
+        // a diagonal on one pair of wheels. Unscaled the pair wants 2.
         follower(1, 1, 0);
         assertEquals("the pair that wanted 2 gets 1", 1.0, frontRight.power, EPS);
         assertEquals(1.0, backLeft.power, EPS);
@@ -132,13 +132,13 @@ public class L6FollowerDriveTrainTest {
 
     /**
      * L6's own move: the driver's three numbers go through the same mixing the
-     * follower would have used, and the four drivetrain are commanded, so the
+     * follower would have used, and the four wheels are commanded, so the
      * follower's own answer is ignored while the driver has the sticks.
      */
     @Test
     public void theSticksCommandTheWheelsSoTheDriverStillWins() {
         drivetrain.sticks(1, 0, 0);
-        assertTrue("the drivetrain are commanded, not left to the follower",
+        assertTrue("the wheels are commanded, not left to the follower",
                 drivetrain.commandedWheelsAreSet());
 
         // Whatever the follower asks for next is ignored; the sticks decided.

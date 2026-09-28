@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.base.CorbelsTeleOp;
  *
  * <p>The shortest thing a Corbels teleop can be: the four standard methods, the
  * framework's hooks around them, and one line that hands the sticks to the
- * follower. Everything else -- the hardware, the follower, Panels, the flight
+ * drivetrain. Everything else -- the hardware, the follower, Panels, the flight
  * log -- comes from {@link CorbelsTeleOp}.
  *
  * <p>Cubing a stick leaves the sign alone and makes small pushes gentler, which
@@ -22,10 +22,13 @@ import org.firstinspires.ftc.teamcode.base.CorbelsTeleOp;
 @TeleOp(name = "TeleOp + Panels", group = "Corbels")
 public class TeleOpWithPanelsOpMode extends CorbelsTeleOp {
 
+    private CorbelsMecanum drivetrain;
+
     @Override
     public void init() {
         initBefore();
-        initAfter(new CorbelsMecanum(hardware));
+        drivetrain = new CorbelsMecanum(hardware);
+        initAfter(drivetrain);
     }
 
     @Override
@@ -35,7 +38,7 @@ public class TeleOpWithPanelsOpMode extends CorbelsTeleOp {
         double forwardSpeed = cubed(-gamepad1.left_stick_y);
         double strafeLeftSpeed = cubed(-gamepad1.left_stick_x);
         double turnCcwSpeed = cubed(-gamepad1.right_stick_x);
-        follower.manual(forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
+        drivetrain.sticks(forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
 
         loopAfter();
     }

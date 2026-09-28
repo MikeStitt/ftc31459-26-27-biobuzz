@@ -60,7 +60,7 @@ public class L17aMeasureTicksPerInchOpMode extends CorbelsTeleOp {
 
     @Override
     public void stop() {
-        // Hand the drivetrain back before the follower's last update, or they keep
+        // Hand the wheels back before the follower's last update, or they keep
         // whatever power the last loop commanded.
         drivetrain.stop();
         stopAfter();

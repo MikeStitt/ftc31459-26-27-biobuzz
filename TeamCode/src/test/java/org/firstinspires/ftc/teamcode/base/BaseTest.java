@@ -17,7 +17,7 @@ import org.junit.Test;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-/** The infrastructure students don't see: stick mappings, heading hold, buttons. */
+/** The infrastructure students don't see: heading hold and buttons. */
 public class BaseTest {
 
     private static final PoseFactory POSES = PoseFactory.degrees();
@@ -31,102 +31,6 @@ public class BaseTest {
         robot = new SimRobot();
         follower = robot.follower;
         Scheduler.reset();
-    }
-
-    /** What the drivetrain was last commanded. follower.update() must have run. */
-    private double forward() { return robot.drive.last.forward(); }
-    private double strafe() { return robot.drive.last.strafe(); }
-    private double turn() { return robot.drive.last.turn(); }
-
-    // ---------------------------------------------------------------- Drive
-
-    @Test
-    public void tankDrivesStraightWhenBothSticksMatch() {
-        Drive.tank(follower, 1.0, 1.0);
-        follower.update();   // manual() only stores the powers; update() applies them
-        assertEquals(1.0, forward(), EPS);
-        assertEquals("tank never strafes", 0.0, strafe(), EPS);
-        assertEquals(0.0, turn(), EPS);
-    }
-
-    @Test
-    public void tankTurnsInPlaceWhenSticksOppose() {
-        // Left side ahead of right swings the nose to the right, which is
-        // clockwise, which is a negative turn.
-        Drive.tank(follower, 1.0, -1.0);
-        follower.update();   // manual() only stores the powers; update() applies them
-        assertEquals(0.0, forward(), EPS);
-        assertEquals(-1.0, turn(), EPS);
-        Drive.tank(follower, -1.0, 1.0);
-        follower.update();   // manual() only stores the powers; update() applies them
-        assertEquals(1.0, turn(), EPS);
-    }
-
-    @Test
-    public void tankCurvesWhenOneSideIsFaster() {
-        Drive.tank(follower, 1.0, 0.5);
-        follower.update();   // manual() only stores the powers; update() applies them
-        assertEquals(0.75, forward(), EPS);
-        assertEquals("the faster left side curves the robot to the right",
-                -0.25, turn(), EPS);
-    }
-
-    @Test
-    public void arcadeSeparatesForwardFromTurnAndNeverStrafes() {
-        Drive.arcade(follower, 0.8, -0.3);
-        follower.update();   // manual() only stores the powers; update() applies them
-        assertEquals(0.8, forward(), EPS);
-        assertEquals(-0.3, turn(), EPS);
-        assertEquals(0.0, strafe(), EPS);
-    }
-
-    @Test
-    public void holonomicPassesAllThreeThrough() {
-        Drive.holonomic(follower, 0.1, 0.2, 0.3);
-        follower.update();   // manual() only stores the powers; update() applies them
-        assertEquals(0.1, forward(), EPS);
-        assertEquals(0.2, strafe(), EPS);
-        assertEquals(0.3, turn(), EPS);
-    }
-
-    @Test
-    public void fieldRelativeMatchesRobotRelativeWhenFacingZero() {
-        follower.setPose(POSES.of(0, 0, 0));
-        follower.update();
-        Drive.fieldRelative(follower, 1.0, 0.0, 0.0);
-        follower.update();   // manual() only stores the powers; update() applies them
-        assertEquals(1.0, forward(), 1e-6);
-        assertEquals(0.0, strafe(), 1e-6);
-    }
-
-    @Test
-    public void fieldRelativeTurnsAwayIntoStrafeWhenTheRobotIsSideways() {
-        follower.setPose(POSES.of(0, 0, 90));      // facing +y
-        follower.update();
-        Drive.fieldRelative(follower, 1.0, 0.0, 0.0);
-        follower.update();   // manual() only stores the powers; update() applies them   // driver pushes "away"
-        assertEquals("robot must strafe right to move +x", 0.0, forward(), 1e-6);
-        assertEquals(-1.0, strafe(), 1e-6);
-    }
-
-    @Test
-    public void fieldRelativeIsUnchangedInMagnitude() {
-        for (int deg = 0; deg < 360; deg += 30) {
-            follower.setPose(POSES.of(0, 0, deg));
-            follower.update();
-            Drive.fieldRelative(follower, 0.6, -0.8, 0);
-            follower.update();   // manual() only stores the powers; update() applies them
-            assertEquals("speed is the same whichever way it faces",
-                    1.0, Math.hypot(forward(), strafe()), 1e-6);
-        }
-    }
-
-    @Test
-    public void deadbandAndSquaredShapeTheSticks() {
-        assertEquals(0.0, Drive.deadband(0.04, 0.05), EPS);
-        assertEquals(0.5, Drive.deadband(0.5, 0.05), EPS);
-        assertEquals(0.25, Drive.squared(0.5), EPS);
-        assertEquals("keeps its sign", -0.25, Drive.squared(-0.5), EPS);
     }
 
     // ---------------------------------------------------------- HeadingHold

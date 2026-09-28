@@ -320,6 +320,40 @@ public final class OpModeHarness {
         return robot.drive.last.turn();
     }
 
+    /**
+     * What the four wheel powers add up to: forward, strafe left and turn
+     * counter-clockwise, recovered by undoing the mecanum mixing.
+     *
+     * <p>This is what to assert about a lesson that commands its own wheels,
+     * because such a lesson tells the follower nothing and {@link #forward()}
+     * stays at zero. Scaling applies to all three together, so a stick pushed
+     * past what one motor can give reads smaller here than it was asked for --
+     * the directions and the ratios survive, the magnitude does not.
+     */
+    public double wheelsForward() {
+        double[] w = wheelPowers();
+        return (w[0] + w[1] + w[2] + w[3]) / 4;
+    }
+
+    public double wheelsStrafe() {
+        double[] w = wheelPowers();
+        return (-w[0] + w[1] + w[2] - w[3]) / 4;
+    }
+
+    public double wheelsTurn() {
+        double[] w = wheelPowers();
+        return (-w[0] + w[1] - w[2] + w[3]) / 4;
+    }
+
+    /** The power on each motor, in wheel order. */
+    public double[] wheelPowers() {
+        return new double[]{
+                motors.get(FRONT_LEFT).power,
+                motors.get(FRONT_RIGHT).power,
+                motors.get(BACK_LEFT).power,
+                motors.get(BACK_RIGHT).power};
+    }
+
     public static void sleep(long ms) {
         if (ms <= 0) return;
         try {

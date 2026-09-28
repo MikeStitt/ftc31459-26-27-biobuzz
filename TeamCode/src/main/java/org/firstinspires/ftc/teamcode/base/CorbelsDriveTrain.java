@@ -218,6 +218,17 @@ public abstract class CorbelsDriveTrain implements Drivetrain {
     }
 
     /**
+     * Drives from the sticks, relative to the robot's own front: the three
+     * numbers go through the same mixing the follower's would have, and the four
+     * wheels are commanded, so the driver wins while a stick is pushed.
+     */
+    public void sticks(double forwardSpeed, double strafeLeftSpeed, double turnCcwSpeed) {
+        double[] mixed = mix(new DrivePowers(forwardSpeed, strafeLeftSpeed, turnCcwSpeed));
+        double[] scaled = normalized(mixed);
+        setCommandedWheels(scaled[FL], scaled[FR], scaled[BL], scaled[BR]);
+    }
+
+    /**
      * Drives relative to the FIELD: pushing the stick away from the driver moves
      * the robot away from the driver, whichever way it is facing.
      *
@@ -228,12 +239,9 @@ public abstract class CorbelsDriveTrain implements Drivetrain {
                               double turnCcwSpeed) {
         double cos = Math.cos(headingRad);
         double sin = Math.sin(headingRad);
-        double forwardSpeed = fieldXSpeed * cos + fieldYSpeed * sin;
-        double strafeLeftSpeed = -fieldXSpeed * sin + fieldYSpeed * cos;
-
-        double[] mixed = mix(new DrivePowers(forwardSpeed, strafeLeftSpeed, turnCcwSpeed));
-        double[] scaled = normalized(mixed);
-        setCommandedWheels(scaled[FL], scaled[FR], scaled[BL], scaled[BR]);
+        sticks(fieldXSpeed * cos + fieldYSpeed * sin,
+                -fieldXSpeed * sin + fieldYSpeed * cos,
+                turnCcwSpeed);
     }
 
     // ------------------------------------------------------- asking for a speed, not a power

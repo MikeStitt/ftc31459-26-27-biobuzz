@@ -123,7 +123,7 @@ public class LessonsDriveTrainTest {
         assertTrue(drivetrain.commandedWheelsAreSet());
 
         drivetrain.drive(new DrivePowers(1, 0, 0), true);
-        assertArrayEquals("the lesson wins while the drivetrain are commanded",
+        assertArrayEquals("the lesson wins while the wheels are commanded",
                 new double[]{0.1, 0.2, 0.3, 0.4}, motorPowers(), EPS);
     }
 
@@ -223,6 +223,40 @@ public class LessonsDriveTrainTest {
         drivetrain.drive(DrivePowers.zero(), true);
         assertArrayEquals("the same journey, sideways to the robot",
                 new double[]{1, -1, -1, 1}, motorPowers(), EPS);
+    }
+
+    @Test
+    public void turningTheDriversViewNeverChangesHowFastTheRobotGoes() {
+        // A small stick, so no wheel asks for more than full power and nothing
+        // is scaled: then the four powers can be read back as a speed. A fresh
+        // drivetrain each time, because these powers are small enough for the
+        // write cache to swallow a step between two headings.
+        for (int deg = 0; deg < 360; deg += 30) {
+            Mecanum drivetrain = new Mecanum(hardware);
+            drivetrain.fieldRelative(Math.toRadians(deg), 0.06, -0.08, 0);
+            drivetrain.drive(DrivePowers.zero(), true);
+            double[] w = motorPowers();
+            double forward = (w[0] + w[1] + w[2] + w[3]) / 4;
+            double strafeLeft = (-w[0] + w[1] + w[2] - w[3]) / 4;
+            assertEquals("the same speed whichever way the robot faces at " + deg + " deg",
+                    0.1, Math.hypot(forward, strafeLeft), 1e-9);
+        }
+    }
+
+    // ------------------------------------------------------- L3a's and L3b's parts
+
+    @Test
+    public void theDeadbandIgnoresAStickThatIsNearlyCentred() {
+        Mecanum drivetrain = new Mecanum(hardware);
+        assertEquals("inside the band", 0.0, drivetrain.deadband(0.04, 0.05), EPS);
+        assertEquals("outside it, the stick itself", 0.5, drivetrain.deadband(0.5, 0.05), EPS);
+    }
+
+    @Test
+    public void squaringTheStickKeepsItsSign() {
+        Mecanum drivetrain = new Mecanum(hardware);
+        assertEquals(0.25, drivetrain.squared(0.5), EPS);
+        assertEquals("keeps its sign", -0.25, drivetrain.squared(-0.5), EPS);
     }
 
     // ------------------------------------------------------------ L16's part

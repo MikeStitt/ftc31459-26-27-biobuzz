@@ -6,15 +6,15 @@ import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.base.CorbelsTeleOp;
-import org.firstinspires.ftc.teamcode.base.Drive;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 
 /**
  * L14: press Y and the robot drives itself to a pose and stays there.
  *
- * <p>The catch worth teaching: follower.manual() throws away whatever the
- * follower was doing. So while the command is running, the stick code must keep
- * its hands off -- unless the driver moves a stick, which cancels the command.
+ * <p>The catch worth teaching: wheels the sticks commanded stay commanded, and
+ * commanded wheels beat whatever the follower worked out. So while the command
+ * is running the stick code hands the wheels back -- unless the driver moves a
+ * stick, which cancels the command.
  */
 @TeleOp(name = "L14 Drive To Pose", group = "Lessons")
 public class L14DriveToPoseOpMode extends CorbelsTeleOp {
@@ -78,11 +78,16 @@ public class L14DriveToPoseOpMode extends CorbelsTeleOp {
         if (drivingItself) {
             if (!driverWantsControl) {
                 Tracker.publish("drive/mode", "AUTO");
+                drivetrain.releaseCommandedWheels();
                 return;                       // leave the follower holding
             }
             drivingItself = false;            // the driver takes over
+            // Out of HOLD, which only manual() can do. The three zeros are
+            // never used -- the sticks command the wheels on the next line.
+            follower.manual(0, 0, 0);
         }
         Tracker.publish("drive/mode", "DRIVER");
-        Drive.fieldRelative(follower, forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
+        drivetrain.fieldRelative(follower.pose().heading(),
+                forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
     }
 }

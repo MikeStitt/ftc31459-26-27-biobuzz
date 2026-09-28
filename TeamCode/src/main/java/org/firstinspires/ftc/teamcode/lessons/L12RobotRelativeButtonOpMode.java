@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.lessons;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.base.CorbelsTeleOp;
-import org.firstinspires.ftc.teamcode.base.Drive;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 
 /**
@@ -41,9 +40,10 @@ public class L12RobotRelativeButtonOpMode extends CorbelsTeleOp {
         double strafeLeftSpeed = -gamepad1.left_stick_x;
         double turnCcwSpeed = -gamepad1.right_stick_x;
         if (gamepad1.right_bumper) {
-            Drive.holonomic(follower, forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
+            drivetrain.sticks(forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
         } else {
-            Drive.fieldRelative(follower, forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
+            drivetrain.fieldRelative(follower.pose().heading(),
+                    forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
         }
         Tracker.publish("drive/robotRelative", gamepad1.right_bumper);
         loopAfter();
