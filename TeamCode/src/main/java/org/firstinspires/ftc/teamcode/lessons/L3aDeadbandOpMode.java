@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.base.CorbelsTeleOp;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 
 /**
- * L3p1: a stick that is nearly centred counts as centred.
+ * L3a: a stick that is nearly centred counts as centred.
  *
  * <p>A stick let go does not read exactly zero, so the robot creeps. A deadband
  * fixes it: anything smaller than {@link #DEADBAND} is treated as nothing, and
@@ -17,10 +17,10 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * drivetrain because every later lesson shapes its sticks the same way. Both
  * sticks go through it here, so the same number is used twice.
  *
- * <p>Passes when: LessonsTest.l3p1_aNearlyCentredStickCountsAsCentred
+ * <p>Passes when: LessonsTest.l3a_aNearlyCentredStickCountsAsCentred
  */
-@TeleOp(name = "L3p1 Deadband", group = "Lessons")
-public class L3p1DeadbandOpMode extends CorbelsTeleOp {
+@TeleOp(name = "L3a Deadband", group = "Lessons")
+public class L3aDeadbandOpMode extends CorbelsTeleOp {
 
     /** Anything smaller than this counts as a stick that was let go. */
     private static final double DEADBAND = 0.05;

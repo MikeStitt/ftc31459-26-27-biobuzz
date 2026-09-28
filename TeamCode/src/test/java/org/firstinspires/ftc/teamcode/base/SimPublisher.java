@@ -23,7 +23,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * {@code /Pose}, {@code /Mode} and a {@code /vel/...} breakdown into the flight
  * log, and the same leaves appear here under {@code sim/}, so someone who has
  * learnt where to look in a robot log looks in the same place here. The sticks
- * use the names {@code L2p2TankOpMode} already publishes to Panels.
+ * use the names {@code L2bTankOpMode} already publishes to Panels.
  *
  * <p>Passes when: SimPublisherTest
  */

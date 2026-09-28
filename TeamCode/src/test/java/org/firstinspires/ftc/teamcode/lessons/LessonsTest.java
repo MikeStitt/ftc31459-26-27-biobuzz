@@ -46,11 +46,11 @@ public class LessonsTest {
         return ((Number) v).doubleValue();
     }
 
-    // -------------------------------------------------------------- L2p1
+    // -------------------------------------------------------------- L2a
 
     @Test
-    public void l2p1_logsEveryStickAndTheAButton() {
-        OpModeHarness h = new OpModeHarness(new L2p1SticksOpMode());
+    public void l2a_logsEveryStickAndTheAButton() {
+        OpModeHarness h = new OpModeHarness(new L2aSticksOpMode());
         h.init();
         h.start();
         h.gamepad1.left_stick_y = -1.0f;      // pushed away from the driver
@@ -76,8 +76,8 @@ public class LessonsTest {
     }
 
     @Test
-    public void l2p1_saysWhenTheButtonIsPressedAndReleased() {
-        OpModeHarness h = new OpModeHarness(new L2p1SticksOpMode());
+    public void l2a_saysWhenTheButtonIsPressedAndReleased() {
+        OpModeHarness h = new OpModeHarness(new L2aSticksOpMode());
         h.init();
         h.start();
 
@@ -97,11 +97,11 @@ public class LessonsTest {
         h.stop();
     }
 
-    // -------------------------------------------------------------- L2p2
+    // -------------------------------------------------------------- L2b
 
     @Test
-    public void l2p2_theSticksDriveTheWheelsLikeATank() {
-        OpModeHarness h = new OpModeHarness(new L2p2TankOpMode());
+    public void l2b_theSticksDriveTheWheelsLikeATank() {
+        OpModeHarness h = new OpModeHarness(new L2bTankOpMode());
         h.init();
         h.start();
 
@@ -130,13 +130,13 @@ public class LessonsTest {
     }
 
     /**
-     * What a viewer watching the simulation sees when L2p2 is driven: the robot
+     * What a viewer watching the simulation sees when L2b is driven: the robot
      * goes up the field. The simulator's own tests use a teleop out of
      * {@code base}, so this is the one place a real lesson is asked to move it.
      */
     @Test
-    public void l2p2_theSticksMoveTheSimulatedRobot() {
-        OpModeHarness h = new OpModeHarness(new L2p2TankOpMode());
+    public void l2b_theSticksMoveTheSimulatedRobot() {
+        OpModeHarness h = new OpModeHarness(new L2bTankOpMode());
         h.init();
         h.start();
 
@@ -150,11 +150,11 @@ public class LessonsTest {
         h.stop();
     }
 
-    // -------------------------------------------------------------- L3p1
+    // -------------------------------------------------------------- L3a
 
     @Test
-    public void l3p1_aNearlyCentredStickCountsAsCentred() {
-        OpModeHarness h = new OpModeHarness(new L3p1DeadbandOpMode());
+    public void l3a_aNearlyCentredStickCountsAsCentred() {
+        OpModeHarness h = new OpModeHarness(new L3aDeadbandOpMode());
         h.init();
         h.start();
 
@@ -176,11 +176,11 @@ public class LessonsTest {
         assertEquals(0.0, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
     }
 
-    // -------------------------------------------------------------- L3p2
+    // -------------------------------------------------------------- L3b
 
     @Test
-    public void l3p2_halfAStickIsAQuarterOfThePower() {
-        OpModeHarness h = new OpModeHarness(new L3p2SquaredOpMode());
+    public void l3b_halfAStickIsAQuarterOfThePower() {
+        OpModeHarness h = new OpModeHarness(new L3bSquaredOpMode());
         h.init();
         h.start();
 

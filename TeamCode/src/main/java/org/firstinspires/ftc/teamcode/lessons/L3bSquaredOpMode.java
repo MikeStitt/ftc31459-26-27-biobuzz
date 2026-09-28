@@ -6,9 +6,9 @@ import org.firstinspires.ftc.teamcode.base.CorbelsTeleOp;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 
 /**
- * L3p2: half a stick is a quarter of the power.
+ * L3b: half a stick is a quarter of the power.
  *
- * <p>L3p1 stopped the creep. This one changes how the rest of the travel feels:
+ * <p>L3a stopped the creep. This one changes how the rest of the travel feels:
  * squaring the number makes small pushes much gentler and leaves full push at
  * full power, which is easier to drive slowly.
  *
@@ -21,10 +21,10 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * <p>Squaring reshapes what the driver asked for, and where it goes decides
  * which way. That is a driver's choice rather than a right answer.
  *
- * <p>Passes when: LessonsTest.l3p2_halfAStickIsAQuarterOfThePower
+ * <p>Passes when: LessonsTest.l3b_halfAStickIsAQuarterOfThePower
  */
-@TeleOp(name = "L3p2 Squared", group = "Lessons")
-public class L3p2SquaredOpMode extends CorbelsTeleOp {
+@TeleOp(name = "L3b Squared", group = "Lessons")
+public class L3bSquaredOpMode extends CorbelsTeleOp {
 
     /** Anything smaller than this counts as a stick that was let go. */
     private static final double DEADBAND = 0.05;

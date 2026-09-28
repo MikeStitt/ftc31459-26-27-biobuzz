@@ -6,9 +6,9 @@ import org.firstinspires.ftc.teamcode.base.CorbelsTeleOp;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 
 /**
- * L2p2: the sticks drive the wheels.
+ * L2b: the sticks drive the wheels.
  *
- * <p>L2p1 read the sticks and wrote the numbers down. This one hands them to a
+ * <p>L2a read the sticks and wrote the numbers down. This one hands them to a
  * drivetrain. Tank drive: the left stick runs the left wheels and the right
  * stick runs the right wheels, and {@link L2TankDriveTrain#sticks} is where that
  * happens. Push both forward and the robot goes straight; push one each way and
@@ -17,11 +17,11 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * <p>The loop count and the running time are gone. The robot logs both itself,
  * so writing them again was practice and not work.
  *
- * <p>Passes when: LessonsTest.l2p2_theSticksDriveTheWheelsLikeATank and
- * LessonsTest.l2p2_theSticksMoveTheSimulatedRobot
+ * <p>Passes when: LessonsTest.l2b_theSticksDriveTheWheelsLikeATank and
+ * LessonsTest.l2b_theSticksMoveTheSimulatedRobot
  */
-@TeleOp(name = "L2p2 Tank", group = "Lessons")
-public class L2p2TankOpMode extends CorbelsTeleOp {
+@TeleOp(name = "L2b Tank", group = "Lessons")
+public class L2bTankOpMode extends CorbelsTeleOp {
 
     private L2TankDriveTrain drivetrain;
 
