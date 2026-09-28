@@ -189,6 +189,118 @@ public final class SimGamepad implements AutoCloseable {
         }
     }
 
+    /**
+     * Pads SDL is listing that were not held, now opened and added to
+     * {@link #pads()}.
+     *
+     * <p>How often this is called is {@link SimPads}'s business, which owns the
+     * policy. A rescan costs about 1 us against the simulator's 5 ms step, and
+     * {@link #departed()} lists again rather than sharing the result, because
+     * 1 us twice is not worth a shape that has to hand an array around.
+     */
+    public List<Pad> arrived() {
+        List<Pad> added = new ArrayList<>();
+        for (int id : addedIds(list(), pads)) {
+            long handle = SDL_OpenGamepad(id);
+            if (handle == 0L) {
+                continue;
+            }
+            Pad pad = new Pad(id, handle, SDL_GetGamepadName(handle),
+                    SDL_GetGamepadSerial(handle));
+            pads.add(pad);
+            added.add(pad);
+        }
+        return added;
+    }
+
+    /**
+     * Pads SDL has stopped listing, now removed from {@link #pads()} and closed.
+     *
+     * <p>A pad SDL stops listing is a pad that was unplugged, and that is the
+     * whole test: what the driver reports for a disconnected pad is never asked.
+     * An id SDL reuses for a different pad inside one run would be taken for the
+     * pad that left, which is untested and has not been seen.
+     */
+    public List<Pad> departed() {
+        List<Pad> gone = goneFrom(list(), pads);
+        for (Pad pad : gone) {
+            pads.remove(pad);
+            SDL_CloseGamepad(pad.handle);
+        }
+        return gone;
+    }
+
+    /** Ids in {@code listed} that no pad in {@code held} has. */
+    static List<Integer> addedIds(int[] listed, List<Pad> held) {
+        List<Integer> out = new ArrayList<>();
+        for (int id : listed) {
+            if (withId(held, id) == null) {
+                out.add(id);
+            }
+        }
+        return out;
+    }
+
+    /** Pads in {@code held} whose id is not in {@code listed}. */
+    static List<Pad> goneFrom(int[] listed, List<Pad> held) {
+        List<Pad> out = new ArrayList<>();
+        for (Pad pad : held) {
+            boolean still = false;
+            for (int id : listed) {
+                if (pad.id == id) {
+                    still = true;
+                    break;
+                }
+            }
+            if (!still) {
+                out.add(pad);
+            }
+        }
+        return out;
+    }
+
+    private static Pad withId(List<Pad> pads, int id) {
+        for (Pad pad : pads) {
+            if (pad.id == id) {
+                return pad;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Every field {@link #read} writes, back to the value a pad at rest gives.
+     *
+     * <p>A pad that is unplugged leaves its last reading behind, so a robot
+     * being driven forward would keep driving. This is the rule that stops it,
+     * written here rather than inherited from whatever the driver reports for a
+     * pad that is gone.
+     */
+    public static void rest(Gamepad into) {
+        into.left_stick_x = 0f;
+        into.left_stick_y = 0f;
+        into.right_stick_x = 0f;
+        into.right_stick_y = 0f;
+        into.left_trigger = 0f;
+        into.right_trigger = 0f;
+
+        into.a = false;
+        into.b = false;
+        into.x = false;
+        into.y = false;
+        into.back = false;
+        into.guide = false;
+        into.start = false;
+        into.left_stick_button = false;
+        into.right_stick_button = false;
+        into.left_bumper = false;
+        into.right_bumper = false;
+        into.dpad_up = false;
+        into.dpad_down = false;
+        into.dpad_left = false;
+        into.dpad_right = false;
+    }
+
     /** The pads SDL has open, in the order it listed them. Possibly none. */
     public List<Pad> pads() {
         return Collections.unmodifiableList(pads);
@@ -199,8 +311,15 @@ public final class SimGamepad implements AutoCloseable {
      *
      * <p>Once a loop is enough: {@link #read} only copies what this call
      * fetched.
+     *
+     * <p>It pumps the event queue as well, the way {@link #open}'s discovery
+     * loop does, so that {@link #arrived()} is listing against the same state
+     * discovery lists against. Whether {@code SDL_UpdateGamepads} alone would
+     * notice a pad plugged in is unmeasured; pumping costs 0.6 us, measured, so
+     * the question was not worth leaving open.
      */
     public void update() {
+        SDL_PumpEvents();
         SDL_UpdateGamepads();
     }
 

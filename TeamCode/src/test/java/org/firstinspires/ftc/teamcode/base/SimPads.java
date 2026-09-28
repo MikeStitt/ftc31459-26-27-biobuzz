@@ -30,6 +30,15 @@ import java.util.Map;
  */
 public final class SimPads implements AutoCloseable {
 
+    /**
+     * How often the pads plugged in are looked at again.
+     *
+     * <p>A rescan costs about 1 us against the simulator's 5 ms step, so this is
+     * not about the mean. It is about the outlier: 2000 rescans had one at
+     * 842 us, and a quarter of a second is far faster than a hand with a cable.
+     */
+    private static final long RESCAN_MS = 250;
+
     static final String KEY1 = "sim.gamepad1.serial";
 
     static final String KEY2 = "sim.gamepad2.serial";
@@ -61,12 +70,15 @@ public final class SimPads implements AutoCloseable {
 
     private SimGamepad.Pad player2;
 
+    private long nextScan;
+
     SimPads(SimGamepad sdl, Path store, PrintStream out) {
         this.sdl = sdl;
         this.store = store;
         this.out = out;
         assign();
         describe();
+        nextScan = System.currentTimeMillis() + RESCAN_MS;
     }
 
     /** Opens SDL, loads any stored assignment, and says what it found. */
@@ -83,6 +95,7 @@ public final class SimPads implements AutoCloseable {
      */
     public void update(Gamepad gamepad1, Gamepad gamepad2) {
         sdl.update();
+        rescan(gamepad1, gamepad2);
         if (player1 == null || player2 == null) {
             claim();
         }
@@ -109,6 +122,49 @@ public final class SimPads implements AutoCloseable {
         sdl.close();
     }
 
+    /**
+     * Picks up a pad plugged in since the last look, and lets go of one
+     * unplugged, at most every {@value #RESCAN_MS} ms.
+     *
+     * <p>A pad that goes away releases its player and that player's
+     * {@code Gamepad} is written back to rest, so a robot being driven forward
+     * stops rather than holding the last reading. Both events print a line, in
+     * the shape the startup lines use.
+     */
+    private void rescan(Gamepad gamepad1, Gamepad gamepad2) {
+        long now = System.currentTimeMillis();
+        if (now < nextScan) {
+            return;
+        }
+        nextScan = now + RESCAN_MS;
+        for (SimGamepad.Pad pad : sdl.departed()) {
+            source.remove(pad);
+            String left = "was not claimed";
+            if (pad == player1) {
+                player1 = null;
+                SimGamepad.rest(gamepad1);
+                left = "gamepad1 is back to rest";
+            } else if (pad == player2) {
+                player2 = null;
+                SimGamepad.rest(gamepad2);
+                left = "gamepad2 is back to rest";
+            }
+            out.println("  gone: " + pad + " -- " + left);
+        }
+        List<SimGamepad.Pad> came = sdl.arrived();
+        if (came.isEmpty()) {
+            return;
+        }
+        assign();
+        for (SimGamepad.Pad pad : came) {
+            out.println("  new pad: " + pad + " -- " + explain(pad));
+        }
+        if (!settled()) {
+            out.println("Hold Start and press A to drive as gamepad1,"
+                    + " or Start and B for gamepad2.");
+        }
+    }
+
     // --- the assignment ---------------------------------------------------
 
     /**
@@ -118,11 +174,21 @@ public final class SimPads implements AutoCloseable {
      * is plugged in. Anything else -- a pad missing, two pads answering to the
      * same serial, no serial at all -- asks for the gesture again, because a
      * stale entry silently driving the wrong robot is worse than a prompt.
+     *
+     * <p>Called again after a pad arrives, and then it does nothing unless both
+     * players are free: a pad arriving beside one that is already driving asks
+     * for the gesture rather than reading the store. The gesture is always
+     * available, which is what makes the simple rule enough.
      */
     private void assign() {
         List<SimGamepad.Pad> pads = sdl.pads();
         for (SimGamepad.Pad pad : pads) {
-            source.put(pad, Source.UNCLAIMED);
+            if (!source.containsKey(pad)) {
+                source.put(pad, Source.UNCLAIMED);
+            }
+        }
+        if (player1 != null || player2 != null) {
+            return;
         }
         if (pads.size() == 1) {
             player1 = pads.get(0);
