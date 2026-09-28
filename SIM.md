@@ -39,9 +39,9 @@ L2bTankOpMode running. Connect AdvantageScope to 127.0.0.1 as NetworkTables 4, a
 ```
 
 Point AdvantageScope at `127.0.0.1` and it will find the topics under `sim/`. Add a 2D field and
-give it `sim/Pose`. No menu path is written down here, because nobody has opened AdvantageScope
-against this yet; that is `nt.watch` in the plan, and this section gets the path once somebody has
-done it.
+give it `sim/Pose`, and the robot drives up the field. Watched on 2026-09-28. The menu path for
+setting the address is still not written down here: whoever drove those menus did it by hand and the
+path was not captured.
 
 Ctrl-C stops it. It closes the flight log on the way out and prints where it left it.
 
@@ -51,15 +51,20 @@ Everything is under `sim/`.
 
 | Topic | What it is |
 |---|---|
-| `sim/Pose` | x, y in metres from the centre of the field, and heading in radians. What a field view wants |
+| `sim/Pose` | A `struct:Pose2d`: x, y in metres from the centre of the field, and heading in radians |
 | `sim/Mode` | What Pedro's follower says it is doing, as its own name for it |
 | `sim/wheels/frontLeft` and the other three | What reached that motor, -1 to 1 |
 | `sim/stick/leftY`, `leftX`, `rightY`, `rightX` | What the driver is holding |
 | `sim/vel/forward_ips`, `strafe_ips`, `omega_radps` | How fast the robot is going, in its own frame |
 
-None of the struct topics the flight log writes are here: no `Speeds`, no `Twist`, no `Path`, no
-`AimPose`. A struct topic has to publish a schema alongside it, and the three `sim/vel` numbers say
-what `Twist` would have said. That is `sim.struct.topics` in `open-work.md`.
+The pose is a struct because AdvantageScope wants one. A bare `double[]` of x, y and heading is what
+it calls the legacy numeric array format: it draws that too, warns about it in 2026 and removes it
+in 2027. The flight log has always written `struct:Pose2d`, so the topic now carries the same three
+little-endian doubles, and the schema that says what they are goes out beside it.
+
+The flight log's other struct topics are still missing: no `Speeds`, no `Twist`, no `Path`, no
+`AimPose`. The three `sim/vel` numbers say what `Twist` would have said. That is
+`sim.struct.topics` in `open-work.md`.
 
 ## Which teleop a test drives
 

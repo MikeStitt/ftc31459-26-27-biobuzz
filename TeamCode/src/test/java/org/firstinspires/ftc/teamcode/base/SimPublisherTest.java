@@ -13,6 +13,9 @@ import org.junit.Test;
 
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * The simulation's NetworkTables server: that it starts, and that what it
@@ -53,6 +56,37 @@ public class SimPublisherTest {
         h.stop();
     }
 
+    /** The three little-endian doubles of a {@code struct:Pose2d}. */
+    private static double[] unpack(byte[] raw) {
+        ByteBuffer b = ByteBuffer.wrap(raw).order(ByteOrder.LITTLE_ENDIAN);
+        return new double[]{b.getDouble(), b.getDouble(), b.getDouble()};
+    }
+
+    @Test
+    public void theFieldViewIsToldWhatAPoseLooksLike() {
+        OpModeHarness h = new OpModeHarness(new SimOpModes.Tank());
+        h.init();
+        try (SimPublisher out = new SimPublisher(h, NT3, NT4)) {
+            out.publish();
+            assertEquals("the pose topic says it is a struct", "struct:Pose2d",
+                    out.instance().getTopic("sim/Pose").getTypeString());
+            String[][] expected = {
+                    {"struct:Translation2d", "double x;double y"},
+                    {"struct:Rotation2d", "double value"},
+                    {"struct:Pose2d", "Translation2d translation;Rotation2d rotation"}};
+            for (String[] schema : expected) {
+                String key = "/.schema/" + schema[0];
+                assertEquals(key + " is published as a schema", "structschema",
+                        out.instance().getTopic(key).getTypeString());
+                byte[] raw = out.instance().getRawTopic(key)
+                        .subscribe("structschema", new byte[0]).get();
+                assertEquals("what " + schema[0] + " is made of", schema[1],
+                        new String(raw, StandardCharsets.UTF_8));
+            }
+        }
+        h.stop();
+    }
+
     @Test
     public void theRobotIsPublishedWhereTheFieldViewWantsIt() {
         int savedTurns = FlightLog.fieldQuarterTurns;
@@ -66,9 +100,10 @@ public class SimPublisherTest {
             h.loops(200, 0);
             try (SimPublisher out = new SimPublisher(h, NT3, NT4)) {
                 out.publish();
-                double[] pose = out.instance()
-                        .getDoubleArrayTopic("sim/Pose").subscribe(new double[0]).get();
-                assertEquals("three numbers: x, y and heading", 3, pose.length);
+                byte[] raw = out.instance().getRawTopic("sim/Pose")
+                        .subscribe("struct:Pose2d", new byte[0]).get();
+                assertEquals("a Pose2d is three doubles", 24, raw.length);
+                double[] pose = unpack(raw);
                 double inches = h.robot.localizer.state().pose().x();
                 assertEquals("x is metres from the centre of the field",
                         (inches - 72) * 0.0254, pose[0], 1e-9);
