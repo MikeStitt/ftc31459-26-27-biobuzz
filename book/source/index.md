@@ -44,6 +44,13 @@ tasks/l6
 
 ```{toctree}
 :maxdepth: 1
+:caption: Know where it is
+
+tasks/l8
+```
+
+```{toctree}
+:maxdepth: 1
 :caption: The answers
 
 answers/index
