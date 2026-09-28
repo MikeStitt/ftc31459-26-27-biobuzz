@@ -51,7 +51,7 @@ public abstract class CorbelsOpMode extends OpMode {
      */
     private Drivetrain heldDrivetrain;
 
-    protected Shadow shadow;
+    protected ShadowLocalizers shadowLocalizers;
 
     // ------------------------------------------------------------ hooks
 
@@ -59,7 +59,7 @@ public abstract class CorbelsOpMode extends OpMode {
     protected void onInit() {
     }
 
-    /** Once, when the OpMode starts, before {@link #shadows()}. */
+    /** Once, when the OpMode starts, before {@link #shadowLocalizers()}. */
     protected void onStart() {
     }
 
@@ -68,7 +68,7 @@ public abstract class CorbelsOpMode extends OpMode {
     }
 
     /** Extra localizers to watch. Runs once, when the OpMode starts. */
-    protected void shadows() {
+    protected void shadowLocalizers() {
     }
 
     // ------------------------------------------------------------ logging
@@ -124,14 +124,18 @@ public abstract class CorbelsOpMode extends OpMode {
         Scheduler.reset();
         Tracker.startLogging();
         follower = follower.withLogger(followerLog -> Tracker.logger.pedro(followerLog.toString()));
-        shadow = new Shadow();
+        shadowLocalizers = new ShadowLocalizers();
         onStart();
     }
 
     /** The shadow localizers. The last thing a lesson's start() calls. */
     protected final void startAfter() {
-        shadows();
-        shadow.setPose(follower.pose());
+        shadowLocalizers();
+        shadowLocalizers.setPose(follower.pose());
+        // The live localizer, under a name, so a lesson's own localizer can be
+        // graphed against it rather than against the bare robot pose. Published
+        // rather than driven: the follower already updates it every loop.
+        shadowLocalizers.publishOnly("pinPoint", follower.localizer);
     }
 
     /**
@@ -150,7 +154,7 @@ public abstract class CorbelsOpMode extends OpMode {
     protected final void loopAfter() {
         follower.update();
         Scheduler.execute();
-        shadow.update();
+        shadowLocalizers.update();
         afterLoop();
         // Counts the loop, records Pedro, closes the file's record for this loop,
         // then flushes Panels and the Driver Station.

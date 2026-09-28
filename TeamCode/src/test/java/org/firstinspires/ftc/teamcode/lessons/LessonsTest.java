@@ -335,6 +335,7 @@ public class LessonsTest {
     @Test
     public void l8_theEncoderLocalizerRunsAlongsideAndIsLogged() {
         OpModeHarness h = new OpModeHarness(new L8CompareLocalizersOpMode());
+        Follower follower = h.robot.follower;
         h.init();
         h.start();
         h.loop();
@@ -345,10 +346,16 @@ public class LessonsTest {
 
         Map<String, Object> values = Tracker.values();
         assertTrue("the shadow localizer is logged: " + values.keySet(),
-                values.containsKey("Localizer/encoders/x_in"));
+                values.containsKey("Localizer/driveWheelEncoders/x_in"));
         assertEquals("the shadow must not steer the robot", 0.0, h.wheelsForward(), EPS);
         assertNotEquals("it moved in its own estimate",
-                0.0, number(values, "Localizer/encoders/x_in"), 0.1);
+                0.0, number(values, "Localizer/driveWheelEncoders/x_in"), 0.1);
+
+        // The lesson is a comparison, so the robot's own answer is published
+        // under a name too, and both series sit under one prefix.
+        assertEquals("the robot's own localizer, to compare against",
+                follower.pose().x(), number(values, "Localizer/pinPoint/x_in"), EPS);
+        assertEquals(follower.pose().y(), number(values, "Localizer/pinPoint/y_in"), EPS);
     }
 
     // -------------------------------------------------------------- L9
@@ -506,7 +513,7 @@ public class LessonsTest {
         h.stop();
 
         assertTrue("the shadow localizer is still running",
-                Tracker.values().containsKey("Localizer/encoders/x_in"));
+                Tracker.values().containsKey("Localizer/driveWheelEncoders/x_in"));
     }
 
     @Test

@@ -39,8 +39,9 @@ public class L15CombinedOpMode extends CorbelsTeleOp {
     private boolean drivingItself;
 
     @Override
-    protected void shadows() {
-        shadow.add("encoders", new MecanumEncoderLocalizer(new HardwareWheelSource(hardware)));
+    protected void shadowLocalizers() {
+        shadowLocalizers.add("driveWheelEncoders",
+                new MecanumEncoderLocalizer(new HardwareWheelSource(hardware)));
     }
 
     @Override

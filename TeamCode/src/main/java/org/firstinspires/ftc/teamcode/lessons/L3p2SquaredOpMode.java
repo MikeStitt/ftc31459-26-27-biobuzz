@@ -12,9 +12,10 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * squaring the number makes small pushes much gentler and leaves full push at
  * full power, which is easier to drive slowly.
  *
- * <p>{@link #squared} keeps the sign, because squaring a negative number the
- * ordinary way would drive the robot forwards when the driver asked for
- * backwards. The deadband runs first and the squaring second, each into its own
+ * <p>{@link LessonsDriveTrain#squared} keeps the sign, because squaring a
+ * negative number the ordinary way would drive the robot forwards when the
+ * driver asked for backwards. It goes beside the deadband in the drivetrain,
+ * where the later lessons can reach it. The deadband runs first and the squaring second, each into its own
  * variable, so what happened to a number can be read off the log.
  *
  * <p>Squaring reshapes what the driver asked for, and where it goes decides
@@ -50,11 +51,11 @@ public class L3p2SquaredOpMode extends CorbelsTeleOp {
         double leftRawSpeed = -gamepad1.left_stick_y;
         double rightRawSpeed = -gamepad1.right_stick_y;
 
-        double leftDeadbanded = deadband(leftRawSpeed, DEADBAND);
-        double rightDeadbanded = deadband(rightRawSpeed, DEADBAND);
+        double leftDeadbanded = drivetrain.deadband(leftRawSpeed, DEADBAND);
+        double rightDeadbanded = drivetrain.deadband(rightRawSpeed, DEADBAND);
 
-        double leftSpeed = squared(leftDeadbanded);
-        double rightSpeed = squared(rightDeadbanded);
+        double leftSpeed = drivetrain.squared(leftDeadbanded);
+        double rightSpeed = drivetrain.squared(rightDeadbanded);
         drivetrain.sticks(leftSpeed, rightSpeed);
 
         Tracker.publish("stick/left_raw", leftRawSpeed);
@@ -69,24 +70,5 @@ public class L3p2SquaredOpMode extends CorbelsTeleOp {
     public void stop() {
         drivetrain.stop();
         stopAfter();
-    }
-
-    /** Zero when the stick is inside the band, and the stick itself when it is not. */
-    private static double deadband(double value, double band) {
-        if (Math.abs(value) < band) {
-            return 0.0;
-        } else {
-            return value;
-        }
-    }
-
-    /** The number times itself, with the sign it started with. */
-    private static double squared(double value) {
-        double magnitude = value * value;
-        if (value < 0.0) {
-            return -magnitude;
-        } else {
-            return magnitude;
-        }
     }
 }

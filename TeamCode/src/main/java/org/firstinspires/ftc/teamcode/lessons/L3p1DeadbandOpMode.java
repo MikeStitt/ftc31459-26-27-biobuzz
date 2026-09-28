@@ -12,9 +12,10 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * fixes it: anything smaller than {@link #DEADBAND} is treated as nothing, and
  * everything else is passed through untouched.
  *
- * <p>{@link #deadband} is this lesson's own work, and it is an {@code if} and an
- * {@code else} rather than anything clever. Both sticks go through it, so the
- * same number is used twice.
+ * <p>{@link LessonsDriveTrain#deadband} is this lesson's own work, and it is an
+ * {@code if} and an {@code else} rather than anything clever. It goes in the
+ * drivetrain because every later lesson shapes its sticks the same way. Both
+ * sticks go through it here, so the same number is used twice.
  *
  * <p>Passes when: LessonsTest.l3p1_aNearlyCentredStickCountsAsCentred
  */
@@ -46,8 +47,8 @@ public class L3p1DeadbandOpMode extends CorbelsTeleOp {
         double leftRawSpeed = -gamepad1.left_stick_y;
         double rightRawSpeed = -gamepad1.right_stick_y;
 
-        double leftSpeed = deadband(leftRawSpeed, DEADBAND);
-        double rightSpeed = deadband(rightRawSpeed, DEADBAND);
+        double leftSpeed = drivetrain.deadband(leftRawSpeed, DEADBAND);
+        double rightSpeed = drivetrain.deadband(rightRawSpeed, DEADBAND);
         drivetrain.sticks(leftSpeed, rightSpeed);
 
         Tracker.publish("stick/left_raw", leftRawSpeed);
@@ -62,14 +63,5 @@ public class L3p1DeadbandOpMode extends CorbelsTeleOp {
     public void stop() {
         drivetrain.stop();
         stopAfter();
-    }
-
-    /** Zero when the stick is inside the band, and the stick itself when it is not. */
-    private static double deadband(double value, double band) {
-        if (Math.abs(value) < band) {
-            return 0.0;
-        } else {
-            return value;
-        }
     }
 }
