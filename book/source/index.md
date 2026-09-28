@@ -71,6 +71,13 @@ tasks/l16
 
 ```{toctree}
 :maxdepth: 1
+:caption: Measure the robot
+
+tasks/l17
+```
+
+```{toctree}
+:maxdepth: 1
 :caption: The answers
 
 answers/index
