@@ -33,6 +33,10 @@ apply from: '../build.dependencies.gradle'
 // Must come AFTER build.common.gradle applies the Android application plugin.
 apply plugin: 'dev.frozenmilk.sinister.sloth.load'
 
+// Where the lesson tests live. Named once: the default run skips it and
+// `testLessons` is the only thing that runs it.
+def lessonTestPackage = 'org.firstinspires.ftc.teamcode.lessons.*'
+
 android {
     namespace = 'org.firstinspires.ftc.teamcode'
 
@@ -47,6 +51,38 @@ android {
     testOptions {
         // Android classes are empty stubs in JVM tests and throw unless this is set
         unitTests.returnDefaultValues = true
+
+        // The lesson tests fail on the lessons line because the blanks are open,
+        // so a default run that includes them cannot tell a regression from a
+        // blank. They are skipped here and run deliberately by `testLessons`.
+        //
+        // Applied in doFirst and only when no `--tests` was given, because a
+        // build-script exclude and a command-line `--tests` intersect rather
+        // than override: with the exclude always on, a lesson's own command
+        // gives "No tests found for given includes", and every task page in the
+        // guide gives its check that way.
+        //
+        // `testLessons` asks for the other half, the lesson package on its own.
+        // It reads the task names rather than being a Test task of its own,
+        // because AGP owns these tasks and builds their classpath.
+        def lessonsWanted = gradle.startParameter.taskNames.any {
+            it == 'testLessons' || it.endsWith(':testLessons')
+        }
+        unitTests.all { t ->
+            t.doFirst {
+                if (!t.filter.commandLineIncludePatterns.isEmpty()) {
+                    return
+                }
+                if (lessonsWanted) {
+                    t.filter.includeTestsMatching lessonTestPackage
+                    logger.lifecycle("Running ${lessonTestPackage} and nothing else.")
+                } else {
+                    t.filter.excludeTestsMatching lessonTestPackage
+                    logger.lifecycle("Skipping ${lessonTestPackage}."
+                            + " Run them with :TeamCode:testLessons.")
+                }
+            }
+        }
     }
 }
 
@@ -126,6 +162,17 @@ dependencies {
 // the unit test one, because that is where the simulation lives and where
 // ntcore is declared; the Android test task is asked for it rather than rebuilt
 // here, so the two can never disagree.
+// The lesson tests, deliberately. They fail on the lessons line, where the
+// blanks are open, and pass on a checkout with the solutions written over them;
+// running them is how that is established before a release.
+//
+// One variant, not both: nothing in a lesson test reads a build type.
+tasks.register('testLessons') {
+    group = 'verification'
+    description = 'Run the lesson tests, which the default test run skips.'
+    dependsOn 'testDebugUnitTest'
+}
+
 afterEvaluate {
     tasks.register('simRun', JavaExec) {
         group = 'verification'
