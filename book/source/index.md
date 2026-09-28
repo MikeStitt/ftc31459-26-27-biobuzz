@@ -78,6 +78,15 @@ tasks/l17
 
 ```{toctree}
 :maxdepth: 1
+:caption: The back of the book
+
+tasks/glossary
+tasks/cheatsheet
+tasks/sources
+```
+
+```{toctree}
+:maxdepth: 1
 :caption: The answers
 
 answers/index

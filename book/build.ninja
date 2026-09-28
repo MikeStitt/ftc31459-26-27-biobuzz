@@ -51,6 +51,11 @@ rule figures
   description = pencilled figures match FIGURES.md
   pool = console
 
+rule cheatsheet
+  command = $tools tools/cheatsheet.py --check
+  description = the cheat sheet matches the lesson code
+  pool = console
+
 build check-sphinx: sphinx | source/conf.py
 build check-wrap: wrap | tools/check_wrap.py tools/bookpaths.py
 build check-reading: reading | tools/check_reading_level.py tools/bookpaths.py
@@ -58,9 +63,10 @@ build check-keep: keep | tools/check_keep.py tools/register.py keep.toml
 build check-words: words | tools/check_words.py tools/register.py keep.toml
 build check-figures: figures | tools/check_figures.py tools/bookpaths.py FIGURES.md
 build check-answers: answers | tools/answers.py tools/register.py keep.toml
+build check-cheatsheet: cheatsheet | tools/cheatsheet.py tools/answers.py tools/register.py keep.toml
 
 build book: phony check-sphinx check-wrap check-reading check-keep check-words check-figures $
-    check-answers
+    check-answers check-cheatsheet
 
 default book
 

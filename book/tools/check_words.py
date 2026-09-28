@@ -14,9 +14,10 @@ from bookpaths import relative, tracked
 from register import PATH, pages
 
 # Generated, and not prose: source/answers/ is what tools/answers.py writes out of
-# the two lesson lines. A ceiling on a page nobody writes by hand would be a
-# ceiling on how much code a lesson may have.
-GENERATED = "source/answers/"
+# the two lesson lines, and source/tasks/cheatsheet.md is what tools/cheatsheet.py
+# reads out of them. A ceiling on a page nobody writes by hand would be a ceiling
+# on how much code a lesson may have, or how many log keys it may publish.
+GENERATED = ("source/answers/", "source/tasks/cheatsheet.md")
 
 
 def words(path) -> int:
