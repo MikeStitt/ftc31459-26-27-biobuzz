@@ -62,13 +62,4 @@ public class L6FollowerDriveTrain extends LessonsDriveTrain {
         wheels[BR] = forwardSpeed - strafeLeftSpeed + turnCcwSpeed;
         return wheels;
     }
-
-    /** Sends each of the four powers to its own motor, by the slot's own name. */
-    @Override
-    protected void writeWheels() {
-        hardware.frontLeft.setPower(wheelPowers[FL]);
-        hardware.frontRight.setPower(wheelPowers[FR]);
-        hardware.backLeft.setPower(wheelPowers[BL]);
-        hardware.backRight.setPower(wheelPowers[BR]);
-    }
 }

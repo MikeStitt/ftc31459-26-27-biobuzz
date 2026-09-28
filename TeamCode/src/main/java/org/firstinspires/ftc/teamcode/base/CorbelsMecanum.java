@@ -6,7 +6,7 @@ import com.pedropathing.drivetrain.DrivePowers;
  * A finished mecanum drivetrain, for code that is not a lesson.
  *
  * <p>Everything a drivetrain does is in {@link CorbelsDriveTrain}. This fills in
- * the two parts that class leaves open, with the mixing Pedro's own
+ * the one part that class leaves open, with the mixing Pedro's own
  * {@code Mecanum} uses, so autonomous behaves exactly as it did before we
  * replaced Pedro's drivetrain with our own.
  *
@@ -33,13 +33,5 @@ public class CorbelsMecanum extends CorbelsDriveTrain {
         wheels[BL] = forward + strafe - turn;
         wheels[BR] = forward - strafe + turn;
         return wheels;
-    }
-
-    @Override
-    protected void writeWheels() {
-        hardware.frontLeft.setPower(wheelPowers[FL]);
-        hardware.frontRight.setPower(wheelPowers[FR]);
-        hardware.backLeft.setPower(wheelPowers[BL]);
-        hardware.backRight.setPower(wheelPowers[BR]);
     }
 }

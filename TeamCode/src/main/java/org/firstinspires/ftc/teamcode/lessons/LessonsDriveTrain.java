@@ -2,10 +2,12 @@ package org.firstinspires.ftc.teamcode.lessons;
 
 import com.pedropathing.drivetrain.DrivePowers;
 import com.pedropathing.drivetrain.Drivetrain;
+import com.pedropathing.revhub.drivetrains.CachedMotor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.base.RobotHardware;
+import org.firstinspires.ftc.teamcode.base.Tracker;
+import org.firstinspires.ftc.teamcode.base.WheelVelocities;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
 import java.util.LinkedHashMap;
@@ -19,20 +21,27 @@ import java.util.Map;
  * robot. The rest arrives one lesson at a time.
  *
  * <ul>
- *   <li>L2p2 writes {@link #driveWheelsNow}, which sends four powers to the four
- *       motors right now.
+ *   <li>L2b writes {@link #writeWheels}, which sends {@link #wheelPowers} to the
+ *       four motors, and {@link #driveWheelsNow}, which puts four powers there
+ *       and sends them straight away.
+ *   <li>L3a writes {@link #deadband} and L3b writes {@link #squared}, which
+ *       reshape what the driver asked for before the wheels get it.
  *   <li>L4 writes {@link #normalized}, so asking for more than full power slows
  *       every wheel down together instead of sending the robot somewhere else.
  *   <li>L6 writes {@link #drive}, {@link #setCommandedWheels} and
  *       {@link #releaseCommandedWheels}, which is how the path follower and a
  *       lesson take turns with the wheels.
+ *   <li>L11 writes {@link #fieldRelative}, which turns the driver's view of the
+ *       field into the robot's view of itself.
+ *   <li>L16 writes {@link #setCommandedWheelSpeeds}, the first door that takes a
+ *       speed rather than a power.
+ *   <li>L17a and L17b write {@link #wheelTicks}, so a measurement can ask the
+ *       encoders what they counted.
  * </ul>
  *
- * <p>Every lesson also builds its own drivetrain on top of this one, and the
- * method it always writes is {@link #writeWheels}, which sends {@link #wheelPowers}
- * to the four motors. {@link #FL}, {@link #FR}, {@link #BL} and {@link #BR} say
- * which wheel each slot belongs to, and they are the only way to index the array,
- * so the order is written down once instead of in every method.
+ * <p>{@link #FL}, {@link #FR}, {@link #BL} and {@link #BR} say which wheel each
+ * slot belongs to, and they are the only way to index a four-wheel array, so the
+ * order is written down once instead of in every method.
  *
  * <p><b>Which way is positive.</b> Forward runs along the robot's nose, strafe
  * goes towards the robot's left, and turn goes counter-clockwise seen from
@@ -41,8 +50,17 @@ import java.util.Map;
  * Pedro's, and it is drawn at
  * https://pedropathing.com/docs/pathing/reference/coordinates
  *
- * <p>The scaling in {@link #maxScaling} follows Pedro's own {@code Mecanum}
- * (BSD 3-Clause, Pedro Pathing).
+ * <p><b>Why we build one at all.</b> Pedro ships a complete mecanum drivetrain,
+ * {@code com.pedropathing.revhub.drivetrains.Mecanum}, and in competition a team
+ * may simply use it -- you do not have to be able to write what you can get from
+ * an open-source library. We build ours so that the motors in a drivetrain are
+ * something you understand and control, and because ours has a door Pedro's does
+ * not: {@link #setCommandedWheels} lets a teleop beat the follower at the wheels.
+ *
+ * <p>The finished version of this class is
+ * {@code org.firstinspires.ftc.teamcode.base.CorbelsDriveTrain}, in the same
+ * order with nothing left blank. Each method Pedro's {@code Drivetrain} interface
+ * requires says above it where it came from.
  */
 public abstract class LessonsDriveTrain implements Drivetrain {
 
@@ -58,11 +76,19 @@ public abstract class LessonsDriveTrain implements Drivetrain {
     /** Back right. */
     protected static final int BR = 3;
 
+    /** Power per inch per second of error, for {@link #setCommandedWheelSpeeds}. */
+    private static final double VELOCITY_KP = 0.008;
+
     /** The robot's motors, sensors and battery. The motors are read from here. */
     protected final RobotHardware hardware;
 
-    /** The four motors in wheel order, for the settings that go to all of them. */
-    private final DcMotorEx[] motors = new DcMotorEx[4];
+    /**
+     * The four motors in wheel order, each behind a write cache. Pedro's own
+     * {@code Mecanum} wraps its motors the same way: a power that has moved by
+     * less than {@code powerThreshold} does not reach the hardware, so a loop
+     * that asks for the same thing twice costs one write instead of two.
+     */
+    private CachedMotor[] motors = new CachedMotor[4];
 
     /** What the wheels were last told to do. Written by whatever drives them. */
     protected final double[] wheelPowers = new double[4];
@@ -70,39 +96,47 @@ public abstract class LessonsDriveTrain implements Drivetrain {
     /** Set by {@link #setCommandedWheels}, cleared by {@link #releaseCommandedWheels}. */
     private double[] commandedWheels;
 
+    /** What {@link #normalized} last had to divide by, as Pedro reports it. */
+    private double powerScale = 1.0;
+
+    /** What the follower last asked for, for {@link #debug}. */
+    private DrivePowers lastDrivePowers = DrivePowers.zero();
+
+    /** True while {@link #forceCoastForCharacterization} is in force. */
+    private boolean coastForCharacterization;
+
+    /** How fast each wheel is actually turning, for {@link #setCommandedWheelSpeeds}. */
+    private final WheelVelocities measuredSpeeds;
+
     /** True once a lesson has written the wheels itself. */
     private boolean drivenDirectly;
 
     /**
-     * Takes the robot's hardware and gets the motors ready: the right side spins
-     * the opposite way to the left, because the two sides face opposite ways on
-     * the robot, and every wheel brakes when its power goes to 0.
+     * Takes the robot's hardware and gets the motors ready: each one spins the
+     * way the config says -- the right side opposite to the left, because the two
+     * sides face opposite ways on the robot -- and every wheel brakes when its
+     * power goes to 0.
      */
     protected LessonsDriveTrain(RobotHardware hardware) {
         this.hardware = hardware;
+        this.measuredSpeeds = new WheelVelocities(hardware);
 
-        motors[FL] = hardware.frontLeft;
-        motors[FR] = hardware.frontRight;
-        motors[BL] = hardware.backLeft;
-        motors[BR] = hardware.backRight;
-
-        hardware.frontLeft.setDirection(hardware.mecanumConfig.frontLeftDirection.get());
-        hardware.frontRight.setDirection(hardware.mecanumConfig.frontRightDirection.get());
-        hardware.backLeft.setDirection(hardware.mecanumConfig.backLeftDirection.get());
-        hardware.backRight.setDirection(hardware.mecanumConfig.backRightDirection.get());
-
-        setZeroPowerBehavior(zeroPowerBrakeWhenTrue(hardware.mecanumConfig.manualBrakeMode.get()));
+        cacheMotors(hardware.mecanumConfig.powerThreshold.get());
+        setZeroPowerBehavior(zeroPowerBrakeWhenTrue(getEffectiveBrakeMode()));
     }
 
-    // ------------------------------------------------- what every lesson writes
+    // ------------------------------------------------- L2b writes these
 
     /**
      * Sends {@link #wheelPowers} to the motors, each slot to the motor
      * {@link #FL} and the others name.
      */
-    protected abstract void writeWheels();
-
-    // ------------------------------------------------- L2p2 writes this
+    protected void writeWheels() {
+        motors[FL].setPower(wheelPowers[FL]);
+        motors[FR].setPower(wheelPowers[FR]);
+        motors[BL].setPower(wheelPowers[BL]);
+        motors[BR].setPower(wheelPowers[BR]);
+    }
 
     /**
      * Drives each wheel at the power given, right now. Powers run from -1 to 1,
@@ -132,21 +166,41 @@ public abstract class LessonsDriveTrain implements Drivetrain {
      * going where the driver asked; chopping each one off on its own would send
      * it somewhere else.
      *
-     * <p>Scales the array it is handed, and hands the same array back.
+     * <p>Scales the array it is handed, hands the same array back, and records
+     * what it divided by in {@link #powerScale}, which is what Pedro reports.
      */
-    protected static double[] normalized(double[] powers) {
+    protected double[] normalized(double[] powers) {
         double max = 1.0;
         for (double power : powers) {
             double magnitude = Math.abs(power);
             max = Math.max(max, magnitude);
         }
-        for (int wheel = 0; wheel < powers.length; wheel++) {
-            powers[wheel] /= max;
+
+        powerScale = 1.0 / max;
+        for (int i = 0; i < powers.length; i++) {
+            powers[i] = powers[i] / max;
         }
         return powers;
     }
 
     // ------------------------------------------------- L6 writes these
+
+    /**
+     * The follower's three numbers, as four wheel powers. L6 is the first lesson
+     * that needs one; up to then a drivetrain drives its own wheels and the
+     * follower never asks.
+     *
+     * <p>Refusing here is deliberate, and it is what lets L2 through L5 exist. A
+     * drivetrain that drives its own wheels has no mixing to do, but the type
+     * still says {@code Drivetrain}, so handing an {@code L5HolonomicDriveTrain}
+     * to {@code initAfter(...)} compiles and then says this at the first follower
+     * update. The promise and the refusal are the design; L6 is where the missing
+     * method arrives.
+     */
+    protected double[] mix(DrivePowers powers) {
+        throw new UnsupportedOperationException(getClass().getSimpleName()
+                + " has no mix(): it drives its own wheels, so the follower cannot drive it.");
+    }
 
     /**
      * Drives each wheel at the power given, from the next follower update until
@@ -176,8 +230,11 @@ public abstract class LessonsDriveTrain implements Drivetrain {
     }
 
     /**
-     * What the follower calls every update: three numbers in, four powers out.
-     * Commanded wheels win; otherwise the lesson's own {@link #mix} decides.
+     * <b>Pedro's {@code Drivetrain} requires this.</b> Ours, and the one that
+     * differs on purpose: Pedro's {@code Mecanum} sets brake mode and then mixes
+     * what it was handed, and this adds the commanded-wheels branch that lets a
+     * lesson beat the follower at the wheels, and the check that catches a
+     * drivetrain being driven twice.
      *
      * <p>Final, so that brake mode cannot be missed.
      */
@@ -189,6 +246,7 @@ public abstract class LessonsDriveTrain implements Drivetrain {
                     + " Either call initAfter() with no drivetrain, or use setCommandedWheels.");
         }
         applyBrakeMode(manual);
+        lastDrivePowers = powers;
 
         double[] sourcePowers;
         if (commandedWheels == null) {
@@ -204,41 +262,140 @@ public abstract class LessonsDriveTrain implements Drivetrain {
         writeWheels();
     }
 
-    /**
-     * The follower's three numbers, as four wheel powers. L6 is the first lesson
-     * that needs one; up to then a drivetrain drives its own wheels and the
-     * follower never asks.
-     */
-    protected double[] mix(DrivePowers powers) {
-        throw new UnsupportedOperationException(getClass().getSimpleName()
-                + " has no mix(): it drives its own wheels, so the follower cannot drive it.");
+    // ------------------------------------------------- L3a and L3b write these, L11 the third
+
+    /** Zero when the stick is inside the band, and the stick itself when it is not. */
+    public double deadband(double value, double band) {
+        if (Math.abs(value) < band) {
+            return 0.0;
+        } else {
+            return value;
+        }
     }
 
-    // ------------------------------------------------- already written
-
-    /**
-     * BRAKE while a driver has the sticks, so letting go stops the robot; FLOAT
-     * while the follower is running a path, so its own control is not fighting
-     * the wheels.
-     */
-    protected final void applyBrakeMode(boolean manual) {
-        boolean brake = manual && hardware.mecanumConfig.manualBrakeMode.get();
-        setZeroPowerBehavior(zeroPowerBrakeWhenTrue(brake));
+    /** The number times itself, with the sign it started with. */
+    public double squared(double value) {
+        double magnitude = value * value;
+        if (value < 0.0) {
+            return -magnitude;
+        } else {
+            return magnitude;
+        }
     }
 
     /**
-     * How much of {@code delta} can be added to {@code current} before a wheel
-     * runs out of power.
+     * Drives relative to the FIELD: pushing the stick away from the driver moves
+     * the robot away from the driver, whichever way it is facing.
      *
-     * <p>Pedro uses this so a path algorithm does not ask for more than the
-     * drivetrain can give. How it works: each wheel is already at some power and
-     * is being asked to change by some amount, and a wheel runs out when it
-     * reaches 1 or -1. For one wheel, the fraction of the change that fits is
-     * the distance to whichever limit it is heading for, divided by the change.
-     * The answer for the drivetrain is the smallest of those fractions, because
-     * the first wheel to run out stops the others going further.
+     * <p>The heading is passed in rather than read, because the drivetrain does
+     * not know where the robot is -- whoever has the follower does.
+     */
+    public void fieldRelative(double headingRad, double fieldXSpeed, double fieldYSpeed,
+                              double turnCcwSpeed) {
+        double cos = Math.cos(headingRad);
+        double sin = Math.sin(headingRad);
+        double forwardSpeed = fieldXSpeed * cos + fieldYSpeed * sin;
+        double strafeLeftSpeed = -fieldXSpeed * sin + fieldYSpeed * cos;
+
+        double[] mixed = mix(new DrivePowers(forwardSpeed, strafeLeftSpeed, turnCcwSpeed));
+        double[] scaled = normalized(mixed);
+        setCommandedWheels(scaled[FL], scaled[FR], scaled[BL], scaled[BR]);
+    }
+
+    // ------------------------------------------------- L16 writes this
+
+    /**
+     * Drives each wheel at the speed given, in inches per second.
      *
-     * <p>The maths is Pedro's, from its own {@code Mecanum}.
+     * <p>Every other door here takes a power, which is whatever the battery and
+     * the carpet make of it. This one takes a speed and gets it, two ways at
+     * once: a feedforward guess at the power a speed needs, from
+     * {@link Constants#powerPerInchPerSecond}, plus a correction proportional to
+     * the difference between the speed asked for and the speed measured.
+     */
+    public void setCommandedWheelSpeeds(double frontLeftInPerS, double frontRightInPerS,
+                                        double backLeftInPerS, double backRightInPerS) {
+        double[] wanted = new double[4];
+        wanted[FL] = frontLeftInPerS;
+        wanted[FR] = frontRightInPerS;
+        wanted[BL] = backLeftInPerS;
+        wanted[BR] = backRightInPerS;
+
+        double[] measured = measuredSpeeds.all();
+        double[] powers = new double[4];
+        for (int i = 0; i < powers.length; i++) {
+            double feedforward = Constants.powerPerInchPerSecond * wanted[i];
+            double feedback = VELOCITY_KP * (wanted[i] - measured[i]);
+            powers[i] = clampToPower(feedforward + feedback);
+        }
+
+        setCommandedWheels(powers[FL], powers[FR], powers[BL], powers[BR]);
+        publishWheelSpeeds(wanted, measured, powers);
+    }
+
+    // ------------------------------------------------- L17a and L17b write this
+
+    /** What each encoder has counted, in ticks, in wheel order. */
+    public int[] wheelTicks() {
+        int[] ticks = new int[4];
+        ticks[FL] = hardware.frontLeft.getCurrentPosition();
+        ticks[FR] = hardware.frontRight.getCurrentPosition();
+        ticks[BL] = hardware.backLeft.getCurrentPosition();
+        ticks[BR] = hardware.backRight.getCurrentPosition();
+        return ticks;
+    }
+
+    // ------------------------------------------------- brake mode
+
+    /** Brakes or coasts as the config says, which is how a match runs. */
+    public void allowConfiguredBrakeMode() {
+        coastForCharacterization = false;
+        cacheMotors(hardware.mecanumConfig.powerThreshold.get());
+        setZeroPowerBehavior(zeroPowerBrakeWhenTrue(getEffectiveBrakeMode()));
+    }
+
+    /**
+     * Gets out of the way of a measurement, until
+     * {@link #allowConfiguredBrakeMode} is called: the wheels coast, so a robot
+     * being pushed rolls freely, and every power reaches the hardware, so a slow
+     * voltage ramp is a ramp rather than a staircase of {@code powerThreshold}
+     * steps. L17a and L17b are what this is for.
+     */
+    public void forceCoastForCharacterization() {
+        coastForCharacterization = true;
+        cacheMotors(0.0);
+        setZeroPowerBehavior(zeroPowerBrakeWhenTrue(getEffectiveBrakeMode()));
+    }
+
+    /** True while {@link #forceCoastForCharacterization} is in force. */
+    public boolean isCoastForCharacterization() {
+        return coastForCharacterization;
+    }
+
+    /** What {@link #stop()} with no argument would use: the outcome, not the override. */
+    public final boolean getEffectiveBrakeMode() {
+        if (coastForCharacterization) {
+            return false;
+        }
+        return hardware.mecanumConfig.manualBrakeMode.get();
+    }
+
+    // ------------------------------------------------- the rest of what Pedro requires
+
+    /**
+     * <b>Pedro's {@code Drivetrain} requires this.</b> The same algebra as
+     * Pedro's {@code Mecanum}, written out: Pedro's version uses {@code lambda},
+     * {@code a}, {@code b}, {@code t1}, {@code t2}, a {@code continue} and
+     * {@code Utils.clamp}, and this one uses named helpers instead.
+     *
+     * <p>How much of {@code delta} can be added to {@code current} before a wheel
+     * runs out of power. Pedro uses it so a path algorithm does not ask for more
+     * than the drivetrain can give: each wheel is at some power and is being
+     * asked to change by some amount, and it runs out when it reaches 1 or -1.
+     * For one wheel the fraction of the change that fits is the distance to
+     * whichever limit it is heading for, divided by the change; the answer for
+     * the drivetrain is the smallest of those, because the first wheel to run out
+     * stops the others going further.
      */
     @Override
     public double maxScaling(DrivePowers current, DrivePowers delta) {
@@ -246,9 +403,9 @@ public abstract class LessonsDriveTrain implements Drivetrain {
         double[] changes = mix(delta);
         double fits = 1.0;
 
-        for (int wheel = 0; wheel < 4; wheel++) {
-            double power = currentPowers[wheel];
-            double change = changes[wheel];
+        for (int i = 0; i < 4; i++) {
+            double power = currentPowers[i];
+            double change = changes[i];
 
             if (movesThisWheel(change)) {
                 double towardsFull = fractionThatFits(power, change, 1.0);
@@ -259,6 +416,79 @@ public abstract class LessonsDriveTrain implements Drivetrain {
         }
 
         return clampToFraction(fits);
+    }
+
+    /**
+     * <b>Pedro's {@code Drivetrain} requires this.</b> The same as Pedro's
+     * {@code Mecanum} except for where the flag comes from: Pedro reads
+     * {@code config.manualBrakeMode.get()}, and this reads
+     * {@link #getEffectiveBrakeMode}, so a characterization run coasts.
+     */
+    @Override
+    public void stop() {
+        stop(getEffectiveBrakeMode());
+    }
+
+    /**
+     * <b>Pedro's {@code Drivetrain} requires this.</b> The same shape as Pedro's
+     * {@code Mecanum}, ours in two ways: it zeroes {@link #wheelPowers} and calls
+     * {@link #writeWheels} where Pedro writes each motor directly, and it clears
+     * the commanded wheels, which Pedro has nothing to clear.
+     */
+    @Override
+    public void stop(boolean brake) {
+        commandedWheels = null;
+        setZeroPowerBehavior(zeroPowerBrakeWhenTrue(brake));
+
+        for (int i = 0; i < wheelPowers.length; i++) {
+            wheelPowers[i] = 0.0;
+        }
+
+        writeWheels();
+    }
+
+    /**
+     * <b>Pedro's {@code Drivetrain} requires this.</b> Copied from Pedro's
+     * {@code Mecanum} unchanged, the same one line.
+     *
+     * <p>It answers how fast the drivetrain can go in a direction between its
+     * fast axis and its slow one.
+     */
+    @Override
+    public double interpolateVelocity(double xRadius, double yRadius, double theta) {
+        return 1.0 / (Math.abs(Math.cos(theta)) / xRadius + Math.abs(Math.sin(theta)) / yRadius);
+    }
+
+    /**
+     * <b>Pedro's {@code Drivetrain} requires this.</b> Pedro's own eight keys,
+     * spelled the way Pedro spells them, so a log from this drivetrain can be
+     * read by anyone who reads Pedro's -- including the Pedro team, if we ever
+     * have to send them one.
+     */
+    @Override
+    public Map<String, Object> debug() {
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("forward", lastDrivePowers.forward());
+        out.put("strafe", lastDrivePowers.strafe());
+        out.put("turn", lastDrivePowers.turn());
+        out.put("powerScale", powerScale);
+        out.put("leftFrontWheelPower", wheelPowers[FL]);
+        out.put("rightFrontWheelPower", wheelPowers[FR]);
+        out.put("leftBackWheelPower", wheelPowers[BL]);
+        out.put("rightBackWheelPower", wheelPowers[BR]);
+        return out;
+    }
+
+    // ------------------------------------------------- the private parts
+
+    /**
+     * BRAKE while a driver has the sticks, so letting go stops the robot; FLOAT
+     * while the follower is running a path, so its own control is not fighting
+     * the wheels.
+     */
+    protected final void applyBrakeMode(boolean manual) {
+        boolean brake = manual && getEffectiveBrakeMode();
+        setZeroPowerBehavior(zeroPowerBrakeWhenTrue(brake));
     }
 
     /** A change too small to matter cannot use up a wheel's power. */
@@ -285,37 +515,39 @@ public abstract class LessonsDriveTrain implements Drivetrain {
         return Math.min(1.0, atLeastNone);
     }
 
-    @Override
-    public void stop() {
-        stop(hardware.mecanumConfig.manualBrakeMode.get());
+    /** No more than full power either way. */
+    private static double clampToPower(double power) {
+        double notTooLow = Math.max(-1.0, power);
+        return Math.min(1.0, notTooLow);
     }
 
-    @Override
-    public void stop(boolean brake) {
-        commandedWheels = null;
-        setZeroPowerBehavior(zeroPowerBrakeWhenTrue(brake));
-
-        for (int wheel = 0; wheel < wheelPowers.length; wheel++) {
-            wheelPowers[wheel] = 0.0;
+    /** What a wanted speed, a measured speed and the power between them were. */
+    private void publishWheelSpeeds(double[] wanted, double[] measured, double[] powers) {
+        String[] names = {"frontLeft", "frontRight", "backLeft", "backRight"};
+        for (int i = 0; i < names.length; i++) {
+            Tracker.publish("wheel/" + names[i] + "/target_ips", wanted[i]);
+            Tracker.publish("wheel/" + names[i] + "/actual_ips", measured[i]);
+            Tracker.publish("wheel/" + names[i] + "/error_ips", wanted[i] - measured[i]);
+            Tracker.publish("wheel/" + names[i] + "/power", powers[i]);
         }
-
-        writeWheels();
     }
 
-    @Override
-    public double interpolateVelocity(double xRadius, double yRadius, double theta) {
-        return 1.0 / (Math.abs(Math.cos(theta)) / xRadius + Math.abs(Math.sin(theta)) / yRadius);
-    }
+    /**
+     * Puts a fresh write cache in front of each motor, with the threshold given,
+     * and sets each one's direction. A new cache has forgotten what the motor was
+     * last told, so the next power always reaches it.
+     */
+    private void cacheMotors(double powerThreshold) {
+        motors = new CachedMotor[4];
+        motors[FL] = new CachedMotor(hardware.frontLeft, powerThreshold);
+        motors[FR] = new CachedMotor(hardware.frontRight, powerThreshold);
+        motors[BL] = new CachedMotor(hardware.backLeft, powerThreshold);
+        motors[BR] = new CachedMotor(hardware.backRight, powerThreshold);
 
-    @Override
-    public Map<String, Object> debug() {
-        Map<String, Object> out = new LinkedHashMap<>();
-        out.put("frontLeft", wheelPowers[FL]);
-        out.put("frontRight", wheelPowers[FR]);
-        out.put("backLeft", wheelPowers[BL]);
-        out.put("backRight", wheelPowers[BR]);
-        out.put("wheelsCommanded", commandedWheels != null);
-        return out;
+        motors[FL].setDirection(hardware.mecanumConfig.frontLeftDirection.get());
+        motors[FR].setDirection(hardware.mecanumConfig.frontRightDirection.get());
+        motors[BL].setDirection(hardware.mecanumConfig.backLeftDirection.get());
+        motors[BR].setDirection(hardware.mecanumConfig.backRightDirection.get());
     }
 
     /** BRAKE when true, FLOAT when false. */
@@ -326,14 +558,8 @@ public abstract class LessonsDriveTrain implements Drivetrain {
         return DcMotor.ZeroPowerBehavior.FLOAT;
     }
 
-    private static void copyInto(double[] destination, double[] source) {
-        for (int wheel = 0; wheel < destination.length; wheel++) {
-            destination[wheel] = source[wheel];
-        }
-    }
-
     private void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior behavior) {
-        for (DcMotorEx motor : motors) {
+        for (CachedMotor motor : motors) {
             motor.setZeroPowerBehavior(behavior);
         }
     }

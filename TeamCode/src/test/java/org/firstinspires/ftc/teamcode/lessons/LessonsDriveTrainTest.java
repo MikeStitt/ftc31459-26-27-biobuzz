@@ -10,6 +10,7 @@ import com.pedropathing.drivetrain.DrivePowers;
 
 import org.firstinspires.ftc.teamcode.base.OpModeHarness;
 import org.firstinspires.ftc.teamcode.base.RobotHardware;
+import org.firstinspires.ftc.teamcode.pedro.Constants;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,14 +40,6 @@ public class LessonsDriveTrainTest {
 
         void sticks(double leftSpeed, double rightSpeed) {
             driveWheelsNow(leftSpeed, rightSpeed, leftSpeed, rightSpeed);
-        }
-
-        @Override
-        protected void writeWheels() {
-            hardware.frontLeft.setPower(wheelPowers[FL]);
-            hardware.frontRight.setPower(wheelPowers[FR]);
-            hardware.backLeft.setPower(wheelPowers[BL]);
-            hardware.backRight.setPower(wheelPowers[BR]);
         }
     }
 
@@ -173,6 +166,105 @@ public class LessonsDriveTrainTest {
             assertTrue("the message names the class: " + expected.getMessage(),
                     expected.getMessage().contains("Sides"));
         }
+    }
+
+    // ------------------------------------------------------------ brake mode
+
+    @Test
+    public void theEffectiveBrakeModeIsWhatTheConfigSaysUntilCharacterizationOverridesIt() {
+        Mecanum drivetrain = new Mecanum(hardware);
+        assertTrue("the config asks for braking", drivetrain.getEffectiveBrakeMode());
+        assertFalse(drivetrain.isCoastForCharacterization());
+
+        drivetrain.forceCoastForCharacterization();
+        assertTrue(drivetrain.isCoastForCharacterization());
+        assertFalse("a measurement needs the wheels to roll", drivetrain.getEffectiveBrakeMode());
+
+        drivetrain.allowConfiguredBrakeMode();
+        assertFalse(drivetrain.isCoastForCharacterization());
+        assertTrue("back to whatever the config says", drivetrain.getEffectiveBrakeMode());
+    }
+
+    @Test
+    public void coastingForCharacterizationSurvivesAFollowerUpdate() {
+        // The bug this replaces: L17 wrote the flag and restored it in
+        // afterLoop(), which runs every loop, so the coast lasted one update.
+        Mecanum drivetrain = new Mecanum(hardware);
+        drivetrain.forceCoastForCharacterization();
+        drivetrain.drive(new DrivePowers(0, 0, 0), true);
+        drivetrain.drive(new DrivePowers(0, 0, 0), true);
+        assertFalse("still coasting on the second update", drivetrain.getEffectiveBrakeMode());
+    }
+
+    @Test
+    public void aConfigThatAsksForCoastingGetsItWithoutAnyOverride() {
+        hardware.mecanumConfig.manualBrakeMode.set(false);
+        Mecanum drivetrain = new Mecanum(hardware);
+        assertFalse("nothing was overridden, and it still coasts",
+                drivetrain.getEffectiveBrakeMode());
+        assertFalse(drivetrain.isCoastForCharacterization());
+    }
+
+    // ------------------------------------------------------------ L11's part
+
+    @Test
+    public void fieldRelativeDrivingTurnsTheDriversViewIntoTheRobots() {
+        Mecanum drivetrain = new Mecanum(hardware);
+
+        // Facing along the field's x axis, the two views agree.
+        drivetrain.fieldRelative(0, 1, 0, 0);
+        drivetrain.drive(DrivePowers.zero(), true);
+        assertArrayEquals("straight down the field is straight ahead",
+                new double[]{1, 1, 1, 1}, motorPowers(), EPS);
+
+        // Turned a quarter turn to the left, going down the field is strafing
+        // to the robot's right, which runs one diagonal pair each way.
+        drivetrain.fieldRelative(Math.PI / 2, 1, 0, 0);
+        drivetrain.drive(DrivePowers.zero(), true);
+        assertArrayEquals("the same journey, sideways to the robot",
+                new double[]{1, -1, -1, 1}, motorPowers(), EPS);
+    }
+
+    // ------------------------------------------------------------ L16's part
+
+    @Test
+    public void aWantedSpeedBecomesAFeedforwardGuessPlusACorrection() {
+        Mecanum drivetrain = new Mecanum(hardware);
+        // Every wheel is stopped, so the whole error is the speed asked for.
+        double wanted = 10.0;
+        double expected = Constants.powerPerInchPerSecond * wanted + 0.008 * wanted;
+
+        drivetrain.setCommandedWheelSpeeds(wanted, wanted, wanted, wanted);
+        drivetrain.drive(DrivePowers.zero(), true);
+        assertArrayEquals(new double[]{expected, expected, expected, expected},
+                motorPowers(), EPS);
+    }
+
+    @Test
+    public void aWheelAlreadyAtTheWantedSpeedGetsTheGuessAndNoCorrection() {
+        Mecanum drivetrain = new Mecanum(hardware);
+        double wanted = 10.0;
+        // getVelocity() is in ticks per second, and ticksPerInch converts it.
+        frontLeft.velocity = wanted * Constants.ticksPerInch;
+
+        drivetrain.setCommandedWheelSpeeds(wanted, wanted, wanted, wanted);
+        drivetrain.drive(DrivePowers.zero(), true);
+        assertEquals("no error, so no correction",
+                Constants.powerPerInchPerSecond * wanted, frontLeft.power, EPS);
+        assertEquals("and the stopped wheel still gets one",
+                Constants.powerPerInchPerSecond * wanted + 0.008 * wanted, frontRight.power, EPS);
+    }
+
+    // ------------------------------------------------------------ L17's part
+
+    @Test
+    public void theTicksDoorReportsWhatEachEncoderCounted() {
+        frontLeft.ticks = 10;
+        frontRight.ticks = 20;
+        backLeft.ticks = 30;
+        backRight.ticks = 40;
+        assertArrayEquals("front left, front right, back left, back right",
+                new int[]{10, 20, 30, 40}, new Mecanum(hardware).wheelTicks());
     }
 
     @Test

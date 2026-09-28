@@ -59,16 +59,4 @@ public class L5HolonomicDriveTrain extends LessonsDriveTrain {
         double backRightPower = forwardSpeed - strafeLeftSpeed + turnCcwSpeed;
         driveWheelsNow(frontLeftPower, frontRightPower, backLeftPower, backRightPower);
     }
-
-    /**
-     * Sends each of the four powers to its own motor, the slot named by {@link #FL}
-     * and the others to the motor of that name.
-     */
-    @Override
-    protected void writeWheels() {
-        hardware.frontLeft.setPower(wheelPowers[FL]);
-        hardware.frontRight.setPower(wheelPowers[FR]);
-        hardware.backLeft.setPower(wheelPowers[BL]);
-        hardware.backRight.setPower(wheelPowers[BR]);
-    }
 }

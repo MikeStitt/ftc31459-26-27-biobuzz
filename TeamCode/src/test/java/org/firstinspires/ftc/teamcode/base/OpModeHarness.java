@@ -75,6 +75,10 @@ public final class OpModeHarness {
         public double power;
         public double velocity;
 
+        /** How many times a power actually reached this motor, so a test can
+         * see the write cache skipping one. */
+        public int writes;
+
         /** The motor to hand to code that wants a DcMotorEx. */
         public final DcMotorEx motor = (DcMotorEx) Proxy.newProxyInstance(
                 DcMotorEx.class.getClassLoader(), new Class<?>[]{DcMotorEx.class}, this);
@@ -88,6 +92,7 @@ public final class OpModeHarness {
                     return velocity;
                 case "setPower":
                     power = (Double) args[0];
+                    writes++;
                     return null;
                 case "getPower":
                     return power;
