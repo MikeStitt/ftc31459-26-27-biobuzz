@@ -211,4 +211,15 @@ afterEvaluate {
         // failure.
         ignoreExitValue = true
     }
+
+    // Assigns the gamepads on their own, before a lesson rather than during one.
+    // Same classpath and the same reason for ignoreExitValue.
+    tasks.register('simPads', JavaExec) {
+        group = 'verification'
+        description = 'Claim the gamepads with Start and A, or Start and B. --args="30" for 30 s.'
+        dependsOn 'compileDebugUnitTestJavaWithJavac'
+        mainClass = 'org.firstinspires.ftc.teamcode.base.SimPads'
+        classpath = tasks.named('testDebugUnitTest').get().classpath
+        ignoreExitValue = true
+    }
 }

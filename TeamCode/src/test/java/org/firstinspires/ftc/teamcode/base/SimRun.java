@@ -18,8 +18,17 @@ import java.lang.reflect.Field;
  *
  * <p>Any field of {@code Gamepad} can be set, so buttons work the same way as
  * sticks: {@code a=true}. The values are set once, before the lesson starts,
- * and held. Driving the sticks while it runs is
- * {@code sim.sticks.input} in {@code open-work.md}, and is not built.
+ * and held.
+ *
+ * <p>The word {@code pad} on its own reads a real gamepad every loop instead:
+ *
+ * <pre>
+ * ./gradlew :TeamCode:simRun --args="L15CombinedOpMode pad"
+ * </pre>
+ *
+ * <p>{@link SimPads} says which pad is which. Without {@code pad} nothing opens
+ * SDL, so a run with no gamepad on the machine behaves exactly as it did. With
+ * both, the pad wins: it is read every loop, over whatever an argument set once.
  *
  * <p>Each loop is {@code stepMs} of simulated time and sleeps the same in real
  * time, so the robot moves at about the speed it would on the field.
@@ -33,8 +42,13 @@ public final class SimRun {
     public static void main(String[] args) throws Exception {
         String lesson = args.length > 0 ? args[0] : "L15CombinedOpMode";
         OpModeHarness harness = new OpModeHarness(lesson(lesson));
+        boolean readPads = false;
         for (int i = 1; i < args.length; i++) {
-            set(harness, args[i]);
+            if (args[i].equals("pad")) {
+                readPads = true;
+            } else {
+                set(harness, args[i]);
+            }
         }
 
         Thread loopThread = Thread.currentThread();
@@ -47,12 +61,16 @@ public final class SimRun {
             }
         }));
 
-        try (SimPublisher out = new SimPublisher(harness)) {
+        try (SimPublisher out = new SimPublisher(harness);
+                SimPads pads = readPads ? SimPads.open() : null) {
             System.out.println(lesson + " running. Connect AdvantageScope to 127.0.0.1"
                     + " as NetworkTables 4, and Ctrl-C to stop.");
             harness.init();
             harness.start();
             while (running) {
+                if (pads != null) {
+                    pads.update(harness.gamepad1, harness.gamepad2);
+                }
                 harness.loop();
                 out.publish();
                 OpModeHarness.sleep(harness.stepMs);

@@ -92,7 +92,12 @@ public final class SimGamepad implements AutoCloseable {
 
         private final long handle;
 
-        private Pad(int id, long handle, String name, String serial) {
+        /**
+         * Package-private, not private, so a test can make a pad with no SDL
+         * behind it. A handle of 0 reads nothing, which is all
+         * {@code SimPadsTest} needs.
+         */
+        Pad(int id, long handle, String name, String serial) {
             this.id = id;
             this.handle = handle;
             this.name = name;
