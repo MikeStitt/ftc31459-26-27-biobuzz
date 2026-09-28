@@ -41,10 +41,10 @@ public class CorbelsMecanumTest {
 
     private double[] motorPowers() {
         return new double[]{
-                h.motors.get(org.firstinspires.ftc.teamcode.pedro.Constants.frontLeftName).power,
-                h.motors.get(org.firstinspires.ftc.teamcode.pedro.Constants.frontRightName).power,
-                h.motors.get(org.firstinspires.ftc.teamcode.pedro.Constants.backLeftName).power,
-                h.motors.get(org.firstinspires.ftc.teamcode.pedro.Constants.backRightName).power};
+                h.motors.get(OpModeHarness.FRONT_LEFT).power,
+                h.motors.get(OpModeHarness.FRONT_RIGHT).power,
+                h.motors.get(OpModeHarness.BACK_LEFT).power,
+                h.motors.get(OpModeHarness.BACK_RIGHT).power};
     }
 
     @Test
@@ -126,6 +126,70 @@ public class CorbelsMecanumTest {
         assertEquals(0.0, drivetrain.maxScaling(new DrivePowers(1, 0, 0), new DrivePowers(1, 0, 0)), 1e-9);
         // Half way there, half of it fits.
         assertEquals(0.5, drivetrain.maxScaling(new DrivePowers(0.5, 0, 0), new DrivePowers(1, 0, 0)), 1e-9);
+    }
+
+    @Test
+    public void theEffectiveBrakeModeIsTheConfigUntilCharacterizationOverridesIt() {
+        assertTrue("the config asks for braking", drivetrain.getEffectiveBrakeMode());
+        assertFalse(drivetrain.isCoastForCharacterization());
+
+        drivetrain.forceCoastForCharacterization();
+        assertTrue(drivetrain.isCoastForCharacterization());
+        assertFalse("a measurement needs the wheels to roll", drivetrain.getEffectiveBrakeMode());
+
+        // A follower update does not put it back. L17's old restore in
+        // afterLoop() did, which is the bug this API replaces.
+        drivetrain.drive(DrivePowers.zero(), true);
+        drivetrain.drive(DrivePowers.zero(), true);
+        assertFalse("still coasting on the second update", drivetrain.getEffectiveBrakeMode());
+
+        drivetrain.allowConfiguredBrakeMode();
+        assertFalse(drivetrain.isCoastForCharacterization());
+        assertTrue("back to whatever the config says", drivetrain.getEffectiveBrakeMode());
+    }
+
+    @Test
+    public void aPowerTooCloseToTheLastOneNeverReachesTheMotor() {
+        OpModeHarness.FakeMotor frontLeft = h.motors.get(OpModeHarness.FRONT_LEFT);
+        drivetrain.drive(new DrivePowers(0.5, 0, 0), true);
+        int afterFirst = frontLeft.writes;
+        assertEquals(0.5, frontLeft.power, 1e-9);
+
+        // powerThreshold is 0.01, so a move of 0.001 is not worth a bus write.
+        drivetrain.drive(new DrivePowers(0.501, 0, 0), true);
+        assertEquals("no write", afterFirst, frontLeft.writes);
+        assertEquals("so the motor still holds the old power", 0.5, frontLeft.power, 1e-9);
+
+        // A move of 0.02 is.
+        drivetrain.drive(new DrivePowers(0.52, 0, 0), true);
+        assertEquals(afterFirst + 1, frontLeft.writes);
+        assertEquals(0.52, frontLeft.power, 1e-9);
+    }
+
+    @Test
+    public void aSignFlipAlwaysReachesTheMotorHoweverSmall() {
+        OpModeHarness.FakeMotor frontLeft = h.motors.get(OpModeHarness.FRONT_LEFT);
+        drivetrain.drive(new DrivePowers(0.001, 0, 0), true);
+        int afterFirst = frontLeft.writes;
+        drivetrain.drive(new DrivePowers(-0.001, 0, 0), true);
+        assertEquals("a reversal is never skipped", afterFirst + 1, frontLeft.writes);
+        assertEquals(-0.001, frontLeft.power, 1e-9);
+    }
+
+    @Test
+    public void characterizationTurnsTheCacheOffSoASlowRampIsNotAStaircase() {
+        // SysId's quasistatic ramp moves the power by far less than 0.01 a
+        // loop, so the cache would turn it into steps and the fit would be of
+        // the steps rather than of the robot.
+        OpModeHarness.FakeMotor frontLeft = h.motors.get(OpModeHarness.FRONT_LEFT);
+        drivetrain.forceCoastForCharacterization();
+        int before = frontLeft.writes;
+
+        drivetrain.drive(new DrivePowers(0.001, 0, 0), true);
+        drivetrain.drive(new DrivePowers(0.002, 0, 0), true);
+        drivetrain.drive(new DrivePowers(0.003, 0, 0), true);
+        assertEquals("every step reached the motor", before + 3, frontLeft.writes);
+        assertEquals(0.003, frontLeft.power, 1e-9);
     }
 
     @Test

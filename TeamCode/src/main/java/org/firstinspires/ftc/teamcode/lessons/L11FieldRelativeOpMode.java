@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.lessons;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.base.CorbelsTeleOp;
-import org.firstinspires.ftc.teamcode.base.Drive;
 
 /**
  * L11: field relative. Push the stick away from you and the robot goes away
@@ -32,10 +31,12 @@ public class L11FieldRelativeOpMode extends CorbelsTeleOp {
     @Override
     public void loop() {
         loopBefore();
-        // TODO: same three numbers as lesson 5, but through
-        //       Drive.fieldRelative(...) instead of Drive.holonomic(...).
-        //       Try lesson 5's version with the robot turned 180 degrees first,
-        //       so you can feel the difference.
+        // TODO (L11): the same three sticks as L5, but through
+        //       drivetrain.fieldRelative(...) instead of drivetrain.sticks(...).
+        //       The heading goes in first, and the drivetrain cannot get it
+        //       itself: follower.pose().heading() is where it comes from.
+        //       Try L5's version with the robot turned 180 degrees first, so you
+        //       can feel the difference.
         loopAfter();
     }
 

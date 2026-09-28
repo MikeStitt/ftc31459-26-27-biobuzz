@@ -25,7 +25,7 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  *
  * <p>Two things to notice. {@code init} passes the drivetrain to
  * {@code initAfter}, which is how the follower gets it. And {@code stop} hands
- * the drivetrain back before the last follower update, or they keep whatever the
+ * the wheels back before the last follower update, or they keep whatever the
  * last loop commanded.
  */
 @TeleOp(name = "L6 Follower Wheels", group = "Lessons")

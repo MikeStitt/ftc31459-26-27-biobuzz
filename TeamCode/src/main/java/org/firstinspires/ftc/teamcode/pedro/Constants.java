@@ -30,24 +30,10 @@ import org.firstinspires.ftc.teamcode.pedro.procedures.Tests;
 public class Constants {
 
     // ---- Device names. These must match the Robot Controller configuration,
-    // ---- and nothing outside this file should name a device. ----------------
+    // ---- and nothing outside this file should name a device. The drivetrain's
+    // ---- four names are in drivetrainConfig below. --------------------------
 
-    public static String frontLeftName = "Front Left";
-    public static String frontRightName = "Front Right";
-    public static String backLeftName = "Back Left";
-    public static String backRightName = "Back Right";
     public static String imuName = "imu";
-
-    // ---- Drivetrain. One source of truth, read by both the Pedro config and
-    // ---- our own CorbelsMecanum. -------------------------------------------
-
-    public static DcMotorSimple.Direction frontLeftDirection = DcMotorSimple.Direction.FORWARD;
-    public static DcMotorSimple.Direction frontRightDirection = DcMotorSimple.Direction.REVERSE;
-    public static DcMotorSimple.Direction backLeftDirection = DcMotorSimple.Direction.FORWARD;
-    public static DcMotorSimple.Direction backRightDirection = DcMotorSimple.Direction.REVERSE;
-
-    /** Brake rather than coast when a driver releases the sticks. */
-    public static boolean manualBrakeMode = true;
 
     /**
      * Ticks per inch of wheel travel, and the fastest a wheel actually goes.
@@ -70,17 +56,36 @@ public class Constants {
     public static double maxStrafeInchesPerSecond = 43.595132915165195;
     public static double powerPerInchPerSecond = 0.016695978563625216;
 
+    /**
+     * The drivetrain: what its four motors are called, which way each one spins,
+     * and whether it brakes when a driver lets go. One holder, read live.
+     *
+     * <p>{@link RobotHardware} is handed this and looks its motors up from it,
+     * and our drivetrains read it back through {@code hardware.mecanumConfig},
+     * so a value set here is read by everything that uses one. It is also the
+     * type Pedro's own {@code Mecanum} takes and the type AutoTune's Mecanum
+     * procedure generates, so what the tuner works out can be pasted in whole.
+     *
+     * <p>Each field is a {@code ConfigVar}: {@code get()} reads it, {@code set()}
+     * writes it, and there are no plain-static copies of any of it anywhere.
+     */
     public static MecanumConfig drivetrainConfig = new MecanumConfig(c -> {
-        c.frontLeftName.set(frontLeftName);
-        c.frontRightName.set(frontRightName);
-        c.backLeftName.set(backLeftName);
-        c.backRightName.set(backRightName);
-        c.frontLeftDirection.set(frontLeftDirection);
-        c.frontRightDirection.set(frontRightDirection);
-        c.backLeftDirection.set(backLeftDirection);
-        c.backRightDirection.set(backRightDirection);
+        c.frontLeftName.set("Front Left");
+        c.frontRightName.set("Front Right");
+        c.backLeftName.set("Back Left");
+        c.backRightName.set("Back Right");
+        c.frontLeftDirection.set(DcMotorSimple.Direction.FORWARD);
+        c.frontRightDirection.set(DcMotorSimple.Direction.REVERSE);
+        c.backLeftDirection.set(DcMotorSimple.Direction.FORWARD);
+        c.backRightDirection.set(DcMotorSimple.Direction.REVERSE);
 
-        c.manualBrakeMode.set(manualBrakeMode);
+        // Brake rather than coast when a driver releases the sticks.
+        c.manualBrakeMode.set(true);
+
+        // Pedro's own default, left alone and named here because our drivetrains
+        // cache motor writes with it: a power that moves by less than this does
+        // not reach the hardware.
+        c.powerThreshold.set(0.01);
     });
 
     public static PinpointConfig localizerConfig = new PinpointConfig(c -> {
@@ -132,7 +137,7 @@ public class Constants {
      * Prefer the two-argument form, which shares the already-resolved devices.
      */
     public static Follower create(HardwareMap h) {
-        return create(h, new CorbelsMecanum(new RobotHardware(h)));
+        return create(h, new CorbelsMecanum(new RobotHardware(h, drivetrainConfig)));
     }
 
     public static Follower create(HardwareMap h, Drivetrain drivetrain) {

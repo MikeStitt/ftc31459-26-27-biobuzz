@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * <p>Lesson 16 turned "turn at one radian per second" into a wheel speed by
  * multiplying by a radius. This measures that radius, the same way as 17a: spin
  * the robot by hand, and compare what the Pinpoint says it turned with how far
- * the drivetrain travelled.
+ * the wheels travelled.
  *
  * <p>A wheel {@code r} inches from the middle travels {@code r} inches for every
  * radian the robot turns. So radius is wheel inches divided by radians.
@@ -32,8 +32,7 @@ public class L17bMeasureTurnRadiusOpMode extends CorbelsTeleOp {
 
     private static final double NEEDED_TURNS = 2;
 
-    private boolean savedBrakeMode;
-    private double[] startTicks;
+    private int[] startTicks;
     private double previousHeading;
     private double radians, wheelInches;
 
@@ -49,17 +48,20 @@ public class L17bMeasureTurnRadiusOpMode extends CorbelsTeleOp {
     @Override
     public void start() {
         startBefore();
-        savedBrakeMode = Constants.manualBrakeMode;
-        Constants.manualBrakeMode = false;
-        startTicks = ticks();
+        // The wheels must roll freely, so no braking while we spin.
+        drivetrain.forceCoastForCharacterization();
+        startTicks = drivetrain.wheelTicks();
         previousHeading = follower.pose().heading();
         startAfter();
     }
 
     @Override
     public void stop() {
-        // Hand the drivetrain back before the follower's last update, or they keep
-        // whatever power the last loop commanded.
+        // Braking is allowed again, however this run ended -- STOP pressed
+        // early, or an exception in the loop. Then hand the wheels back before
+        // the follower's last update, or they keep whatever power the last loop
+        // commanded.
+        drivetrain.allowConfiguredBrakeMode();
         drivetrain.stop();
         stopAfter();
     }
@@ -73,7 +75,7 @@ public class L17bMeasureTurnRadiusOpMode extends CorbelsTeleOp {
         radians += Calibration.unwrap(previousHeading, heading);
         previousHeading = heading;
 
-        double[] now = ticks();
+        int[] now = drivetrain.wheelTicks();
         double turnTicks = Calibration.turnPart(now[0] - startTicks[0], now[1] - startTicks[1],
                 now[2] - startTicks[2], now[3] - startTicks[3]);
         wheelInches = turnTicks / Constants.ticksPerInch;
@@ -89,23 +91,12 @@ public class L17bMeasureTurnRadiusOpMode extends CorbelsTeleOp {
         if (Math.abs(radians) >= NEEDED_TURNS * 2 * Math.PI) {
             Tracker.printToDs();
             Tracker.printToDs("turn radius  %.2f inches", measured);
-            Tracker.printToDs("Measure the diagonal between drivetrain and halve it; they should agree.");
+            Tracker.printToDs("Measure the diagonal between wheels and halve it; they should agree.");
         } else {
             Tracker.printToDs("Currently  %.2f inches", measured);
         }
         Tracker.printToDs("ticksPerInch in use  %.2f", Constants.ticksPerInch);
 
         loopAfter();
-    }
-
-    private double[] ticks() {
-        return new double[]{
-                hardware.frontLeft.getCurrentPosition(), hardware.frontRight.getCurrentPosition(),
-                hardware.backLeft.getCurrentPosition(), hardware.backRight.getCurrentPosition()};
-    }
-
-    @Override
-    protected void afterLoop() {
-        Constants.manualBrakeMode = savedBrakeMode;
     }
 }

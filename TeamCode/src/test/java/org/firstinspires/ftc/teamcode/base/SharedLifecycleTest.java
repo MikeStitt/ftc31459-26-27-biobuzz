@@ -28,7 +28,7 @@ public class SharedLifecycleTest {
         public final List<String> calls = new ArrayList<>();
 
         @Override protected void bindings() { calls.add("bindings"); }
-        @Override protected void shadows() { calls.add("shadows"); }
+        @Override protected void shadowLocalizers() { calls.add("shadowLocalizers"); }
 
         @Override public void init() { initBefore(); initAfter(); }
 
@@ -55,7 +55,7 @@ public class SharedLifecycleTest {
             return Commands.instant(() -> ran = true);
         }
 
-        @Override protected void shadows() { calls.add("shadows"); }
+        @Override protected void shadowLocalizers() { calls.add("shadowLocalizers"); }
 
         @Override public void init() { initBefore(); initAfter(); }
 
@@ -72,7 +72,8 @@ public class SharedLifecycleTest {
         assertEquals("no hooks yet", 0, opMode.calls.size());
 
         h.start();
-        assertEquals("bindings before shadows", "[bindings, shadows]", opMode.calls.toString());
+        assertEquals("bindings before the shadow localizers",
+                "[bindings, shadowLocalizers]", opMode.calls.toString());
         assertNotNull(opMode.buttons);
 
         h.loop();
@@ -97,7 +98,7 @@ public class SharedLifecycleTest {
 
         h.start();
         assertTrue(opMode.calls.contains("routine"));
-        assertTrue(opMode.calls.contains("shadows"));
+        assertTrue(opMode.calls.contains("shadowLocalizers"));
 
         h.loop();
         assertTrue("the scheduler ran the routine", opMode.ran);

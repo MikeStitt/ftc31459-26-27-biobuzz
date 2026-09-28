@@ -57,15 +57,4 @@ public class L5HolonomicDriveTrain extends LessonsDriveTrain {
         //       hand the four to driveWheelsNow. Three numbers add up differently
         //       at each corner; the sources in this class's javadoc draw it.
     }
-
-    /**
-     * Sends each of the four powers to its own motor, the slot named by {@link #FL}
-     * and the others to the motor of that name.
-     */
-    @Override
-    protected void writeWheels() {
-        // TODO: send each slot of wheelPowers to its own motor, naming the slot
-        //       with FL, FR, BL or BR and the motor through hardware:
-        //       hardware.frontLeft.setPower(wheelPowers[FL]);  and the other three.
-    }
 }

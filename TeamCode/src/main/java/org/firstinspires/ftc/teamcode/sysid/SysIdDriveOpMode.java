@@ -50,7 +50,7 @@ public class SysIdDriveOpMode extends CorbelsTeleOp {
     private SysIdRecorder.State selected = SysIdRecorder.State.QUASISTATIC_FORWARD;
     private boolean running;
     private long startNs;
-    private double[] startTicks;
+    private int[] startTicks;
 
     @Override
     public void init() {
@@ -64,12 +64,17 @@ public class SysIdDriveOpMode extends CorbelsTeleOp {
         startBefore();
         recorder = new SysIdRecorder(Tracker.flightlog, "drive");
         wheels = new WheelVelocities(hardware);
-        startTicks = ticks();
+        // A measurement, so the wheels roll and every power reaches the motor:
+        // the quasistatic ramp moves by far less than the write cache's
+        // threshold each loop, and cached writes would fit the steps.
+        drivetrain.forceCoastForCharacterization();
+        startTicks = drivetrain.wheelTicks();
         startAfter();
     }
 
     @Override
     public void stop() {
+        drivetrain.allowConfiguredBrakeMode();
         drivetrain.releaseCommandedWheels();
         stopAfter();
     }
@@ -88,7 +93,7 @@ public class SysIdDriveOpMode extends CorbelsTeleOp {
         if (wanted && !running) {
             running = true;
             startNs = System.nanoTime();
-            startTicks = ticks();
+            startTicks = drivetrain.wheelTicks();
         } else if (!wanted && running) {
             running = false;
             recorder.state(SysIdRecorder.State.NONE);
@@ -106,7 +111,7 @@ public class SysIdDriveOpMode extends CorbelsTeleOp {
 
         if (running) {
             recorder.state(selected);
-            double[] now = ticks();
+            int[] now = drivetrain.wheelTicks();
             double[] speeds = wheels.all();
             for (int i = 0; i < 4; i++) {
                 recorder.motor(MOTOR_NAMES[i], power, battery,
@@ -143,12 +148,6 @@ public class SysIdDriveOpMode extends CorbelsTeleOp {
             default:
                 return 0;
         }
-    }
-
-    private double[] ticks() {
-        return new double[]{
-                hardware.frontLeft.getCurrentPosition(), hardware.frontRight.getCurrentPosition(),
-                hardware.backLeft.getCurrentPosition(), hardware.backRight.getCurrentPosition()};
     }
 
     private static double clamp(double v) {

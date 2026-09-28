@@ -62,12 +62,4 @@ public class L6FollowerDriveTrain extends LessonsDriveTrain {
         //         BR. The four sums are the same ones L5HolonomicDriveTrain uses.
         return wheels;
     }
-
-    /** Sends each of the four powers to its own motor, by the slot's own name. */
-    @Override
-    protected void writeWheels() {
-        // TODO: send each slot of wheelPowers to its own motor, naming the slot
-        //       with FL, FR, BL or BR and the motor through hardware:
-        //       hardware.frontLeft.setPower(wheelPowers[FL]);  and the other three.
-    }
 }

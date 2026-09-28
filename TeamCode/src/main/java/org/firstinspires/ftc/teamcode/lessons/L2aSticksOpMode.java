@@ -6,11 +6,11 @@ import org.firstinspires.ftc.teamcode.base.CorbelsTeleOp;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 
 /**
- * L2p1: read the gamepad and write down what it says. Nothing moves.
+ * L2a: read the gamepad and write down what it says. Nothing moves.
  *
  * <p>The robot can sit on the floor for this one. Every number the driver's
  * hands make goes to Panels and into the flight log, and the wheels are not
- * touched until L2p2.
+ * touched until L2b.
  *
  * <p>This is also the first look at the four methods every OpMode has.
  * {@code init} runs once when INIT is pressed, {@code start} once when PLAY is
@@ -29,11 +29,11 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * show how; the robot already logs both for itself, which is worth knowing
  * before writing it a second time.
  *
- * <p>Passes when: LessonsTest.l2p1_logsEveryStickAndTheAButton and
- * LessonsTest.l2p1_saysWhenTheButtonIsPressedAndReleased
+ * <p>Passes when: LessonsTest.l2a_logsEveryStickAndTheAButton and
+ * LessonsTest.l2a_saysWhenTheButtonIsPressedAndReleased
  */
-@TeleOp(name = "L2p1 Sticks", group = "Lessons")
-public class L2p1SticksOpMode extends CorbelsTeleOp {
+@TeleOp(name = "L2a Sticks", group = "Lessons")
+public class L2aSticksOpMode extends CorbelsTeleOp {
 
     /** How many times {@link #loop} has run. */
     private int loopCount;
@@ -78,8 +78,8 @@ public class L2p1SticksOpMode extends CorbelsTeleOp {
         //         "button A released" when it is now false, as
         //         "lesson/event". A String logs the same way. Then remember this
         //         loop's value in previousButtonA for the next one.
-        //         Works when: LessonsTest.l2p1_logsEveryStickAndTheAButton and
-        //         LessonsTest.l2p1_saysWhenTheButtonIsPressedAndReleased pass.
+        //         Works when: LessonsTest.l2a_logsEveryStickAndTheAButton and
+        //         LessonsTest.l2a_saysWhenTheButtonIsPressedAndReleased pass.
 
         loopAfter();
     }

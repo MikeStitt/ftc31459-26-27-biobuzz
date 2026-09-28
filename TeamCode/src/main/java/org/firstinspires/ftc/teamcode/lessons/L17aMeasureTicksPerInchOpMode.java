@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * and the code was given a number to convert with. This measures it instead.
  *
  * <p>The trick is that the robot already knows how far it went: the Pinpoint
- * measures the floor with its own drivetrain, and it is already tuned. So push the
+ * measures the floor with its own wheels, and it is already tuned. So push the
  * robot and compare two accounts of the same journey -- the Pinpoint's, in
  * inches, and the drive encoders', in ticks. The ratio is the constant.
  *
@@ -32,8 +32,7 @@ public class L17aMeasureTicksPerInchOpMode extends CorbelsTeleOp {
 
     private static final double NEEDED_INCHES = 36;
 
-    private boolean savedBrakeMode;
-    private double[] startTicks;
+    private int[] startTicks;
     private double startX, startY;
     private double inches, ticks;
 
@@ -49,10 +48,9 @@ public class L17aMeasureTicksPerInchOpMode extends CorbelsTeleOp {
     @Override
     public void start() {
         startBefore();
-        // The drivetrain must roll freely, so no braking while we push.
-        savedBrakeMode = Constants.manualBrakeMode;
-        Constants.manualBrakeMode = false;
-        startTicks = ticks();
+        // The wheels must roll freely, so no braking while we push.
+        drivetrain.forceCoastForCharacterization();
+        startTicks = drivetrain.wheelTicks();
         startX = follower.pose().x();
         startY = follower.pose().y();
         startAfter();
@@ -60,8 +58,11 @@ public class L17aMeasureTicksPerInchOpMode extends CorbelsTeleOp {
 
     @Override
     public void stop() {
-        // Hand the drivetrain back before the follower's last update, or they keep
-        // whatever power the last loop commanded.
+        // Braking is allowed again, however this run ended -- STOP pressed
+        // early, or an exception in the loop. Then hand the wheels back before
+        // the follower's last update, or they keep whatever power the last loop
+        // commanded.
+        drivetrain.allowConfiguredBrakeMode();
         drivetrain.stop();
         stopAfter();
     }
@@ -71,7 +72,7 @@ public class L17aMeasureTicksPerInchOpMode extends CorbelsTeleOp {
         loopBefore();
         drivetrain.setCommandedWheels(0, 0, 0, 0);       // no power: we are pushing
 
-        double[] now = ticks();
+        int[] now = drivetrain.wheelTicks();
         ticks = Calibration.forwardPart(now[0] - startTicks[0], now[1] - startTicks[1],
                 now[2] - startTicks[2], now[3] - startTicks[3]);
         double dx = follower.pose().x() - startX;
@@ -95,16 +96,5 @@ public class L17aMeasureTicksPerInchOpMode extends CorbelsTeleOp {
         Tracker.printToDs("Configured now  %.2f", Constants.ticksPerInch);
 
         loopAfter();
-    }
-
-    private double[] ticks() {
-        return new double[]{
-                hardware.frontLeft.getCurrentPosition(), hardware.frontRight.getCurrentPosition(),
-                hardware.backLeft.getCurrentPosition(), hardware.backRight.getCurrentPosition()};
-    }
-
-    @Override
-    protected void afterLoop() {
-        Constants.manualBrakeMode = savedBrakeMode;
     }
 }

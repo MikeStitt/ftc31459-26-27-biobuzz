@@ -11,12 +11,13 @@ import org.firstinspires.ftc.teamcode.base.RobotHardware;
  * spins, and braking when the power goes to 0 -- and adds what is special about
  * this lesson. {@code super(hardware)} is how the motors get handed over.
  *
- * <p>Two methods are this lesson's own. {@link #sticks} turns the two stick
- * numbers into four wheel powers, and {@link #writeWheels} sends them to the
- * motors. Nothing else writes to these motors while L2 is running, so what
- * {@code sticks} asks for is what the wheels do.
+ * <p>One method is this lesson's own: {@link #sticks} turns the two stick
+ * numbers into four wheel powers. Sending them to the motors is
+ * {@link LessonsDriveTrain#writeWheels}, written once there and used by every
+ * lesson after this one. Nothing else writes to these motors while L2 is
+ * running, so what {@code sticks} asks for is what the wheels do.
  *
- * <p>Passes when: LessonsTest.l2_theSticksDriveTheWheelsLikeATank
+ * <p>Passes when: LessonsTest.l2b_theSticksDriveTheWheelsLikeATank
  */
 public class L2TankDriveTrain extends LessonsDriveTrain {
 
@@ -33,19 +34,8 @@ public class L2TankDriveTrain extends LessonsDriveTrain {
      * one place so every lesson that drives this way says the same thing.
      */
     public void sticks(double leftSpeed, double rightSpeed) {
-        // TODO (L2p2): call driveWheelsNow with four powers. The left stick runs both
+        // TODO (L2b): call driveWheelsNow with four powers. The left stick runs both
         //       left wheels and the right stick runs both right wheels, so two of
         //       the four are the same number.
-    }
-
-    /**
-     * Sends each of the four powers to its own motor, the slot named by {@link #FL}
-     * and the others to the motor of that name.
-     */
-    @Override
-    protected void writeWheels() {
-        // TODO (L2p2): send each slot of wheelPowers to its own motor, naming the slot
-        //       with FL, FR, BL or BR and the motor through hardware:
-        //       hardware.frontLeft.setPower(wheelPowers[FL]);  and the other three.
     }
 }

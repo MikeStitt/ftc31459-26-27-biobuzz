@@ -6,23 +6,26 @@ import org.firstinspires.ftc.teamcode.base.CorbelsTeleOp;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 
 /**
- * L3p1: a stick that is nearly centred counts as centred.
+ * L3a: a stick that is nearly centred counts as centred.
  *
  * <p>A stick let go does not read exactly zero, so the robot creeps. A deadband
  * fixes it: anything smaller than {@link #DEADBAND} is treated as nothing, and
  * everything else is passed through untouched.
  *
- * <p>{@link #deadband} is this lesson's own work, and it is an {@code if} and an
- * {@code else} rather than anything clever. Both sticks go through it, so the
- * same number is used twice.
+ * <p>{@link LessonsDriveTrain#deadband} is this lesson's own work, and it is an
+ * {@code if} and an {@code else} rather than anything clever. It goes in the
+ * drivetrain because every later lesson shapes its sticks the same way. Both
+ * sticks go through it here, so the same number is used twice.
  *
- * <p>Passes when: LessonsTest.l3p1_aNearlyCentredStickCountsAsCentred
+ * <p>Passes when: LessonsTest.l3a_aNearlyCentredStickCountsAsCentred
  */
-@TeleOp(name = "L3p1 Deadband", group = "Lessons")
-public class L3p1DeadbandOpMode extends CorbelsTeleOp {
+@TeleOp(name = "L3a Deadband", group = "Lessons")
+public class L3aDeadbandOpMode extends CorbelsTeleOp {
 
     /** Anything smaller than this counts as a stick that was let go. */
-    private static final double DEADBAND = 0.05;
+    // TODO 1 (L3a): pick the number. A stick let go reads a few hundredths, so
+    //         0.05 is a good first guess; 0 leaves the creep exactly where it was.
+    private static final double DEADBAND = 0;
 
     private L2TankDriveTrain drivetrain;
 
@@ -46,8 +49,9 @@ public class L3p1DeadbandOpMode extends CorbelsTeleOp {
         double leftRawSpeed = -gamepad1.left_stick_y;
         double rightRawSpeed = -gamepad1.right_stick_y;
 
-        // TODO 1: put each raw stick through deadband(), with DEADBAND as the
-        //         band both times, and hand the two to drivetrain.sticks().
+        // TODO 2 (L3a): put each raw stick through drivetrain.deadband(), with
+        //         DEADBAND as the band both times, and hand the two to
+        //         drivetrain.sticks().
         double leftSpeed = 0;
         double rightSpeed = 0;
 
@@ -63,15 +67,5 @@ public class L3p1DeadbandOpMode extends CorbelsTeleOp {
     public void stop() {
         drivetrain.stop();
         stopAfter();
-    }
-
-    /** Zero when the stick is inside the band, and the stick itself when it is not. */
-    private static double deadband(double value, double band) {
-        // TODO 2: if the value is smaller than the band, ignoring its minus sign,
-        //         the answer is 0. Otherwise the answer is the value itself. An if
-        //         and an else, and Math.abs takes the minus sign off.
-        //         Works when: LessonsTest.l3p1_aNearlyCentredStickCountsAsCentred
-        //         passes, and the robot sits still with the sticks let go.
-        return value;
     }
 }
