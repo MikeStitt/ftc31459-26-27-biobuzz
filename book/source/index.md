@@ -51,6 +51,13 @@ tasks/l8
 
 ```{toctree}
 :maxdepth: 1
+:caption: Drive it without a driver
+
+tasks/l9
+```
+
+```{toctree}
+:maxdepth: 1
 :caption: The answers
 
 answers/index

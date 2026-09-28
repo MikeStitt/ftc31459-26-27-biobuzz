@@ -43,6 +43,10 @@ words = 1200
 path = "source/tasks/l8.md"
 words = 1300
 
+[[page]]
+path = "source/tasks/l9.md"
+words = 700
+
 # The two lines the answers are generated from. tools/answers.py reads the
 # commits, not the branch names, so regenerating gives the same pages until this
 # pin is deliberately moved.
