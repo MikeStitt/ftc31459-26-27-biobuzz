@@ -26,7 +26,15 @@ in front of them to what the guide calls each part.
 :caption: Get the robot moving
 ```
 
-Nothing here yet. The first task page is L2, and it arrives with the template it sets.
+Nothing here yet. Getting the robot and the laptop ready has no page until the tasks below need
+one.
+
+```{toctree}
+:maxdepth: 1
+:caption: Drive it with the sticks
+
+tasks/l2
+```
 
 ```{toctree}
 :maxdepth: 1

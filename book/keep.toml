@@ -13,6 +13,12 @@
 path = "source/index.md"
 words = 240
 
+# Measured off the first draft and rounded up, so the check has something to
+# hold. Mike sets the real one when he reads the page.
+[[page]]
+path = "source/tasks/l2.md"
+words = 1400
+
 # The two lines the answers are generated from. tools/answers.py reads the
 # commits, not the branch names, so regenerating gives the same pages until this
 # pin is deliberately moved.
