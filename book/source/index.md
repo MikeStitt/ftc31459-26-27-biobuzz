@@ -39,6 +39,7 @@ tasks/l2
 tasks/l3
 tasks/l4
 tasks/l5
+tasks/l6
 ```
 
 ```{toctree}
