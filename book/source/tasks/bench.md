@@ -83,8 +83,11 @@ To push the sticks yourself, plug a gamepad into the laptop and add the word `pa
 ./gradlew :TeamCode:simRun --args="L2bTankOpMode pad"
 ```
 
-One pad becomes `gamepad1` on its own, and the pad then wins over anything an argument set. With two
-plugged in, hold Start and press A on the one you want to drive with.
+One pad becomes `gamepad1` on its own. With two plugged in, hold Start and press A on the one you
+want to drive with.
+
+Use `pad`, or set the sticks with arguments, but not both. Together they are an error, and the run
+names the setting that clashed.
 
 It prints where it is listening, then runs:
 
