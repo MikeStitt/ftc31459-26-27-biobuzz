@@ -54,6 +54,7 @@ tasks/l8
 :caption: Drive it without a driver
 
 tasks/l9
+tasks/l10
 ```
 
 ```{toctree}
