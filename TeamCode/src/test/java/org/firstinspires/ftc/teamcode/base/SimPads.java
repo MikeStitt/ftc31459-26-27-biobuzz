@@ -107,7 +107,17 @@ public final class SimPads implements AutoCloseable {
         }
     }
 
-    /** True once every pad plugged in has a player. */
+    /** True while nothing is plugged in at all, so there is nothing to assign. */
+    public boolean empty() {
+        return sdl.pads().isEmpty();
+    }
+
+    /**
+     * True once every pad plugged in has a player.
+     *
+     * <p>True of no pads, which is why {@link #main} asks {@link #empty()} as
+     * well: zero pads all having a player is not a reason to stop waiting.
+     */
     public boolean settled() {
         for (Source s : source.values()) {
             if (s == Source.UNCLAIMED) {
@@ -415,13 +425,28 @@ public final class SimPads implements AutoCloseable {
             long end = System.currentTimeMillis() + seconds * 1000;
             Gamepad ignored1 = new Gamepad();
             Gamepad ignored2 = new Gamepad();
-            while (!pads.settled() && System.currentTimeMillis() < end) {
+            while ((pads.empty() || !pads.settled()) && System.currentTimeMillis() < end) {
                 pads.update(ignored1, ignored2);
                 OpModeHarness.sleep(20);
             }
-            System.out.println(pads.settled()
-                    ? "Every pad has a player; run a lesson."
-                    : "Gave up after " + seconds + " s with a pad unclaimed.");
+            System.out.println(verdict(pads.empty(), pads.settled(), seconds));
         }
+    }
+
+    /**
+     * The line that ends a {@code simPads} run.
+     *
+     * <p>Three cases, not two. Before a pad could arrive mid-run there was no
+     * point waiting for one, and no pad at all ended the run saying every pad
+     * had a player, which was true and useless.
+     */
+    static String verdict(boolean empty, boolean settled, long seconds) {
+        if (empty) {
+            return "No pad was plugged in after " + seconds + " s.";
+        }
+        if (settled) {
+            return "Every pad has a player; run a lesson.";
+        }
+        return "Gave up after " + seconds + " s with a pad unclaimed.";
     }
 }
