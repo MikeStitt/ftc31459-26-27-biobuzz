@@ -46,6 +46,51 @@ public class SimRunTest {
     }
 
     @Test
+    public void padWithAStickIsInvalid() {
+        String why = SimRun.invalid(new String[] {"L2bTankOpMode", "pad", "left_stick_y=-1"});
+        assertTrue(String.valueOf(why), why != null && why.contains("left_stick_y=-1"));
+        assertTrue(String.valueOf(why), why.startsWith("invalid arguments:"));
+    }
+
+    @Test
+    public void padWithSeveralSettingsNamesThemAll() {
+        String why = SimRun.invalid(
+                new String[] {"L2bTankOpMode", "left_stick_y=-1", "pad", "a=true"});
+        assertTrue(String.valueOf(why), why.contains("left_stick_y=-1"));
+        assertTrue(String.valueOf(why), why.contains("a=true"));
+    }
+
+    @Test
+    public void padOnItsOwnIsFine() {
+        assertEquals(null, SimRun.invalid(new String[] {"L2bTankOpMode", "pad"}));
+        assertEquals(null, SimRun.invalid(new String[] {"L2bTankOpMode", "pad", "pad"}));
+    }
+
+    @Test
+    public void settingsOnTheirOwnAreFine() {
+        assertEquals(null,
+                SimRun.invalid(new String[] {"L2bTankOpMode", "left_stick_y=-1", "a=true"}));
+        assertEquals(null, SimRun.invalid(new String[] {"L2bTankOpMode"}));
+        assertEquals(null, SimRun.invalid(new String[] {}));
+    }
+
+    @Test
+    public void onlyTheBareWordIsTheFlag() {
+        // pad=true is a setting, so it reaches set() and fails on its own name.
+        // It needs a real setting beside it to tell a bare-word match from a
+        // prefix match: on its own there is nothing for the flag to conflict with.
+        assertEquals(null, SimRun.invalid(new String[] {"L2bTankOpMode", "pad=true"}));
+        assertEquals(null,
+                SimRun.invalid(new String[] {"L2bTankOpMode", "pad=true", "a=true"}));
+    }
+
+    @Test
+    public void theLessonNameIsNeverASetting() {
+        // args[0] is the lesson, so a lesson called pad would not be the flag.
+        assertEquals(null, SimRun.invalid(new String[] {"pad", "left_stick_y=-1"}));
+    }
+
+    @Test
     public void anArgumentWithNoValueIsRejected() throws Exception {
         OpModeHarness h = new OpModeHarness(new L2bTankOpMode());
         try {
