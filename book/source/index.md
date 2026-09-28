@@ -24,10 +24,12 @@ in front of them to what the guide calls each part.
 ```{toctree}
 :maxdepth: 1
 :caption: Get the robot moving
+
+tasks/directions
 ```
 
-Nothing here yet. Getting the robot and the laptop ready has no page until the tasks below need
-one.
+Getting the robot and the laptop ready has no page yet. Checking the motor directions needs L2
+finished, so read it after that one.
 
 ```{toctree}
 :maxdepth: 1
