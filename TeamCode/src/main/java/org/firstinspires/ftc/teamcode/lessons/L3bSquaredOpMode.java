@@ -15,8 +15,9 @@ import org.firstinspires.ftc.teamcode.base.Tracker;
  * <p>{@link LessonsDriveTrain#squared} keeps the sign, because squaring a
  * negative number the ordinary way would drive the robot forwards when the
  * driver asked for backwards. It goes beside the deadband in the drivetrain,
- * where the later lessons can reach it. The deadband runs first and the squaring second, each into its own
- * variable, so what happened to a number can be read off the log.
+ * where the later lessons can reach it. The deadband runs first and the squaring
+ * second, each into its own variable, so what happened to a number can be read
+ * off the log.
  *
  * <p>Squaring reshapes what the driver asked for, and where it goes decides
  * which way. That is a driver's choice rather than a right answer.

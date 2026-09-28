@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.base.RobotHardware;
  * lesson after this one. Nothing else writes to these motors while L2 is
  * running, so what {@code sticks} asks for is what the wheels do.
  *
- * <p>Passes when: LessonsTest.l2_theSticksDriveTheWheelsLikeATank
+ * <p>Passes when: LessonsTest.l2b_theSticksDriveTheWheelsLikeATank
  */
 public class L2TankDriveTrain extends LessonsDriveTrain {
 
