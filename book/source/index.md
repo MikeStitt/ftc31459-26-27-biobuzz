@@ -45,6 +45,7 @@ tasks/l5
 :maxdepth: 1
 :caption: See what it is doing
 
+tasks/panels
 tasks/bench
 ```
 

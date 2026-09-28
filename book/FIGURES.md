@@ -30,3 +30,4 @@ What the picture must show, in one sentence.
 | `fig-field-relative` | The field from above with the driver at the bottom, the robot turned a quarter turn, the stick's direction as an arrow on the field, and the same arrow drawn again on the robot showing what forward and sideways it turns into | A drawing | pencilled |
 | `fig-speed-loop` | The loop drawn once round: the stick asking for 40 in/s, the feedforward guess at the power, the encoder's measured speed coming back, and the error being added in | A drawing | pencilled |
 | `fig-advantagescope-sim` | AdvantageScope with a 2D field showing `sim/Pose`, the topic list open beside it, and a graph of the four `sim/wheels` values | Screenshot of AdvantageScope | pencilled |
+| `fig-panels-graph` | The Panels Graph panel with `stick/left_raw` and `stick/left_shaped` both plotted while the stick is pushed slowly to full, so the gap between the two curves is visible | Screenshot of Panels | pencilled |

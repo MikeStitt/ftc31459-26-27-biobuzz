@@ -40,6 +40,10 @@ path = "source/tasks/l6.md"
 words = 1200
 
 [[page]]
+path = "source/tasks/panels.md"
+words = 1000
+
+[[page]]
 path = "source/tasks/bench.md"
 words = 1000
 
