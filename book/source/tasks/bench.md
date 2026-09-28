@@ -21,16 +21,29 @@ you can see what your code does before it is your turn at the field.
 ./gradlew :TeamCode:test
 ```
 
-That runs every test in the project. On a fresh copy, where nobody has written a lesson yet, it ends
-like this:
+That runs the tests for everything the lessons are built on, and leaves the lesson tests out. It
+says so while it runs:
 
 ```
-143 tests completed, 54 failed
+Skipping org.firstinspires.ftc.teamcode.lessons.*. Run them with :TeamCode:testLessons.
 ```
 
+**You'll know it worked when** it ends with `BUILD SUCCESSFUL`. Nothing underneath the lessons is
+broken, so whatever fails next is yours.
+
+**If it didn't**, and it says `SDK location not found`, the laptop has no `local.properties` file
+yet. That file is not kept in git, and Android Studio writes it the first time it opens the project.
+Open the project once, then run the command again.
+
+Now the tests for your own work:
+
+```
+./gradlew :TeamCode:testLessons
+```
+
+On a fresh copy, where nobody has written a lesson yet, the report counts 66 tests and 54 failures.
 Measured on 2026-09-28. Fifty-four failures is not a broken copy. Each one is a lesson nobody has
-written, and the count drops as you write them. The simulator's own three tests pass on that same
-fresh copy, so everything underneath the lessons is working.
+written, and the count drops as you write them.
 
 **You'll know it worked when** the last lines name a report:
 
@@ -51,10 +64,6 @@ A file and a line, and no word about what went wrong. The report for that same r
 *if it didn't* line in this guide quotes a message out of the report, so every one of them starts
 here.
 
-**If it didn't**, and it says `SDK location not found`, the laptop has no `local.properties` file
-yet. That file is not kept in git, and Android Studio writes it the first time it opens the project.
-Open the project once, then run the command again.
-
 ### Step 2: watch one lesson move
 
 A test says where the robot ended up. It does not show you the robot. For that, run one lesson on
@@ -66,8 +75,16 @@ its own:
 
 The first word inside the quotes is the lesson's class name. Everything after it holds one gamepad
 control at one value for the whole run, named the way the gamepad names it. So `left_stick_y=-1` is
-the left stick pushed fully forward, and `a=true` is the A button held down. You cannot push the
-sticks while it runs. That is not built yet.
+the left stick pushed fully forward, and `a=true` is the A button held down.
+
+To push the sticks yourself, plug a gamepad into the laptop and add the word `pad`:
+
+```
+./gradlew :TeamCode:simRun --args="L2bTankOpMode pad"
+```
+
+One pad becomes `gamepad1` on its own, and the pad then wins over anything an argument set. With two
+plugged in, hold Start and press A on the one you want to drive with.
 
 It prints where it is listening, then runs:
 

@@ -43,9 +43,14 @@ words = 1200
 path = "source/tasks/panels.md"
 words = 1000
 
+# Raised from 1000 on 2026-09-28. The split build gave the page a second command
+# to run, and simRun gained a real gamepad, so step 1 grew a check and step 2 a
+# paragraph. What came out was the sentence about the simulator's own three
+# tests, which `BUILD SUCCESSFUL` now covers, and the one saying the sticks
+# cannot be pushed.
 [[page]]
 path = "source/tasks/bench.md"
-words = 1000
+words = 1100
 
 [[page]]
 path = "source/tasks/pinpoint.md"
