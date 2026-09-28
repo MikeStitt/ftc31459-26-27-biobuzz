@@ -1,38 +1,41 @@
 # L8CompareLocalizersOpMode
 
-The blanks in this file, filled in from `7475a49`:
+The blanks in this file, filled in from `e74ab6c`:
 
 `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L8CompareLocalizersOpMode.java`
 
-## TODO 1
+## TODO 1 (L8)
 
 What the lesson leaves blank:
 
 ```java
-        // TODO 1: run your localizer alongside the real one, named "encoders":
-        //         shadow.add("encoders",
+        // TODO 1 (L8): run your localizer alongside the robot's own, named
+        //         "driveWheelEncoders" because that is which encoders it reads:
+        //         shadowLocalizers.add("driveWheelEncoders",
         //                 new MecanumEncoderLocalizer(new HardwareWheelSource(hardware)));
 ```
 
 What the solutions line has there:
 
 ```java
-        shadow.add("encoders", new MecanumEncoderLocalizer(new HardwareWheelSource(hardware)));
+        shadowLocalizers.add("driveWheelEncoders",
+                new MecanumEncoderLocalizer(new HardwareWheelSource(hardware)));
 ```
 
-## TODO 2
+## TODO 2 (L8)
 
 What the lesson leaves blank:
 
 ```java
-        // TODO 2: holonomic driving, same as lesson 5 -- but through the
-        //         follower now, the way lesson 6 handed the drivetrain over.
+        // TODO 2 (L8): holonomic driving, same as L5 -- but through the drivetrain
+        //         the follower is holding now, the way L6 handed it over. One call
+        //         to drivetrain.sticks() with the three sticks.
 ```
 
 What the solutions line has there:
 
 ```java
-        Drive.holonomic(follower,
+        drivetrain.sticks(
                 -gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x);
 ```
 

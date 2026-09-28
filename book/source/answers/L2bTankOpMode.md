@@ -1,8 +1,8 @@
-# L2p2TankOpMode
+# L2bTankOpMode
 
-The blanks in this file, filled in from `7475a49`:
+The blanks in this file, filled in from `e74ab6c`:
 
-`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L2p2TankOpMode.java`
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L2bTankOpMode.java`
 
 ## TODO 1
 
@@ -10,7 +10,7 @@ What the lesson leaves blank:
 
 ```java
         // TODO 1: read both sticks' y axes into named doubles, negating each one
-        //         the way L2p1 did, and hand them to the drivetrain:
+        //         the way L2a did, and hand them to the drivetrain:
         //         drivetrain.sticks(leftSpeed, rightSpeed);
 ```
 
@@ -28,10 +28,10 @@ What the lesson leaves blank:
 
 ```java
         // TODO 2: log the four stick axes, the A button and the pressed and
-        //         released events, the same as L2p1. The loop count and the time
+        //         released events, the same as L2a. The loop count and the time
         //         are gone: the robot logs both for itself.
-        //         Works when: LessonsTest.l2p2_theSticksDriveTheWheelsLikeATank
-        //         and LessonsTest.l2p2_theSticksMoveTheSimulatedRobot pass.
+        //         Works when: LessonsTest.l2b_theSticksDriveTheWheelsLikeATank
+        //         and LessonsTest.l2b_theSticksMoveTheSimulatedRobot pass.
 ```
 
 What the solutions line has there:

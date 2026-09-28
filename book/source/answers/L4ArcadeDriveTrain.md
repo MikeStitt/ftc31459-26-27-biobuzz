@@ -1,6 +1,6 @@
 # L4ArcadeDriveTrain
 
-The blanks in this file, filled in from `7475a49`:
+The blanks in this file, filled in from `e74ab6c`:
 
 `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L4ArcadeDriveTrain.java`
 
@@ -21,23 +21,4 @@ What the solutions line has there:
         double leftSpeed = forwardSpeed - turnCcwSpeed;
         double rightSpeed = forwardSpeed + turnCcwSpeed;
         driveWheelsNow(leftSpeed, rightSpeed, leftSpeed, rightSpeed);
-```
-
-## TODO 
-
-What the lesson leaves blank:
-
-```java
-        // TODO: send each slot of wheelPowers to its own motor, naming the slot
-        //       with FL, FR, BL or BR and the motor through hardware:
-        //       hardware.frontLeft.setPower(wheelPowers[FL]);  and the other three.
-```
-
-What the solutions line has there:
-
-```java
-        hardware.frontLeft.setPower(wheelPowers[FL]);
-        hardware.frontRight.setPower(wheelPowers[FR]);
-        hardware.backLeft.setPower(wheelPowers[BL]);
-        hardware.backRight.setPower(wheelPowers[BR]);
 ```

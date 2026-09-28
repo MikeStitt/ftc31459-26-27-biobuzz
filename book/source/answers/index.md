@@ -14,10 +14,10 @@ L14DriveToPoseOpMode
 L15CombinedOpMode
 L16VelocityDriveOpMode
 L2TankDriveTrain
-L2p1SticksOpMode
-L2p2TankOpMode
-L3p1DeadbandOpMode
-L3p2SquaredOpMode
+L2aSticksOpMode
+L2bTankOpMode
+L3aDeadbandOpMode
+L3bSquaredOpMode
 L4ArcadeDriveTrain
 L4ArcadeOpMode
 L5HolonomicDriveTrain

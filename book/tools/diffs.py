@@ -50,14 +50,14 @@ html_theme = "furo"
 '''
 
 MARKER = re.compile(r"TODO(\s+(?P<number>\d+))?")
-LESSON_IN_MARKER = re.compile(r"\(L(\d+)(p\d+|[a-z]?)\)")
-LESSON_IN_JAVADOC = re.compile(r"^\s*\* (L\d+(?:p\d+|[a-z]?)):")
-LESSON_IN_NAME = re.compile(r"^L(\d+)(p\d+|[a-z]*?)(?=[A-Z]|$)")
+LESSON_IN_MARKER = re.compile(r"\(L(\d+)([a-z]?)\)")
+LESSON_IN_JAVADOC = re.compile(r"^\s*\* (L\d+[a-z]?):")
+LESSON_IN_NAME = re.compile(r"^L(\d+)([a-z]*?)(?=[A-Z]|$)")
 UNNAMED = "No lesson named"
 
 
 def lesson_order(label: str) -> tuple[int, int, str]:
-    """L2 before L10, L2p1 before L2p2, L17a before L17b, anything unnumbered last."""
+    """L2 before L10, L2a before L2b, L17a before L17b, anything unnumbered last."""
     found = LESSON_IN_NAME.match(label)
     if not found:
         return (1, 0, label)
@@ -69,8 +69,8 @@ def file_lesson(path: str, text: list[str]) -> str | None:
 
     A file named L4ArcadeDriveTrain belongs to L4. A shared file says so in the
     first line of its class javadoc, the way MecanumEncoderLocalizer opens `L8:`.
-    LessonsDriveTrain serves L2, L4 and L6 and so answers None: its markers carry
-    the lesson one at a time.
+    LessonsDriveTrain serves L2b, L3a, L3b, L4, L6, L11, L16 and L17a and so
+    answers None: its markers carry the lesson one at a time.
     """
     named = LESSON_IN_NAME.match(Path(path).stem)
     if named:

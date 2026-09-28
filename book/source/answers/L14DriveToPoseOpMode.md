@@ -1,6 +1,6 @@
 # L14DriveToPoseOpMode
 
-The blanks in this file, filled in from `7475a49`:
+The blanks in this file, filled in from `e74ab6c`:
 
 `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L14DriveToPoseOpMode.java`
 
@@ -27,36 +27,38 @@ What the solutions line has there:
         }));
 ```
 
-## TODO 2
+## TODO 2 (L14)
 
 What the lesson leaves blank:
 
 ```java
-        // TODO 2: if drivingItself and the sticks are near zero, call
-        //         Tracker.publish("drive/mode", "AUTO") and return without calling
-        //         any Drive method -- let the follower hold.
-        // TODO 3: if the driver DOES move a stick, set drivingItself = false, call
-        //         Tracker.publish("drive/mode", "DRIVER"), and drive field relative.
+        // TODO 2 (L14): if drivingItself and the sticks are near zero, publish
+        //         Tracker.publish("drive/mode", "AUTO"), hand the wheels back with
+        //         drivetrain.releaseCommandedWheels(), and return -- the follower
+        //         is holding the pose and must not be argued with.
+        // TODO 3 (L14): if the driver DOES move a stick, set drivingItself = false,
+        //         call follower.manual(0, 0, 0) to leave HOLD -- only manual() can,
+        //         and the three zeros are never used -- then publish
+        //         Tracker.publish("drive/mode", "DRIVER") and drive field relative.
 ```
 
 What the solutions line has there:
 
 ```java
-        double forwardSpeed = -gamepad1.left_stick_y;
-        double strafeLeftSpeed = -gamepad1.left_stick_x;
-        double turnCcwSpeed = -gamepad1.right_stick_x;
-        boolean driverWantsControl = Math.abs(forwardSpeed) > 0.1
-                || Math.abs(strafeLeftSpeed) > 0.1 || Math.abs(turnCcwSpeed) > 0.1;
-
         if (drivingItself) {
             if (!driverWantsControl) {
                 Tracker.publish("drive/mode", "AUTO");
+                drivetrain.releaseCommandedWheels();
                 return;                       // leave the follower holding
             }
             drivingItself = false;            // the driver takes over
+            // Out of HOLD, which only manual() can do. The three zeros are
+            // never used -- the sticks command the wheels on the next line.
+            follower.manual(0, 0, 0);
         }
         Tracker.publish("drive/mode", "DRIVER");
-        Drive.fieldRelative(follower, forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
+        drivetrain.fieldRelative(follower.pose().heading(),
+                forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
 ```
 
 The two lines also differ in 1 run(s) of comment lines, which are not

@@ -1,8 +1,8 @@
-# L2p1SticksOpMode
+# L2aSticksOpMode
 
-The blanks in this file, filled in from `7475a49`:
+The blanks in this file, filled in from `e74ab6c`:
 
-`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L2p1SticksOpMode.java`
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L2aSticksOpMode.java`
 
 ## TODO 1
 
@@ -86,8 +86,8 @@ What the lesson leaves blank:
         //         "button A released" when it is now false, as
         //         "lesson/event". A String logs the same way. Then remember this
         //         loop's value in previousButtonA for the next one.
-        //         Works when: LessonsTest.l2p1_logsEveryStickAndTheAButton and
-        //         LessonsTest.l2p1_saysWhenTheButtonIsPressedAndReleased pass.
+        //         Works when: LessonsTest.l2a_logsEveryStickAndTheAButton and
+        //         LessonsTest.l2a_saysWhenTheButtonIsPressedAndReleased pass.
 ```
 
 What the solutions line has there:
