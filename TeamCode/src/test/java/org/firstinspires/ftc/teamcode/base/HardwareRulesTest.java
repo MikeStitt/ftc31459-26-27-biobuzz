@@ -60,10 +60,10 @@ public class HardwareRulesTest {
         h.init();
         L15CombinedOpMode opMode = (L15CombinedOpMode) h.opMode();
         assertSame("the same motor object, not a second handle",
-                h.motors.get(Constants.frontLeftName).motor, opMode.hardware.frontLeft);
-        assertSame(h.motors.get(Constants.frontRightName).motor, opMode.hardware.frontRight);
-        assertSame(h.motors.get(Constants.backLeftName).motor, opMode.hardware.backLeft);
-        assertSame(h.motors.get(Constants.backRightName).motor, opMode.hardware.backRight);
+                h.motors.get(OpModeHarness.FRONT_LEFT).motor, opMode.hardware.frontLeft);
+        assertSame(h.motors.get(OpModeHarness.FRONT_RIGHT).motor, opMode.hardware.frontRight);
+        assertSame(h.motors.get(OpModeHarness.BACK_LEFT).motor, opMode.hardware.backLeft);
+        assertSame(h.motors.get(OpModeHarness.BACK_RIGHT).motor, opMode.hardware.backRight);
         assertSame(h.imu.imu, opMode.hardware.imu);
     }
 
@@ -72,8 +72,8 @@ public class HardwareRulesTest {
         Path baseDirectory = sourceRoot();
         assertNotNull("could not find the sources to scan", baseDirectory);
 
-        String[] names = {Constants.frontLeftName, Constants.frontRightName,
-                Constants.backLeftName, Constants.backRightName, Constants.imuName};
+        String[] names = {OpModeHarness.FRONT_LEFT, OpModeHarness.FRONT_RIGHT,
+                OpModeHarness.BACK_LEFT, OpModeHarness.BACK_RIGHT, Constants.imuName};
         List<String> offenders = new ArrayList<>();
         try (Stream<Path> files = Files.walk(baseDirectory)) {
             for (Path file : files.filter(f -> f.toString().endsWith(".java"))

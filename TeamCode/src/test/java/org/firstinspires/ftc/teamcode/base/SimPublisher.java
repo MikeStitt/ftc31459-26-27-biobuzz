@@ -88,10 +88,10 @@ public final class SimPublisher implements AutoCloseable {
         pose.set(FieldPose.of(p.x(), p.y(), p.heading()));
         mode.set(String.valueOf(harness.robot.follower.mode()));
 
-        wheels[0].set(harness.motors.get(Constants.frontLeftName).power);
-        wheels[1].set(harness.motors.get(Constants.frontRightName).power);
-        wheels[2].set(harness.motors.get(Constants.backLeftName).power);
-        wheels[3].set(harness.motors.get(Constants.backRightName).power);
+        wheels[0].set(harness.motors.get(OpModeHarness.FRONT_LEFT).power);
+        wheels[1].set(harness.motors.get(OpModeHarness.FRONT_RIGHT).power);
+        wheels[2].set(harness.motors.get(OpModeHarness.BACK_LEFT).power);
+        wheels[3].set(harness.motors.get(OpModeHarness.BACK_RIGHT).power);
 
         leftY.set(harness.gamepad1.left_stick_y);
         leftX.set(harness.gamepad1.left_stick_x);

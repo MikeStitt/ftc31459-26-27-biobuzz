@@ -21,11 +21,12 @@ public final class RobotFactory {
     public static BiFunction<HardwareMap, Drivetrain, Follower> follower = Constants::create;
 
     /**
-     * Finds every device, by the names in {@link Constants}. Tests swap in
-     * fakes, which is also why nothing constructs a HardwareMap in a test:
-     * the real one needs an Android context.
+     * Finds every device, by the names in {@link Constants#drivetrainConfig}.
+     * Tests swap in fakes, which is also why nothing constructs a HardwareMap in
+     * a test: the real one needs an Android context.
      */
-    public static Function<HardwareMap, RobotHardware> hardware = RobotHardware::new;
+    public static Function<HardwareMap, RobotHardware> hardware =
+            map -> new RobotHardware(map, Constants.drivetrainConfig);
 
     private RobotFactory() {
     }

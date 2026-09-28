@@ -50,8 +50,8 @@ public class L17aMeasureTicksPerInchOpMode extends CorbelsTeleOp {
     public void start() {
         startBefore();
         // The drivetrain must roll freely, so no braking while we push.
-        savedBrakeMode = Constants.manualBrakeMode;
-        Constants.manualBrakeMode = false;
+        savedBrakeMode = Constants.drivetrainConfig.manualBrakeMode.get();
+        Constants.drivetrainConfig.manualBrakeMode.set(false);
         startTicks = ticks();
         startX = follower.pose().x();
         startY = follower.pose().y();
@@ -105,6 +105,6 @@ public class L17aMeasureTicksPerInchOpMode extends CorbelsTeleOp {
 
     @Override
     protected void afterLoop() {
-        Constants.manualBrakeMode = savedBrakeMode;
+        Constants.drivetrainConfig.manualBrakeMode.set(savedBrakeMode);
     }
 }

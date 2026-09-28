@@ -109,23 +109,23 @@ public class LessonsTest {
         h.loop();
 
         assertEquals("the left stick runs the front left wheel",
-                1.0, h.motors.get(Constants.frontLeftName).power, EPS);
+                1.0, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
         assertEquals("and the back left too",
-                1.0, h.motors.get(Constants.backLeftName).power, EPS);
+                1.0, h.motors.get(OpModeHarness.BACK_LEFT).power, EPS);
         assertEquals("the right stick is centred, so the right wheels sit still",
-                0.0, h.motors.get(Constants.frontRightName).power, EPS);
-        assertEquals(0.0, h.motors.get(Constants.backRightName).power, EPS);
+                0.0, h.motors.get(OpModeHarness.FRONT_RIGHT).power, EPS);
+        assertEquals(0.0, h.motors.get(OpModeHarness.BACK_RIGHT).power, EPS);
 
         h.gamepad1.right_stick_y = 1.0f;      // right stick fully back
         h.loop();
         assertEquals("opposed sticks spin the robot",
-                -1.0, h.motors.get(Constants.frontRightName).power, EPS);
-        assertEquals(1.0, h.motors.get(Constants.frontLeftName).power, EPS);
+                -1.0, h.motors.get(OpModeHarness.FRONT_RIGHT).power, EPS);
+        assertEquals(1.0, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
 
         h.stop();
         assertEquals("stopping the OpMode stops the wheels",
-                0.0, h.motors.get(Constants.frontLeftName).power, EPS);
-        assertEquals(0.0, h.motors.get(Constants.frontRightName).power, EPS);
+                0.0, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
+        assertEquals(0.0, h.motors.get(OpModeHarness.FRONT_RIGHT).power, EPS);
     }
 
     /**
@@ -161,18 +161,18 @@ public class LessonsTest {
         h.gamepad1.right_stick_y = 0.04f;
         h.loop();
         assertEquals("inside the deadband, so the robot does not creep",
-                0.0, h.motors.get(Constants.frontLeftName).power, EPS);
-        assertEquals(0.0, h.motors.get(Constants.frontRightName).power, EPS);
+                0.0, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
+        assertEquals(0.0, h.motors.get(OpModeHarness.FRONT_RIGHT).power, EPS);
         assertNotEquals("the raw stick was not 0 though", 0.0,
                 number(Tracker.values(), "stick/left_raw"), EPS);
 
         h.gamepad1.left_stick_y = -0.5f;      // half forward
         h.loop();
         assertEquals("outside the band, the stick is passed through untouched",
-                0.5, h.motors.get(Constants.frontLeftName).power, EPS);
+                0.5, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
 
         h.stop();
-        assertEquals(0.0, h.motors.get(Constants.frontLeftName).power, EPS);
+        assertEquals(0.0, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
     }
 
     // -------------------------------------------------------------- L3p2
@@ -185,24 +185,24 @@ public class LessonsTest {
 
         h.gamepad1.left_stick_y = -0.03f;     // the deadband is still there
         h.loop();
-        assertEquals(0.0, h.motors.get(Constants.frontLeftName).power, EPS);
+        assertEquals(0.0, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
 
         h.gamepad1.left_stick_y = -0.5f;      // half forward
         h.gamepad1.right_stick_y = 0.5f;      // half back
         h.loop();
         assertEquals("half stick is quarter power",
-                0.25, h.motors.get(Constants.frontLeftName).power, EPS);
+                0.25, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
         assertEquals("and squaring keeps the sign",
-                -0.25, h.motors.get(Constants.frontRightName).power, EPS);
+                -0.25, h.motors.get(OpModeHarness.FRONT_RIGHT).power, EPS);
 
         h.gamepad1.left_stick_y = -1.0f;      // fully forward
         h.loop();
         assertEquals("full stick still reaches full power",
-                1.0, h.motors.get(Constants.frontLeftName).power, EPS);
-        assertEquals(1.0, h.motors.get(Constants.backLeftName).power, EPS);
+                1.0, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
+        assertEquals(1.0, h.motors.get(OpModeHarness.BACK_LEFT).power, EPS);
 
         h.stop();
-        assertEquals(0.0, h.motors.get(Constants.frontLeftName).power, EPS);
+        assertEquals(0.0, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
     }
 
     // -------------------------------------------------------------- L4
@@ -217,22 +217,22 @@ public class LessonsTest {
         h.gamepad1.right_stick_x = 0.25f;     // and a quarter turn to the right
         h.loop();
         assertEquals("turning right speeds the left wheels up",
-                0.75, h.motors.get(Constants.frontLeftName).power, EPS);
+                0.75, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
         assertEquals("and slows the right wheels down",
-                0.25, h.motors.get(Constants.frontRightName).power, EPS);
+                0.25, h.motors.get(OpModeHarness.FRONT_RIGHT).power, EPS);
         assertEquals("both wheels on a side do the same thing",
-                0.75, h.motors.get(Constants.backLeftName).power, EPS);
-        assertEquals(0.25, h.motors.get(Constants.backRightName).power, EPS);
+                0.75, h.motors.get(OpModeHarness.BACK_LEFT).power, EPS);
+        assertEquals(0.25, h.motors.get(OpModeHarness.BACK_RIGHT).power, EPS);
 
         h.gamepad1.left_stick_y = -1.0f;      // full forward
         h.gamepad1.right_stick_x = -1.0f;     // and a full turn to the left
         h.loop();
         assertEquals("asking for more than a motor can give scales both sides down together",
-                0.0, h.motors.get(Constants.frontLeftName).power, EPS);
-        assertEquals(1.0, h.motors.get(Constants.frontRightName).power, EPS);
+                0.0, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
+        assertEquals(1.0, h.motors.get(OpModeHarness.FRONT_RIGHT).power, EPS);
 
         h.stop();
-        assertEquals(0.0, h.motors.get(Constants.frontRightName).power, EPS);
+        assertEquals(0.0, h.motors.get(OpModeHarness.FRONT_RIGHT).power, EPS);
     }
 
     // -------------------------------------------------------------- L5
@@ -246,30 +246,30 @@ public class LessonsTest {
         h.gamepad1.left_stick_y = -1.0f;      // stick pushed away from the driver
         h.loop();
         assertEquals("driving forward turns every wheel the same way",
-                1.0, h.motors.get(Constants.frontLeftName).power, EPS);
-        assertEquals(1.0, h.motors.get(Constants.frontRightName).power, EPS);
-        assertEquals(1.0, h.motors.get(Constants.backLeftName).power, EPS);
-        assertEquals(1.0, h.motors.get(Constants.backRightName).power, EPS);
+                1.0, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
+        assertEquals(1.0, h.motors.get(OpModeHarness.FRONT_RIGHT).power, EPS);
+        assertEquals(1.0, h.motors.get(OpModeHarness.BACK_LEFT).power, EPS);
+        assertEquals(1.0, h.motors.get(OpModeHarness.BACK_RIGHT).power, EPS);
 
         h.gamepad1.left_stick_y = 0.0f;
         h.gamepad1.left_stick_x = -1.0f;      // stick pushed left
         h.loop();
         assertEquals("sliding left runs one diagonal back and the other forward",
-                -1.0, h.motors.get(Constants.frontLeftName).power, EPS);
-        assertEquals(1.0, h.motors.get(Constants.frontRightName).power, EPS);
-        assertEquals(1.0, h.motors.get(Constants.backLeftName).power, EPS);
-        assertEquals(-1.0, h.motors.get(Constants.backRightName).power, EPS);
+                -1.0, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
+        assertEquals(1.0, h.motors.get(OpModeHarness.FRONT_RIGHT).power, EPS);
+        assertEquals(1.0, h.motors.get(OpModeHarness.BACK_LEFT).power, EPS);
+        assertEquals(-1.0, h.motors.get(OpModeHarness.BACK_RIGHT).power, EPS);
 
         h.gamepad1.left_stick_x = 0.0f;
         h.gamepad1.right_stick_x = 0.5f;      // turn right, on the spot
         h.loop();
         assertEquals("turning right runs the left side forward",
-                0.5, h.motors.get(Constants.frontLeftName).power, EPS);
+                0.5, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
         assertEquals("and the right side back",
-                -0.5, h.motors.get(Constants.frontRightName).power, EPS);
+                -0.5, h.motors.get(OpModeHarness.FRONT_RIGHT).power, EPS);
 
         h.stop();
-        assertEquals(0.0, h.motors.get(Constants.frontLeftName).power, EPS);
+        assertEquals(0.0, h.motors.get(OpModeHarness.FRONT_LEFT).power, EPS);
     }
 
     // -------------------------------------------------------------- L6

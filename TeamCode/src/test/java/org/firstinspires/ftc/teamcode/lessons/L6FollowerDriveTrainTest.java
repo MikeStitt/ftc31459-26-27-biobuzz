@@ -38,7 +38,7 @@ public class L6FollowerDriveTrainTest {
         backRight = new OpModeHarness.FakeMotor();
         drivetrain = new L6FollowerDriveTrain(new RobotHardware(
                 frontLeft.motor, frontRight.motor, backLeft.motor, backRight.motor,
-                new OpModeHarness.FakeImu().imu));
+                new OpModeHarness.FakeImu().imu, OpModeHarness.freshConfig()));
     }
 
     /** What the follower does every update: three numbers in, four powers out. */

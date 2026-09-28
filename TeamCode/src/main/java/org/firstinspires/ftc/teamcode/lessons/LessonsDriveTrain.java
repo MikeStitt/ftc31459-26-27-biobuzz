@@ -86,12 +86,12 @@ public abstract class LessonsDriveTrain implements Drivetrain {
         motors[BL] = hardware.backLeft;
         motors[BR] = hardware.backRight;
 
-        hardware.frontLeft.setDirection(Constants.frontLeftDirection);
-        hardware.frontRight.setDirection(Constants.frontRightDirection);
-        hardware.backLeft.setDirection(Constants.backLeftDirection);
-        hardware.backRight.setDirection(Constants.backRightDirection);
+        hardware.frontLeft.setDirection(hardware.mecanumConfig.frontLeftDirection.get());
+        hardware.frontRight.setDirection(hardware.mecanumConfig.frontRightDirection.get());
+        hardware.backLeft.setDirection(hardware.mecanumConfig.backLeftDirection.get());
+        hardware.backRight.setDirection(hardware.mecanumConfig.backRightDirection.get());
 
-        setZeroPowerBehavior(zeroPowerBrakeWhenTrue(Constants.manualBrakeMode));
+        setZeroPowerBehavior(zeroPowerBrakeWhenTrue(hardware.mecanumConfig.manualBrakeMode.get()));
     }
 
     // ------------------------------------------------- what every lesson writes
@@ -190,12 +190,15 @@ public abstract class LessonsDriveTrain implements Drivetrain {
         }
         applyBrakeMode(manual);
 
+        double[] sourcePowers;
         if (commandedWheels == null) {
             double[] mixed = mix(powers);
-            double[] scaled = normalized(mixed);
-            copyInto(wheelPowers, scaled);
+            sourcePowers = normalized(mixed);
         } else {
-            copyInto(wheelPowers, commandedWheels);
+            sourcePowers = commandedWheels;
+        }
+        for (int i = 0; i < wheelPowers.length; i++) {
+            wheelPowers[i] = sourcePowers[i];
         }
 
         writeWheels();
@@ -219,7 +222,7 @@ public abstract class LessonsDriveTrain implements Drivetrain {
      * the wheels.
      */
     protected final void applyBrakeMode(boolean manual) {
-        boolean brake = manual && Constants.manualBrakeMode;
+        boolean brake = manual && hardware.mecanumConfig.manualBrakeMode.get();
         setZeroPowerBehavior(zeroPowerBrakeWhenTrue(brake));
     }
 
@@ -284,7 +287,7 @@ public abstract class LessonsDriveTrain implements Drivetrain {
 
     @Override
     public void stop() {
-        stop(Constants.manualBrakeMode);
+        stop(hardware.mecanumConfig.manualBrakeMode.get());
     }
 
     @Override

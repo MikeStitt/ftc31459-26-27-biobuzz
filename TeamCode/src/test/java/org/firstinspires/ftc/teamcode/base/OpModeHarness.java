@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.base;
 
+import com.pedropathing.revhub.drivetrains.MecanumConfig;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -29,6 +31,35 @@ import java.util.Map;
  * and what it prints from {@link #driverStation}, rather than from a file.
  */
 public final class OpModeHarness {
+
+    /** The four motor names, read from the one config every OpMode is built on. */
+    public static final String FRONT_LEFT = Constants.drivetrainConfig.frontLeftName.get();
+    public static final String FRONT_RIGHT = Constants.drivetrainConfig.frontRightName.get();
+    public static final String BACK_LEFT = Constants.drivetrainConfig.backLeftName.get();
+    public static final String BACK_RIGHT = Constants.drivetrainConfig.backRightName.get();
+
+    /**
+     * A config of this test's own, with the same values the robot's has.
+     *
+     * <p>Every test that needs one builds one: {@code Constants.drivetrainConfig}
+     * is a static built once, so a test that wrote to it would carry the change
+     * into whichever test ran next.
+     */
+    public static MecanumConfig freshConfig() {
+        MecanumConfig robots = Constants.drivetrainConfig;
+        return new MecanumConfig(c -> {
+            c.frontLeftName.set(robots.frontLeftName.get());
+            c.frontRightName.set(robots.frontRightName.get());
+            c.backLeftName.set(robots.backLeftName.get());
+            c.backRightName.set(robots.backRightName.get());
+            c.frontLeftDirection.set(robots.frontLeftDirection.get());
+            c.frontRightDirection.set(robots.frontRightDirection.get());
+            c.backLeftDirection.set(robots.backLeftDirection.get());
+            c.backRightDirection.set(robots.backRightDirection.get());
+            c.manualBrakeMode.set(robots.manualBrakeMode.get());
+            c.powerThreshold.set(robots.powerThreshold.get());
+        });
+    }
 
     /**
      * A motor whose encoder the test drives by hand.
@@ -149,10 +180,10 @@ public final class OpModeHarness {
 
     /** Sets what each motor reports for velocity, in ticks per second. */
     public void velocities(double frontLeft, double frontRight, double backLeft, double backRight) {
-        motors.get(Constants.frontLeftName).velocity = frontLeft;
-        motors.get(Constants.frontRightName).velocity = frontRight;
-        motors.get(Constants.backLeftName).velocity = backLeft;
-        motors.get(Constants.backRightName).velocity = backRight;
+        motors.get(FRONT_LEFT).velocity = frontLeft;
+        motors.get(FRONT_RIGHT).velocity = frontRight;
+        motors.get(BACK_LEFT).velocity = backLeft;
+        motors.get(BACK_RIGHT).velocity = backRight;
     }
 
     /** Where this harness's flight logs go. */
@@ -172,10 +203,13 @@ public final class OpModeHarness {
 
     private final OpMode opMode;
 
+    /** This harness's own drivetrain config, handed to the hardware it builds. */
+    public final MecanumConfig config = freshConfig();
+
     public OpModeHarness(OpMode opMode) {
         this.opMode = opMode;
-        for (String name : new String[]{Constants.frontLeftName, Constants.frontRightName,
-                Constants.backLeftName, Constants.backRightName}) {
+        for (String name : new String[]{FRONT_LEFT, FRONT_RIGHT,
+                BACK_LEFT, BACK_RIGHT}) {
             motors.put(name, new FakeMotor());
         }
         // No HardwareMap is built here: the real one needs an Android context.
@@ -184,12 +218,13 @@ public final class OpModeHarness {
         RobotFactory.hardware = map -> {
             lookups++;
             return new RobotHardware(
-                    motors.get(Constants.frontLeftName).motor,
-                    motors.get(Constants.frontRightName).motor,
-                    motors.get(Constants.backLeftName).motor,
-                    motors.get(Constants.backRightName).motor,
+                    motors.get(FRONT_LEFT).motor,
+                    motors.get(FRONT_RIGHT).motor,
+                    motors.get(BACK_LEFT).motor,
+                    motors.get(BACK_RIGHT).motor,
                     imu.imu,
-                    battery);
+                    battery,
+                    config);
         };
         opMode.telemetry = SimRobot.telemetry(driverStation);
         opMode.gamepad1 = gamepad1;
@@ -198,10 +233,10 @@ public final class OpModeHarness {
         // it: the lesson's own code in L2 to L5, the follower through the
         // lesson's drivetrain from L6 on.
         robot.localizer.driveFrom(() -> SimRobot.fromWheels(
-                motors.get(Constants.frontLeftName).power,
-                motors.get(Constants.frontRightName).power,
-                motors.get(Constants.backLeftName).power,
-                motors.get(Constants.backRightName).power));
+                motors.get(FRONT_LEFT).power,
+                motors.get(FRONT_RIGHT).power,
+                motors.get(BACK_LEFT).power,
+                motors.get(BACK_RIGHT).power));
         // Pedro gets the simulated drivetrain, which passes what it is asked
         // for on to the drivetrain the lesson built. Without that, nothing the
         // follower computes ever reaches a motor.
@@ -223,10 +258,10 @@ public final class OpModeHarness {
 
     /** Sets all four encoders, in ticks. */
     public void setWheelTicks(int frontLeft, int frontRight, int backLeft, int backRight) {
-        motors.get(Constants.frontLeftName).ticks = frontLeft;
-        motors.get(Constants.frontRightName).ticks = frontRight;
-        motors.get(Constants.backLeftName).ticks = backLeft;
-        motors.get(Constants.backRightName).ticks = backRight;
+        motors.get(FRONT_LEFT).ticks = frontLeft;
+        motors.get(FRONT_RIGHT).ticks = frontRight;
+        motors.get(BACK_LEFT).ticks = backLeft;
+        motors.get(BACK_RIGHT).ticks = backRight;
     }
 
     /** The OpMode under test, for reading what it logged. */

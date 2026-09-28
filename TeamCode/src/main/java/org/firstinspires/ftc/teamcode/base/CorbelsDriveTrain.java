@@ -71,10 +71,10 @@ public abstract class CorbelsDriveTrain implements Drivetrain {
         motors[BL] = hardware.backLeft;
         motors[BR] = hardware.backRight;
 
-        hardware.frontLeft.setDirection(Constants.frontLeftDirection);
-        hardware.frontRight.setDirection(Constants.frontRightDirection);
-        hardware.backLeft.setDirection(Constants.backLeftDirection);
-        hardware.backRight.setDirection(Constants.backRightDirection);
+        hardware.frontLeft.setDirection(hardware.mecanumConfig.frontLeftDirection.get());
+        hardware.frontRight.setDirection(hardware.mecanumConfig.frontRightDirection.get());
+        hardware.backLeft.setDirection(hardware.mecanumConfig.backLeftDirection.get());
+        hardware.backRight.setDirection(hardware.mecanumConfig.backRightDirection.get());
     }
 
     // ------------------------------------------------------- what a lesson writes
@@ -156,7 +156,7 @@ public abstract class CorbelsDriveTrain implements Drivetrain {
      * the wheels.
      */
     protected final void applyBrakeMode(boolean manual) {
-        boolean brake = manual && Constants.manualBrakeMode;
+        boolean brake = manual && hardware.mecanumConfig.manualBrakeMode.get();
         setZeroPowerBehavior(zeroPowerBrakeWhenTrue(brake));
     }
 
@@ -225,7 +225,7 @@ public abstract class CorbelsDriveTrain implements Drivetrain {
 
     @Override
     public void stop() {
-        stop(Constants.manualBrakeMode);
+        stop(hardware.mecanumConfig.manualBrakeMode.get());
     }
 
     @Override

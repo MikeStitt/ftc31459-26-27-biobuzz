@@ -49,8 +49,8 @@ public class L17bMeasureTurnRadiusOpMode extends CorbelsTeleOp {
     @Override
     public void start() {
         startBefore();
-        savedBrakeMode = Constants.manualBrakeMode;
-        Constants.manualBrakeMode = false;
+        savedBrakeMode = Constants.drivetrainConfig.manualBrakeMode.get();
+        Constants.drivetrainConfig.manualBrakeMode.set(false);
         startTicks = ticks();
         previousHeading = follower.pose().heading();
         startAfter();
@@ -106,6 +106,6 @@ public class L17bMeasureTurnRadiusOpMode extends CorbelsTeleOp {
 
     @Override
     protected void afterLoop() {
-        Constants.manualBrakeMode = savedBrakeMode;
+        Constants.drivetrainConfig.manualBrakeMode.set(savedBrakeMode);
     }
 }

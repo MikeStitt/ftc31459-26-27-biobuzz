@@ -41,10 +41,10 @@ public class CorbelsMecanumTest {
 
     private double[] motorPowers() {
         return new double[]{
-                h.motors.get(org.firstinspires.ftc.teamcode.pedro.Constants.frontLeftName).power,
-                h.motors.get(org.firstinspires.ftc.teamcode.pedro.Constants.frontRightName).power,
-                h.motors.get(org.firstinspires.ftc.teamcode.pedro.Constants.backLeftName).power,
-                h.motors.get(org.firstinspires.ftc.teamcode.pedro.Constants.backRightName).power};
+                h.motors.get(OpModeHarness.FRONT_LEFT).power,
+                h.motors.get(OpModeHarness.FRONT_RIGHT).power,
+                h.motors.get(OpModeHarness.BACK_LEFT).power,
+                h.motors.get(OpModeHarness.BACK_RIGHT).power};
     }
 
     @Test

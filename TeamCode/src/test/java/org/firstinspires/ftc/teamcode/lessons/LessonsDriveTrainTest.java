@@ -76,7 +76,8 @@ public class LessonsDriveTrainTest {
         backLeft = new OpModeHarness.FakeMotor();
         backRight = new OpModeHarness.FakeMotor();
         hardware = new RobotHardware(frontLeft.motor, frontRight.motor,
-                backLeft.motor, backRight.motor, new OpModeHarness.FakeImu().imu);
+                backLeft.motor, backRight.motor, new OpModeHarness.FakeImu().imu,
+                OpModeHarness.freshConfig());
     }
 
     private double[] motorPowers() {

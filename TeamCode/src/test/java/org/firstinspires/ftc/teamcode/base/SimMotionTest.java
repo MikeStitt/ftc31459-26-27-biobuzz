@@ -29,10 +29,10 @@ public class SimMotionTest {
 
     private static double[] motorPowers(OpModeHarness h) {
         return new double[]{
-                h.motors.get(Constants.frontLeftName).power,
-                h.motors.get(Constants.frontRightName).power,
-                h.motors.get(Constants.backLeftName).power,
-                h.motors.get(Constants.backRightName).power};
+                h.motors.get(OpModeHarness.FRONT_LEFT).power,
+                h.motors.get(OpModeHarness.FRONT_RIGHT).power,
+                h.motors.get(OpModeHarness.BACK_LEFT).power,
+                h.motors.get(OpModeHarness.BACK_RIGHT).power};
     }
 
     /** Both sticks pushed fully forward, for one simulated second. */
