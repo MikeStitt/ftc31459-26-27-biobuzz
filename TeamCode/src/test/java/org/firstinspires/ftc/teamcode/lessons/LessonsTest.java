@@ -12,6 +12,7 @@ import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 
+import org.firstinspires.ftc.teamcode.base.CorbelsOpMode;
 import org.firstinspires.ftc.teamcode.base.OpModeHarness;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
@@ -624,6 +625,54 @@ public class LessonsTest {
         double right = (Double) Tracker.values().get("wheel/frontRight/target_ips");
         assertEquals("opposite", -left, right, 1e-6);
         assertTrue("turning counter-clockwise drives the left side backwards", left < 0);
+    }
+
+    // -------------------------------------------------------------- L17
+
+    /**
+     * Both halves of L17 are measurements: the student pushes or spins the robot
+     * by hand, so the wheels have to roll all the way through, and brake again
+     * afterwards.
+     *
+     * <p>Two bugs this catches, both of which the lessons had until the
+     * drivetrain owned the override. The coast used to last one follower update,
+     * because it was restored in afterLoop(), which runs every loop. And a run
+     * that ended without completing a loop -- STOP pressed early, or an
+     * exception in the loop body -- never restored it at all, so the next OpMode
+     * coasted when it should have braked.
+     */
+    @Test
+    public void l17_theWheelsRollThroughoutAMeasurementAndBrakeAgainAfterwards() {
+        for (OpMode lesson : new OpMode[]{new L17aMeasureTicksPerInchOpMode(),
+                new L17bMeasureTurnRadiusOpMode()}) {
+            String name = lesson.getClass().getSimpleName();
+            OpModeHarness h = new OpModeHarness(lesson);
+            h.init();
+            LessonsDriveTrain drivetrain =
+                    (LessonsDriveTrain) ((CorbelsOpMode) h.opMode()).drivetrain();
+            assertTrue(name + " brakes before the run", drivetrain.getEffectiveBrakeMode());
+
+            h.start();
+            assertFalse(name + " coasts once it starts", drivetrain.getEffectiveBrakeMode());
+            h.loops(5, 0);
+            assertFalse(name + " still coasts five loops in",
+                    drivetrain.getEffectiveBrakeMode());
+
+            h.stop();
+            assertTrue(name + " brakes again afterwards", drivetrain.getEffectiveBrakeMode());
+            OpModeHarness.restoreFactories();
+        }
+    }
+
+    @Test
+    public void l17_stoppingBeforeASingleLoopStillPutsBrakingBack() {
+        OpModeHarness h = new OpModeHarness(new L17aMeasureTicksPerInchOpMode());
+        h.init();
+        h.start();
+        h.stop();                                  // STOP pressed straight away
+        assertTrue("braking is back although no loop ran",
+                ((LessonsDriveTrain) ((CorbelsOpMode) h.opMode()).drivetrain())
+                        .getEffectiveBrakeMode());
     }
 
     // ---------------------------------------------------------- helpers

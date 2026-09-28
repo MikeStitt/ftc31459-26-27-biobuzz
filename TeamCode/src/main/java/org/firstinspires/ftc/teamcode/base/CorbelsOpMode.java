@@ -99,6 +99,11 @@ public abstract class CorbelsOpMode extends OpMode {
         initAfter(new PassiveDriveTrain());
     }
 
+    /** The drivetrain this OpMode drives, as it was handed to {@link #initAfter}. */
+    public final Drivetrain drivetrain() {
+        return heldDrivetrain;
+    }
+
     /** The follower, driving the drivetrain given. The last thing a lesson's init() calls. */
     protected final void initAfter(Drivetrain heldDrivetrain) {
         this.heldDrivetrain = heldDrivetrain;
