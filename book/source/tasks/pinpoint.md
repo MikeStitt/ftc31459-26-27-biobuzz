@@ -10,8 +10,8 @@ you press INIT. The robot does not yet know how far the pods sit from its middle
 
 - [L6](l6.md) is finished. From L6 on the follower holds the drivetrain, and the follower is what
   builds the Pinpoint.
-- The robot, a 4 mm hex driver, and the two odometry pods.
-- The Pinpoint's own wire, which is a 4-pin I2C cable.
+- The robot, the two odometry pods, and whatever driver the robot's own screws take.
+- The I2C cable the Pinpoint came with.
 
 :::{admonition} fig-pinpoint-mounting
 :class: pencil
