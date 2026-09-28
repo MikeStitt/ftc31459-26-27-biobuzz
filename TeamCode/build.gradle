@@ -109,6 +109,23 @@ def wpilibClassifier = {
     return arm ? 'linuxarm64' : 'linuxx86-64'
 }()
 
+// LWJGL's SDL bindings, for reading a real gamepad in the simulation. SDL is
+// what WPILib's own simulator reads a gamepad with, and it is the only route
+// tried here that gets the axes right on this laptop: see sim.sticks.input in
+// .docs/open-work.md.
+def lwjglVersion = '3.4.3'
+
+// One natives jar per platform, the same shape as wpilibClassifier above.
+// Only natives-macos-arm64 has been run.
+def lwjglNatives = {
+    String os = System.getProperty('os.name').toLowerCase()
+    String arch = System.getProperty('os.arch').toLowerCase()
+    boolean arm = arch.contains('aarch64') || arch.contains('arm64')
+    if (os.contains('mac')) return arm ? 'natives-macos-arm64' : 'natives-macos'
+    if (os.contains('win')) return arm ? 'natives-windows-arm64' : 'natives-windows'
+    return arm ? 'natives-linux-arm64' : 'natives-linux'
+}()
+
 dependencies {
     implementation project(':FtcRobotController')
 
@@ -156,12 +173,17 @@ dependencies {
     testImplementation "edu.wpi.first.wpiutil:wpiutil-java:$ntcoreVersion"
     testImplementation "edu.wpi.first.ntcore:ntcore-jni:$ntcoreVersion:$wpilibClassifier"
     testImplementation "edu.wpi.first.wpiutil:wpiutil-jni:$ntcoreVersion:$wpilibClassifier"
+
+    // --- SDL, for a real gamepad in the simulation -------------------------
+    // testImplementation and testRuntimeOnly throughout, so none of this can
+    // reach the robot. lwjgl carries the loader that finds the natives jar;
+    // lwjgl-sdl is the bindings. Each has its own natives jar.
+    testImplementation "org.lwjgl:lwjgl:$lwjglVersion"
+    testImplementation "org.lwjgl:lwjgl-sdl:$lwjglVersion"
+    testRuntimeOnly "org.lwjgl:lwjgl:$lwjglVersion:$lwjglNatives"
+    testRuntimeOnly "org.lwjgl:lwjgl-sdl:$lwjglVersion:$lwjglNatives"
 }
 
-// Runs a lesson in the simulator, publishing to NetworkTables. The classpath is
-// the unit test one, because that is where the simulation lives and where
-// ntcore is declared; the Android test task is asked for it rather than rebuilt
-// here, so the two can never disagree.
 // The lesson tests, deliberately. They fail on the lessons line, where the
 // blanks are open, and pass on a checkout with the solutions written over them;
 // running them is how that is established before a release.
@@ -173,6 +195,10 @@ tasks.register('testLessons') {
     dependsOn 'testDebugUnitTest'
 }
 
+// Runs a lesson in the simulator, publishing to NetworkTables. The classpath is
+// the unit test one, because that is where the simulation lives and where
+// ntcore is declared; the Android test task is asked for it rather than rebuilt
+// here, so the two can never disagree.
 afterEvaluate {
     tasks.register('simRun', JavaExec) {
         group = 'verification'
