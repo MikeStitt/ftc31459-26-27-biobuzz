@@ -46,6 +46,7 @@ tasks/l6
 :maxdepth: 1
 :caption: Know where it is
 
+tasks/pinpoint
 tasks/l8
 ```
 
