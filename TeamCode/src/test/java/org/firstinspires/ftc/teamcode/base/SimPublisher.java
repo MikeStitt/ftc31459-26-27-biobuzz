@@ -4,10 +4,13 @@ import com.pedropathing.localization.MotionState;
 import com.pedropathing.math.Pose;
 import com.pedropathing.math.Twist;
 
-import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.RawPublisher;
 import edu.wpi.first.networktables.StringPublisher;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import org.firstinspires.ftc.teamcode.pedro.Constants;
 
@@ -25,6 +28,13 @@ import org.firstinspires.ftc.teamcode.pedro.Constants;
  * learnt where to look in a robot log looks in the same place here. The sticks
  * use the names {@code L2bTankOpMode} already publishes to Panels.
  *
+ * <p>The pose goes out as a WPILib {@code struct:Pose2d}, which is three
+ * little-endian doubles and a schema that says so. AdvantageScope draws a bare
+ * {@code double[]} too, and calls it the legacy numeric array format: it warns
+ * on it in 2026 and removes it in 2027. The flight log has always written the
+ * struct, so this is the same 24 bytes {@code FlightLog} writes for
+ * {@code /Pose}, on a topic instead of in a file.
+ *
  * <p>Passes when: SimPublisherTest
  */
 public final class SimPublisher implements AutoCloseable {
@@ -38,7 +48,20 @@ public final class SimPublisher implements AutoCloseable {
     private final OpModeHarness harness;
     private final NetworkTableInstance nt;
 
-    private final DoubleArrayPublisher pose;
+    /** The struct schemas a {@code struct:Pose2d} is built out of, innermost
+     *  first. The same table is {@code FlightLog.SCHEMAS}, which writes them
+     *  into the flight log; it is not public, so the three a pose needs are
+     *  named here. A wrong one is loud: AdvantageScope draws nothing. */
+    private static final String[][] POSE_SCHEMAS = {
+            {"struct:Translation2d", "double x;double y"},
+            {"struct:Rotation2d", "double value"},
+            {"struct:Pose2d", "Translation2d translation;Rotation2d rotation"}};
+
+    private static final int POSE_BYTES = 3 * Double.BYTES;
+
+    private final RawPublisher pose;
+    private final ByteBuffer poseBytes =
+            ByteBuffer.allocate(POSE_BYTES).order(ByteOrder.LITTLE_ENDIAN);
     private final StringPublisher mode;
     private final DoublePublisher[] wheels;
     private final DoublePublisher leftY;
@@ -60,7 +83,10 @@ public final class SimPublisher implements AutoCloseable {
         nt = NetworkTableInstance.create();
         nt.startServer("", "", nt3Port, nt4Port);
 
-        pose = nt.getDoubleArrayTopic("sim/Pose").publish();
+        for (String[] schema : POSE_SCHEMAS) {
+            nt.addSchema(schema[0], "structschema", schema[1]);
+        }
+        pose = nt.getRawTopic("sim/Pose").publish("struct:Pose2d");
         mode = nt.getStringTopic("sim/Mode").publish();
         wheels = new DoublePublisher[]{
                 nt.getDoubleTopic("sim/wheels/frontLeft").publish(),
@@ -85,7 +111,7 @@ public final class SimPublisher implements AutoCloseable {
     public void publish() {
         MotionState state = harness.robot.localizer.state();
         Pose p = state.pose();
-        pose.set(FieldPose.of(p.x(), p.y(), p.heading()));
+        pose.set(packed(FieldPose.of(p.x(), p.y(), p.heading())));
         mode.set(String.valueOf(harness.robot.follower.mode()));
 
         wheels[0].set(harness.motors.get(OpModeHarness.FRONT_LEFT).power);
@@ -104,6 +130,16 @@ public final class SimPublisher implements AutoCloseable {
         omegaRadps.set(twist.omega);
 
         nt.flush();
+    }
+
+    /** {@code {x, y, headingRad}} as a {@code struct:Pose2d}'s three
+     *  little-endian doubles. */
+    private byte[] packed(double[] fieldPose) {
+        poseBytes.clear();
+        for (double value : fieldPose) {
+            poseBytes.putDouble(value);
+        }
+        return poseBytes.array();
     }
 
     @Override
