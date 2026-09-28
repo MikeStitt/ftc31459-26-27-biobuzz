@@ -86,6 +86,9 @@ To push the sticks yourself, plug a gamepad into the laptop and add the word `pa
 One pad becomes `gamepad1` on its own. With two plugged in, hold Start and press A on the one you
 want to drive with.
 
+Plug the pad in before the run or during it, whichever suits. Pull it out and the sticks go back to
+rest, so the robot stops. Plug it back in and it is yours again.
+
 Use `pad`, or set the sticks with arguments, but not both. Together they are an error, and the run
 names the setting that clashed.
 
