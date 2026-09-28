@@ -130,7 +130,7 @@ forward.
 
 ## Where next
 
-- `task.l3` stops the robot creeping when the sticks are centred.
+- [task.l3](l3.md) stops the robot creeping when the sticks are centred.
 - `task.autotune` is the full procedure, and it covers more than directions.
 
-Neither page is written yet.
+`task.autotune` is not written yet.

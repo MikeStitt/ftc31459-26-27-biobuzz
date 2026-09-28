@@ -36,6 +36,7 @@ finished, so read it after that one.
 :caption: Drive it with the sticks
 
 tasks/l2
+tasks/l3
 ```
 
 ```{toctree}
