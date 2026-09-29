@@ -140,8 +140,9 @@ public final class OpModeHarness {
 
     /**
      * The simulated clock, in nanoseconds. It moves only when {@link #loop}
-     * runs, by {@link #stepMs} each time, so the motion a run integrates is the
-     * same every run. Nothing here reads the wall clock.
+     * runs, by however much that call is given, so a test that drives the loops
+     * itself integrates the same motion every run. Nothing here reads the wall
+     * clock.
      */
     public static final class SimClock {
         private long nanos;
@@ -157,8 +158,15 @@ public final class OpModeHarness {
 
     public final SimClock clock = new SimClock();
 
-    /** How long one {@link #loop} takes, in simulated milliseconds. */
-    public long stepMs = 5;
+    /**
+     * How much simulated time {@link #loop()} advances, in milliseconds.
+     *
+     * <p>A fixed step, for a test that wants the same motion every run.
+     * {@code SimRun} does not use it: a real run measures how long a pass took
+     * and calls {@link #loop(long)} with that, so the robot moves at the speed
+     * it would on the field however slow a pass is.
+     */
+    public long stepMs = SimTicker.GRID_MS;
 
     public final SimRobot robot = new SimRobot(clock::nanos);
     public final Gamepad gamepad1 = new Gamepad();
@@ -284,7 +292,17 @@ public final class OpModeHarness {
 
     /** One loop, {@link #stepMs} of simulated time later than the last. */
     public void loop() {
-        clock.advance(stepMs);
+        loop(stepMs);
+    }
+
+    /**
+     * One loop, {@code ms} of simulated time later than the last.
+     *
+     * <p>What a real run hands in is the wall-clock time since its last loop, so
+     * the simulated clock keeps up with the real one whatever a pass costs.
+     */
+    public void loop(long ms) {
+        clock.advance(ms);
         opMode.loop();
     }
 

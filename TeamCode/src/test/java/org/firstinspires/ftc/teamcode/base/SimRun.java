@@ -1,43 +1,172 @@
 package org.firstinspires.ftc.teamcode.base;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import java.lang.reflect.Field;
 
 /**
- * Runs one lesson in the simulator until Ctrl-C, publishing to
- * NetworkTables every loop so AdvantageScope can watch it.
- *
- * <p>{@code ./gradlew :TeamCode:simRun} with no arguments runs
- * {@code L15CombinedOpMode} standing still. Arguments name a lesson and then set
- * gamepad fields by their own names:
+ * Runs one OpMode in the simulator until Ctrl-C, publishing to NetworkTables
+ * every loop so AdvantageScope can watch it, or checks gamepads and nothing
+ * else.
  *
  * <pre>
- * ./gradlew :TeamCode:simRun --args="L2bTankOpMode left_stick_y=-1 right_stick_y=-1"
+ * ./gradlew :TeamCode:simRun --args="--help"
+ * ./gradlew :TeamCode:simRun --args="--pad-check"
+ * ./gradlew :TeamCode:simRun --args="lessons.L2bTankOpMode"
+ * ./gradlew :TeamCode:simRun --args="lessons.L2bTankOpMode --pad"
+ * ./gradlew :TeamCode:simRun --args="lessons.L2bTankOpMode --left_stick_y=-1"
  * </pre>
  *
- * <p>Any field of {@code Gamepad} can be set, so buttons work the same way as
- * sticks: {@code a=true}. The values are set once, before the lesson starts,
- * and held. Driving the sticks while it runs is
- * {@code sim.sticks.input} in {@code open-work.md}, and is not built.
+ * <p>{@link SimArgs} holds the four forms, the 21 controls that can be set and
+ * the usage text; {@code --help} prints it. A usage error is one line on
+ * standard error and exit 2, with no stack trace.
  *
- * <p>Each loop is {@code stepMs} of simulated time and sleeps the same in real
- * time, so the robot moves at about the speed it would on the field.
+ * <p>An OpMode is named by what follows {@link #PACKAGE}, so any OpMode in the
+ * project can be run. A control option fills a staging gamepad that is copied
+ * into {@code gamepad1} every loop, and {@code --pad} fills both slots from real
+ * gamepads instead; {@link SimPads} says which gamepad is which.
  *
- * <p>Passes when: SimRunTest.
+ * <p>Everything periodic runs on {@link SimTicker}'s 10 ms grid, measured from
+ * the clock read when the run starts: the gamepads are read and the simulated
+ * robot steps every instant it wakes on, the gestures are read every fifth
+ * instant, and the rescan runs every twenty-fifth with the off-rest report
+ * beside it for {@code --pad-check}. A slow pass is charged to itself rather
+ * than to the periods after it, and an instant it ran through is skipped rather
+ * than caught up.
+ *
+ * <p>A pass advances the simulated clock by the real time since the last pass
+ * rather than by one instant, so the robot moves at the speed it would move on
+ * the field however long a pass takes. Measured on this bench on 2026-09-29,
+ * driving straight at full power and reading the pose off NetworkTables: an
+ * OpMode burning 25 ms in every loop ran at 0.398 of real time while a pass
+ * advanced a fixed 10 ms, and at 1.001 once it advanced what it measured. An
+ * OpMode with nothing in its loop runs at 1.000 either way.
+ * {@link SimTicker#stepWorth} says what a step is worth and bounds it.
+ *
+ * <p>Passes when: SimRunTest, SimArgsTest.
  */
 public final class SimRun {
+
+    /** The package an OpMode's name is relative to. Written here and nowhere else. */
+    static final String PACKAGE = "org.firstinspires.ftc.teamcode.";
 
     private static volatile boolean running = true;
 
     public static void main(String[] args) throws Exception {
-        String lesson = args.length > 0 ? args[0] : "L15CombinedOpMode";
-        OpModeHarness harness = new OpModeHarness(lesson(lesson));
-        for (int i = 1; i < args.length; i++) {
-            set(harness, args[i]);
+        SimArgs.Plan plan = SimArgs.parse(args);
+        if (plan.error != null) {
+            System.err.println(plan.error);
+            System.exit(2);
+            return;
         }
+        if (plan.form == SimArgs.Form.HELP) {
+            System.out.println(SimArgs.usage());
+            return;
+        }
+        stopOnCtrlC(Thread.currentThread());
+        OpModeHarness harness = null;
+        if (plan.form != SimArgs.Form.PAD_CHECK) {
+            OpMode opMode;
+            try {
+                opMode = opMode(plan.opMode);
+            } catch (ReflectiveOperationException | ClassCastException e) {
+                System.err.println("simRun: no OpMode called \"" + plan.opMode + "\" under "
+                        + SimArgs.packageName() + "; see --help");
+                System.exit(2);
+                return;
+            }
+            harness = new OpModeHarness(opMode);
+        }
+        Gamepad typed = null;
+        for (String control : plan.controls) {
+            if (typed == null) {
+                typed = new Gamepad();
+            }
+            set(typed, control);
+        }
+        loop(plan, harness, typed);
+    }
 
-        Thread loopThread = Thread.currentThread();
+    /**
+     * One loop for both forms, over the instants on {@link SimTicker}'s grid.
+     *
+     * <p>{@code --pad-check} is this loop with the simulated robot, the WPILOG
+     * and the NetworkTables server left out, which is what makes the slots, the
+     * gestures and the rescan one implementation rather than two. Its two gamepad
+     * objects are real ones that no lesson reads.
+     *
+     * <p>Every instant reads the gamepads first, so everything due at that
+     * instant reads the same state. Then whatever is due runs, and the pass waits
+     * for the next instant rather than for a fixed time after itself.
+     *
+     * <p>The step is handed the clock's own measure of how long it has been since
+     * the last step, so how far the robot goes follows real time rather than the
+     * number of passes it took to get there.
+     */
+    private static void loop(SimArgs.Plan plan, OpModeHarness harness, Gamepad typed) {
+        Gamepad slot1 = harness == null ? new Gamepad() : harness.gamepad1;
+        Gamepad slot2 = harness == null ? new Gamepad() : harness.gamepad2;
+        boolean usePads = plan.form == SimArgs.Form.OPMODE_PAD
+                || plan.form == SimArgs.Form.PAD_CHECK;
+
+        try (SimPublisher out = harness == null ? null : new SimPublisher(harness);
+                SimPads pads = usePads ? SimPads.open() : null) {
+            if (harness != null) {
+                System.out.println(plan.opMode + " running. Connect AdvantageScope to 127.0.0.1"
+                        + " as NetworkTables 4, and Ctrl-C to stop.");
+                harness.init();
+                harness.start();
+            }
+            long origin = System.currentTimeMillis();
+            long nowMs = origin;
+            long tick = 0;
+            long lastStep = -1;
+            long lastStepMs = origin;
+            long lastGestures = -1;
+            long lastReport = -1;
+            while (running) {
+                if (pads != null) {
+                    pads.read(slot1, slot2);
+                }
+                if (typed != null) {
+                    slot1.copy(typed);
+                }
+                if (SimTicker.due(tick, lastStep, SimTicker.STEP_TICKS)) {
+                    lastStep = tick;
+                    if (harness != null) {
+                        harness.loop(SimTicker.stepWorth(nowMs - lastStepMs));
+                        out.publish();
+                    }
+                    lastStepMs = nowMs;
+                }
+                if (pads != null && SimTicker.due(tick, lastGestures, SimTicker.GESTURE_TICKS)) {
+                    lastGestures = tick;
+                    pads.gestures();
+                }
+                if (pads != null && SimTicker.due(tick, lastReport, SimTicker.REPORT_TICKS)) {
+                    lastReport = tick;
+                    pads.rescan();
+                    if (plan.form == SimArgs.Form.PAD_CHECK) {
+                        pads.report();
+                    }
+                }
+                OpModeHarness.sleep(SimTicker.startOf(origin, tick + 1)
+                        - System.currentTimeMillis());
+                nowMs = System.currentTimeMillis();
+                tick = SimTicker.tickAt(origin, nowMs);
+            }
+            if (harness != null) {
+                harness.stop();
+            }
+        }
+        if (harness != null) {
+            System.out.println("Flight logs: " + harness.logFolder);
+        }
+    }
+
+    /** Ends the loop on Ctrl-C, so a try-with-resources still closes. */
+    private static void stopOnCtrlC(Thread loopThread) {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             running = false;
             try {
@@ -46,52 +175,34 @@ public final class SimRun {
                 Thread.currentThread().interrupt();
             }
         }));
-
-        try (SimPublisher out = new SimPublisher(harness)) {
-            System.out.println(lesson + " running. Connect AdvantageScope to 127.0.0.1"
-                    + " as NetworkTables 4, and Ctrl-C to stop.");
-            harness.init();
-            harness.start();
-            while (running) {
-                harness.loop();
-                out.publish();
-                OpModeHarness.sleep(harness.stepMs);
-            }
-            harness.stop();
-        }
-        System.out.println("Flight logs: " + harness.logFolder);
     }
 
-    /** One lesson by its class name, with no package. */
-    static OpMode lesson(String name) throws ReflectiveOperationException {
-        Class<?> type = Class.forName("org.firstinspires.ftc.teamcode.lessons." + name);
+    /** One OpMode by the part of its class name that follows {@link #PACKAGE}. */
+    static OpMode opMode(String name) throws ReflectiveOperationException {
+        Class<?> type = Class.forName(PACKAGE + name);
         return (OpMode) type.getDeclaredConstructor().newInstance();
     }
 
-    /** One {@code name=value} onto {@code gamepad1}, by the field's own name. */
-    static void set(OpModeHarness harness, String assignment) throws ReflectiveOperationException {
+    /**
+     * One {@code name=value} onto {@code into}, by the field's own name.
+     *
+     * <p>{@code into} is the pad the arguments are collected in, which is copied
+     * into {@code gamepad1} every loop rather than written there once. So a
+     * typed control and a real gamepad reach a lesson by the same path, and the
+     * SDK derives the aliases and the edges from both.
+     *
+     * <p>Which names are controls is {@link SimArgs}'s business, and it has said
+     * so before this is called.
+     */
+    static void set(Gamepad into, String assignment) throws ReflectiveOperationException {
         int equals = assignment.indexOf('=');
-        if (equals < 1) {
-            throw new IllegalArgumentException(
-                    "expected a gamepad field as name=value, got \"" + assignment + "\"");
-        }
         String name = assignment.substring(0, equals);
         String value = assignment.substring(equals + 1);
-        Field field;
-        try {
-            field = harness.gamepad1.getClass().getField(name);
-        } catch (NoSuchFieldException e) {
-            throw new IllegalArgumentException("no gamepad field called \"" + name
-                    + "\"; the sticks are left_stick_x, left_stick_y, right_stick_x"
-                    + " and right_stick_y", e);
-        }
+        Field field = into.getClass().getField(name);
         if (field.getType() == float.class) {
-            field.setFloat(harness.gamepad1, Float.parseFloat(value));
-        } else if (field.getType() == boolean.class) {
-            field.setBoolean(harness.gamepad1, Boolean.parseBoolean(value));
+            field.setFloat(into, Float.parseFloat(value));
         } else {
-            throw new IllegalArgumentException(name + " is a " + field.getType().getSimpleName()
-                    + ", and only the float and boolean fields can be set");
+            field.setBoolean(into, Boolean.parseBoolean(value));
         }
     }
 }
