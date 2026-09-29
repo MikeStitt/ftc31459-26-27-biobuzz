@@ -1,0 +1,17 @@
+/* A figure that has not been taken yet. It renders as a visible box carrying
+   its id and what it will show, so a reader can see the guide is unfinished
+   there and a writer can keep going. book/FIGURES.md holds the register. */
+.admonition.pencil {
+    border-left: 4px dashed var(--color-foreground-border);
+    background: transparent;
+}
+
+.admonition.pencil > .admonition-title {
+    background: transparent;
+    font-style: italic;
+}
+
+.admonition.pencil > .admonition-title::before {
+    content: "\270E";  /* pencil */
+    margin-right: 0.4em;
+}

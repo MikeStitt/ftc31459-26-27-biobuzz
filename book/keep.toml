@@ -1,0 +1,119 @@
+# The guide's register: word ceilings, and the passages Mike has said he likes.
+#
+# A page's ceiling is set when the page is accepted, and raising one is a visible
+# line in a diff. tools/check_words.py fails a page over its ceiling, and a page
+# with no ceiling at all.
+#
+# A [[keep]] entry pins a passage Mike has accepted: the page, the first line of
+# the passage as an anchor, and the sha256 of the whole passage.
+# tools/check_keep.py fails when the words have moved. There are none yet: the
+# first arrive in phase.b, from Mike reading task.l2 and task.directions.
+
+[[page]]
+path = "source/index.md"
+words = 240
+
+# Measured off the first draft and rounded up, so the check has something to
+# hold. Mike sets the real one when he reads the page.
+[[page]]
+path = "source/tasks/l2.md"
+words = 1400
+
+[[page]]
+path = "source/tasks/directions.md"
+words = 1100
+
+[[page]]
+path = "source/tasks/l3.md"
+words = 1200
+
+[[page]]
+path = "source/tasks/l4.md"
+words = 1000
+
+[[page]]
+path = "source/tasks/l5.md"
+words = 1000
+
+[[page]]
+path = "source/tasks/l6.md"
+words = 1200
+
+[[page]]
+path = "source/tasks/panels.md"
+words = 1000
+
+# Raised from 1000 on 2026-09-28. The split build gave the page a second command
+# to run, and simRun gained a real gamepad, so step 1 grew a check and step 2 a
+# paragraph. What came out was the sentence about the simulator's own three
+# tests, which `BUILD SUCCESSFUL` now covers, and the one saying the sticks
+# cannot be pushed.
+[[page]]
+path = "source/tasks/bench.md"
+words = 1100
+
+[[page]]
+path = "source/tasks/pinpoint.md"
+words = 1000
+
+[[page]]
+path = "source/tasks/l8.md"
+words = 1300
+
+[[page]]
+path = "source/tasks/l9.md"
+words = 700
+
+[[page]]
+path = "source/tasks/l10.md"
+words = 800
+
+[[page]]
+path = "source/tasks/l11.md"
+words = 900
+
+[[page]]
+path = "source/tasks/l12.md"
+words = 800
+
+[[page]]
+path = "source/tasks/l13.md"
+words = 900
+
+[[page]]
+path = "source/tasks/l14.md"
+words = 1000
+
+[[page]]
+path = "source/tasks/l15.md"
+words = 900
+
+[[page]]
+path = "source/tasks/l16.md"
+words = 1400
+
+[[page]]
+path = "source/tasks/l17.md"
+words = 1100
+
+[[page]]
+path = "source/tasks/glossary.md"
+words = 400
+
+[[page]]
+path = "source/tasks/sources.md"
+words = 400
+
+# The two lines the answers are generated from. A blank commit is the normal
+# state: the tool then reads the ref beside it, so running it by hand diffs the
+# tips rather than asking anyone to paste a hash. Put a commit in to freeze a
+# regeneration deliberately.
+#
+# lessons is HEAD because the tool is run from the lessons line. This file is
+# byte-identical on the solutions line, where running it fails on the TODO guard
+# in tools/answers.py rather than writing empty pages.
+[answers]
+lessons = "HEAD"
+lessons_commit = ""
+solutions = "solutions-sim-gamepad"
+solutions_commit = ""
