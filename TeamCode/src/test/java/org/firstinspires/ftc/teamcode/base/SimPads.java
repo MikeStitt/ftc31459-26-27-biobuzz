@@ -162,14 +162,28 @@ public final class SimPads implements AutoCloseable {
     }
 
     /**
-     * Watches every pad without a slot for Start and A, or Start and B.
+     * Watches every gamepad without a slot for Start and A, or Start and B.
      *
      * <p>Every fifth instant. Faster buys nothing: the gesture is held rather
      * than a press, so 50 ms cannot miss one.
+     *
+     * <p>A full pair of slots is not a reason to stop watching: a gesture takes
+     * an occupied slot and moves whoever was there out of the way. A gamepad
+     * already in a slot is watched too, so one gamepad on its own can move
+     * itself to the other slot; a gesture that changes nothing is ignored, which
+     * is what a held Start and A on the gamepad that already has that slot is.
      */
     public void gestures() {
-        if (player1 == null || player2 == null) {
-            claim();
+        List<SimGamepad.Pad> all = sdl.pads();
+        for (SimGamepad.Pad pad : all) {
+            if (state(pad, all, player1, player2) == State.NOT_ACCEPTED) {
+                continue;
+            }
+            sdl.read(pad, probe);
+            int player = claimedPlayer(probe);
+            if (player != 0) {
+                take(pad, player);
+            }
         }
     }
 
@@ -193,16 +207,15 @@ public final class SimPads implements AutoCloseable {
      * True once every gamepad a gesture could move has a slot.
      *
      * <p>True of no gamepads as well, so it says nothing about whether anything
-     * is plugged in; what it decides is whether to ask for the gesture. A
-     * gamepad with no serial number is not counted, because no gesture moves it,
-     * and neither is one with both slots taken, because there is nowhere for it
-     * to go.
+     * is plugged in; what it decides is whether to ask for the gesture. Only a
+     * gamepad with no serial number is not counted, because that is the only one
+     * no gesture moves.
      */
     private boolean settled() {
         List<SimGamepad.Pad> all = sdl.pads();
         for (SimGamepad.Pad pad : all) {
             State s = state(pad, all, player1, player2);
-            if (s == State.UNCLAIMED_FREE || s == State.PASSED_OVER) {
+            if (s != State.ACTIVE && s != State.NOT_ACCEPTED) {
                 return false;
             }
         }
@@ -339,49 +352,72 @@ public final class SimPads implements AutoCloseable {
         return accepted(pad) && highestWithSerial(pads, pad.serial) != pad;
     }
 
-    /** Start and A for player one, Start and B for player two. */
-    private void claim() {
-        List<SimGamepad.Pad> all = sdl.pads();
-        for (SimGamepad.Pad pad : all) {
-            State s = state(pad, all, player1, player2);
-            if (s == State.ACTIVE || s == State.NOT_ACCEPTED) {
-                continue;
-            }
-            sdl.read(pad, probe);
-            int player = claimedPlayer(probe, player1 == null, player2 == null);
-            if (player != 0) {
-                take(pad, player);
-            }
-        }
-    }
-
     /**
-     * The player one pad's current state claims, or 0 for none.
+     * The slot a gamepad's current state claims, or 0 for none.
      *
      * <p>Held, not toggled: the gesture is Start down and A down at the same
-     * moment, the way the Driver Station's is, so a pad cannot claim a player
-     * that already has one and pressing A on its own does nothing.
+     * moment, the way the Driver Station's is, so pressing A on its own does
+     * nothing. Whether the slot is free is not asked, because a gesture takes an
+     * occupied slot.
      */
-    static int claimedPlayer(Gamepad state, boolean player1Free, boolean player2Free) {
+    static int claimedPlayer(Gamepad state) {
         if (!state.start) {
             return 0;
         }
-        if (state.a && player1Free) {
+        if (state.a) {
             return 1;
         }
-        if (state.b && player2Free) {
+        if (state.b) {
             return 2;
         }
         return 0;
     }
 
-    private void take(SimGamepad.Pad pad, int player) {
-        if (player == 1) {
-            player1 = pad;
-        } else {
-            player2 = pad;
+    /**
+     * The two slots after a gesture: {@code gamepad1} at 0, {@code gamepad2} at
+     * 1, either of them null for empty.
+     *
+     * <p>Pure, and it is the whole slot rule for a gesture. The gamepad making
+     * the gesture takes the slot it asked for, whoever was in it. The gamepad
+     * displaced moves to the other slot when that one is free, and is left with
+     * none when it is not, which takes three gamepads to happen. A gamepad holds
+     * one slot, so one claiming the other slot lets go of the one it had, and the
+     * two swap.
+     */
+    static SimGamepad.Pad[] displace(SimGamepad.Pad claimant, int player,
+            SimGamepad.Pad player1, SimGamepad.Pad player2) {
+        SimGamepad.Pad wanted = player == 1 ? player1 : player2;
+        SimGamepad.Pad other = player == 1 ? player2 : player1;
+        if (wanted == claimant) {
+            return new SimGamepad.Pad[] {player1, player2};
         }
-        source.put(pad, Source.GESTURE);
+        if (other == claimant) {
+            other = null;
+        }
+        if (other == null) {
+            other = wanted;
+        }
+        return player == 1
+                ? new SimGamepad.Pad[] {claimant, other}
+                : new SimGamepad.Pad[] {other, claimant};
+    }
+
+    private void take(SimGamepad.Pad pad, int player) {
+        SimGamepad.Pad[] slots = displace(pad, player, player1, player2);
+        if (slots[0] == player1 && slots[1] == player2) {
+            return;
+        }
+        SimGamepad.Pad was1 = player1;
+        SimGamepad.Pad was2 = player2;
+        player1 = slots[0];
+        player2 = slots[1];
+        // Only a gamepad whose slot changed had it decided by this gesture.
+        if (player1 != null && player1 != was1) {
+            source.put(player1, Source.GESTURE);
+        }
+        if (player2 != null && player2 != was2) {
+            source.put(player2, Source.GESTURE);
+        }
         out.println("  claimed: " + pad + " -- gamepad" + player);
         store();
         census();
@@ -533,7 +569,7 @@ public final class SimPads implements AutoCloseable {
                 return "passed over; another gamepad reports this serial number"
                         + " with a higher device id";
             case UNCLAIMED_FULL:
-                return "not claimed, and both slots are taken";
+                return "not claimed; both slots are taken, and a gesture takes one anyway";
             default:
                 return "not claimed yet";
         }

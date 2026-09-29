@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.base;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -261,29 +262,74 @@ public final class SimPadsTest {
 
     @Test
     public void startAndAClaimsPlayerOneAndStartAndBClaimsPlayerTwo() {
-        assertEquals(1, SimPads.claimedPlayer(pressing(true, true, false), true, true));
-        assertEquals(2, SimPads.claimedPlayer(pressing(true, false, true), true, true));
+        assertEquals(1, SimPads.claimedPlayer(pressing(true, true, false)));
+        assertEquals(2, SimPads.claimedPlayer(pressing(true, false, true)));
     }
 
     @Test
     public void aButtonWithoutStartClaimsNothing() {
-        assertEquals("A on its own", 0,
-                SimPads.claimedPlayer(pressing(false, true, false), true, true));
-        assertEquals("B on its own", 0,
-                SimPads.claimedPlayer(pressing(false, false, true), true, true));
-        assertEquals("Start on its own", 0,
-                SimPads.claimedPlayer(pressing(true, false, false), true, true));
-    }
-
-    @Test
-    public void aPlayerThatAlreadyHasApadCannotBeClaimedAgain() {
-        assertEquals(0, SimPads.claimedPlayer(pressing(true, true, false), false, true));
-        assertEquals(0, SimPads.claimedPlayer(pressing(true, false, true), true, false));
+        assertEquals("A on its own", 0, SimPads.claimedPlayer(pressing(false, true, false)));
+        assertEquals("B on its own", 0, SimPads.claimedPlayer(pressing(false, false, true)));
+        assertEquals("Start on its own", 0, SimPads.claimedPlayer(pressing(true, false, false)));
     }
 
     @Test
     public void bothButtonsAtOnceClaimsPlayerOne() {
-        assertEquals(1, SimPads.claimedPlayer(pressing(true, true, true), true, true));
+        assertEquals(1, SimPads.claimedPlayer(pressing(true, true, true)));
+    }
+
+    // --- what a gesture does to the two slots -----------------------------
+
+    @Test
+    public void aGestureFillsAnEmptySlotAndLeavesTheOtherAlone() {
+        SimGamepad.Pad one = pad(1, "AAA");
+        SimGamepad.Pad two = pad(2, "BBB");
+        assertArrayEquals(new SimGamepad.Pad[] {one, two},
+                SimPads.displace(one, 1, null, two));
+        assertArrayEquals(new SimGamepad.Pad[] {one, two},
+                SimPads.displace(two, 2, one, null));
+    }
+
+    @Test
+    public void theGamepadDisplacedMovesToTheOtherSlotWhenItIsFree() {
+        SimGamepad.Pad held = pad(1, "AAA");
+        SimGamepad.Pad arriving = pad(2, "BBB");
+        assertArrayEquals("held moves out of gamepad1 and into gamepad2",
+                new SimGamepad.Pad[] {arriving, held},
+                SimPads.displace(arriving, 1, held, null));
+    }
+
+    @Test
+    public void aThirdGamepadLeavesTheDisplacedOneWithNoSlot() {
+        SimGamepad.Pad one = pad(1, "AAA");
+        SimGamepad.Pad two = pad(2, "BBB");
+        SimGamepad.Pad three = pad(3, "CCC");
+        assertArrayEquals("one is displaced and both slots are full",
+                new SimGamepad.Pad[] {three, two},
+                SimPads.displace(three, 1, one, two));
+    }
+
+    @Test
+    public void aGamepadClaimingTheOtherSlotSwapsWithWhoeverIsThere() {
+        SimGamepad.Pad one = pad(1, "AAA");
+        SimGamepad.Pad two = pad(2, "BBB");
+        assertArrayEquals(new SimGamepad.Pad[] {two, one},
+                SimPads.displace(one, 2, one, two));
+        assertArrayEquals("and it leaves gamepad1 empty when nobody is in gamepad2",
+                new SimGamepad.Pad[] {null, one},
+                SimPads.displace(one, 2, one, null));
+    }
+
+    @Test
+    public void claimingTheSlotAGamepadAlreadyHasChangesNothing() {
+        SimGamepad.Pad one = pad(1, "AAA");
+        SimGamepad.Pad two = pad(2, "BBB");
+        assertArrayEquals("a held Start and A is not a new gesture every 50 ms",
+                new SimGamepad.Pad[] {one, two},
+                SimPads.displace(one, 1, one, two));
+        assertArrayEquals("and it does not put one gamepad in both slots",
+                new SimGamepad.Pad[] {one, null},
+                SimPads.displace(one, 1, one, null));
     }
 
     // --- writing the assignment down --------------------------------------
