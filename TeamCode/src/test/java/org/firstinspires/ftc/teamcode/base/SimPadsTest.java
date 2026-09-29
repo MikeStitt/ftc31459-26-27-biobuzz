@@ -1,8 +1,10 @@
 package org.firstinspires.ftc.teamcode.base;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 
@@ -75,33 +77,78 @@ public final class SimPadsTest {
                 Collections.emptyList(), differing);
     }
 
-    // --- whether a stored serial is trusted -------------------------------
+    // --- which pads are accepted ------------------------------------------
 
     @Test
-    public void oneSerialNamingOnePadIsTheAssignment() {
+    public void aPadIsAcceptedOnceItReportsASerialNumberOfAnyLength() {
+        assertTrue("one character is a serial number", SimPads.accepted(pad(1, "X")));
+        assertTrue(SimPads.accepted(pad(1, "1DD5F3D")));
+        assertFalse("no serial number at all", SimPads.accepted(pad(1, null)));
+        assertFalse("an empty string is not a serial number", SimPads.accepted(pad(1, "")));
+    }
+
+    // --- whether a stored serial number is trusted ------------------------
+
+    @Test
+    public void oneSerialNumberNamingOnePadIsTheAssignment() {
         List<SimGamepad.Pad> pads = Arrays.asList(pad(1, "AAA"), pad(2, "BBB"));
-        assertSame(pads.get(1), SimPads.onlyPadWithSerial(pads, "BBB"));
+        assertSame(pads.get(1), SimPads.highestWithSerial(pads, "BBB"));
     }
 
     @Test
-    public void aSerialNoPadAnswersToIsNotTrusted() {
+    public void aSerialNumberNoPadAnswersToIsNotTrusted() {
         List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
-        assertNull("the pad it named is unplugged", SimPads.onlyPadWithSerial(pads, "BBB"));
+        assertNull("the pad it named is unplugged", SimPads.highestWithSerial(pads, "BBB"));
     }
 
     @Test
-    public void aSerialTwoPadsAnswerToIsNotTrusted() {
-        List<SimGamepad.Pad> pads = Arrays.asList(pad(1, "SAME"), pad(2, "SAME"));
-        assertNull("two pads, one serial, no way to tell them apart",
-                SimPads.onlyPadWithSerial(pads, "SAME"));
+    public void aSerialNumberTwoPadsAnswerToTakesTheHigherDeviceId() {
+        List<SimGamepad.Pad> pads = Arrays.asList(pad(7, "SAME"), pad(3, "SAME"));
+        assertSame("the highest id, whichever order they were listed in",
+                pads.get(0), SimPads.highestWithSerial(pads, "SAME"));
+        List<SimGamepad.Pad> other = Arrays.asList(pad(3, "SAME"), pad(7, "SAME"));
+        assertSame(other.get(1), SimPads.highestWithSerial(other, "SAME"));
     }
 
     @Test
-    public void aPadWithNoSerialIsNeverMatched() {
-        List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, null));
-        assertNull(SimPads.onlyPadWithSerial(pads, "AAA"));
-        assertNull("and an empty stored serial matches nothing either",
-                SimPads.onlyPadWithSerial(pads, ""));
+    public void aStoredValueThatIsNotASerialNumberNamesNoPad() {
+        List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
+        assertNull("nothing stored", SimPads.highestWithSerial(pads, null));
+        assertNull("an empty entry", SimPads.highestWithSerial(pads, ""));
+    }
+
+    @Test
+    public void aPadWithNoSerialNumberFillsNoSlot() {
+        List<SimGamepad.Pad> pads = Arrays.asList(pad(1, null), pad(2, ""));
+        assertNull("a pad with no serial number", SimPads.highestWithSerial(pads, "AAA"));
+        assertNull("and an empty stored entry names neither of them",
+                SimPads.highestWithSerial(pads, ""));
+    }
+
+    // --- which pad a shared serial number passes over ---------------------
+
+    @Test
+    public void theLowerDeviceIdIsThePadPassedOver() {
+        List<SimGamepad.Pad> pads = Arrays.asList(pad(3, "SAME"), pad(7, "SAME"));
+        assertTrue("id 3 against id 7", SimPads.passedOver(pads.get(0), pads));
+        assertFalse("id 7 is the one the serial number names",
+                SimPads.passedOver(pads.get(1), pads));
+    }
+
+    @Test
+    public void twoPadsWithDifferentSerialNumbersPassOverNeither() {
+        List<SimGamepad.Pad> pads = Arrays.asList(pad(3, "AAA"), pad(7, "BBB"));
+        assertFalse(SimPads.passedOver(pads.get(0), pads));
+        assertFalse(SimPads.passedOver(pads.get(1), pads));
+    }
+
+    @Test
+    public void aPadWithNoSerialNumberIsNotPassedOverButIsNotUsedEither() {
+        List<SimGamepad.Pad> pads = Arrays.asList(pad(3, null), pad(7, null));
+        assertFalse("passed over is about a serial number two pads share",
+                SimPads.passedOver(pads.get(0), pads));
+        assertFalse(SimPads.accepted(pads.get(0)));
+        assertFalse(SimPads.accepted(pads.get(1)));
     }
 
     // --- the claiming gesture ---------------------------------------------

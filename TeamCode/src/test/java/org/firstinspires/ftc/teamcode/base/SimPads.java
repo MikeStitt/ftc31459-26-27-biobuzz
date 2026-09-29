@@ -47,12 +47,16 @@ public final class SimPads implements AutoCloseable {
     enum Source {
         /** The only pad plugged in, so no gesture was asked for. */
         ONLY_PAD,
-        /** Read back from {@code local.properties} by serial. */
+        /** Read back from {@code local.properties} by serial number. */
         STORED,
         /** Claimed with Start and A, or Start and B, during this run. */
         GESTURE,
         /** Not assigned to either player yet. */
-        UNCLAIMED
+        UNCLAIMED,
+        /** Another pad reports the same serial number with a higher id. */
+        PASSED_OVER,
+        /** No serial number, so it is not used at all. */
+        NOT_ACCEPTED
     }
 
     private final SimGamepad sdl;
@@ -133,14 +137,15 @@ public final class SimPads implements AutoCloseable {
     }
 
     /**
-     * True once every pad plugged in has a player.
+     * True once every pad a gesture could move has a player.
      *
      * <p>True of no pads as well, so it says nothing about whether anything is
-     * plugged in; what it decides is whether to ask for the gesture.
+     * plugged in; what it decides is whether to ask for the gesture. A pad with
+     * no serial number is not counted, because no gesture moves it.
      */
     private boolean settled() {
         for (Source s : source.values()) {
-            if (s == Source.UNCLAIMED) {
+            if (s == Source.UNCLAIMED || s == Source.PASSED_OVER) {
                 return false;
             }
         }
@@ -197,10 +202,10 @@ public final class SimPads implements AutoCloseable {
     /**
      * The assignment before any gesture: the only pad, or what the store says.
      *
-     * <p>A stored serial is used only when it still names exactly one pad that
-     * is plugged in. Anything else -- a pad missing, two pads answering to the
-     * same serial, no serial at all -- asks for the gesture again, because a
-     * stale entry silently driving the wrong robot is worse than a prompt.
+     * <p>A stored serial number is used only when a pad plugged in reports it.
+     * A stale entry asks for the gesture again rather than silently driving the
+     * wrong robot, and where two pads report one serial number the higher device
+     * id takes it.
      *
      * <p>Called again after a pad arrives, and then it does nothing unless both
      * players are free: a pad arriving beside one that is already driving asks
@@ -208,23 +213,39 @@ public final class SimPads implements AutoCloseable {
      * available, which is what makes the simple rule enough.
      */
     private void assign() {
-        List<SimGamepad.Pad> pads = sdl.pads();
-        for (SimGamepad.Pad pad : pads) {
-            if (!source.containsKey(pad)) {
+        List<SimGamepad.Pad> all = sdl.pads();
+        List<SimGamepad.Pad> usable = new ArrayList<>();
+        for (SimGamepad.Pad pad : all) {
+            if (pad == player1 || pad == player2) {
+                // A pad keeps its slot until it is unplugged or a gesture moves it,
+                // so a twin arriving with a higher id does not pass it over.
+                usable.add(pad);
+                continue;
+            }
+            if (!accepted(pad)) {
+                source.put(pad, Source.NOT_ACCEPTED);
+                continue;
+            }
+            if (passedOver(pad, all)) {
+                source.put(pad, Source.PASSED_OVER);
+                continue;
+            }
+            usable.add(pad);
+            if (!source.containsKey(pad) || source.get(pad) == Source.PASSED_OVER) {
                 source.put(pad, Source.UNCLAIMED);
             }
         }
         if (player1 != null || player2 != null) {
             return;
         }
-        if (pads.size() == 1) {
-            player1 = pads.get(0);
+        if (usable.size() == 1) {
+            player1 = usable.get(0);
             source.put(player1, Source.ONLY_PAD);
             return;
         }
         Map<String, String> stored = read(store);
-        player1 = onlyPadWithSerial(pads, stored.get(KEY1));
-        player2 = onlyPadWithSerial(pads, stored.get(KEY2));
+        player1 = highestWithSerial(all, stored.get(KEY1));
+        player2 = highestWithSerial(all, stored.get(KEY2));
         if (player1 != null && player1 == player2) {
             // One serial written to both keys names one pad for both players.
             player1 = null;
@@ -238,26 +259,53 @@ public final class SimPads implements AutoCloseable {
         }
     }
 
-    static SimGamepad.Pad onlyPadWithSerial(List<SimGamepad.Pad> pads, String serial) {
+    /**
+     * True when the library reports a serial number for this pad, which is any
+     * string of one character or more.
+     *
+     * <p>A serial number is the only handle that survives unplugging, so a pad
+     * without one cannot be remembered and cannot be told from another of the
+     * same model. Such a pad is not used: it is not read, no slot takes it and
+     * no gesture moves it.
+     */
+    static boolean accepted(SimGamepad.Pad pad) {
+        return pad.serial != null && !pad.serial.isEmpty();
+    }
+
+    /**
+     * The pad a stored serial number names: the one with the highest device id
+     * where several report the same number.
+     *
+     * <p>Two pads reporting one serial number is not a case this tool is
+     * required to work for. The highest id is a rule rather than a refusal so
+     * that it does something rather than nothing, and the gesture is still
+     * there to say otherwise.
+     */
+    static SimGamepad.Pad highestWithSerial(List<SimGamepad.Pad> pads, String serial) {
         if (serial == null || serial.isEmpty()) {
             return null;
         }
         SimGamepad.Pad found = null;
         for (SimGamepad.Pad pad : pads) {
-            if (serial.equals(pad.serial)) {
-                if (found != null) {
-                    return null;
-                }
+            // No accepted() here: serial is not empty, so matching it makes the pad
+            // accepted by definition.
+            if (serial.equals(pad.serial) && (found == null || pad.id > found.id)) {
                 found = pad;
             }
         }
         return found;
     }
 
+    /** True when this pad is the one another with its serial number stands in for. */
+    static boolean passedOver(SimGamepad.Pad pad, List<SimGamepad.Pad> pads) {
+        return accepted(pad) && highestWithSerial(pads, pad.serial) != pad;
+    }
+
     /** Start and A for player one, Start and B for player two. */
     private void claim() {
         for (SimGamepad.Pad pad : sdl.pads()) {
-            if (source.get(pad) != Source.UNCLAIMED) {
+            Source from = source.get(pad);
+            if (from != Source.UNCLAIMED && from != Source.PASSED_OVER) {
                 continue;
             }
             sdl.read(pad, probe);
@@ -427,6 +475,10 @@ public final class SimPads implements AutoCloseable {
                 return player + ", remembered in local.properties by serial";
             case GESTURE:
                 return player + ", claimed this run";
+            case NOT_ACCEPTED:
+                return "no serial number, so it is not used";
+            case PASSED_OVER:
+                return "passed over; another pad reports this serial number with a higher id";
             default:
                 return "not claimed yet";
         }
