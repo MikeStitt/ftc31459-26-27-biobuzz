@@ -197,6 +197,58 @@ public final class SimPadsTest {
                 SimPads.state(pads.get(2), pads, pads.get(0), pads.get(1)));
     }
 
+    // --- which controls the report names -----------------------------------
+
+    @Test
+    public void anUntouchedGamepadHasNothingToReport() {
+        assertEquals(Collections.emptyList(), SimPads.offRest(new Gamepad()));
+    }
+
+    @Test
+    public void aStickThatWasPushedAndLetGoIsNotReported() {
+        Gamepad state = new Gamepad();
+        state.left_stick_y = -0.00003f;
+        state.right_stick_x = 0.04f;
+        assertEquals("0.00003 of full scale is where a released stick sits",
+                Collections.emptyList(), SimPads.offRest(state));
+    }
+
+    @Test
+    public void aStickAndAButtonAreBothNamedWithTheirValues() {
+        Gamepad state = new Gamepad();
+        state.left_stick_y = -0.7344055f;
+        state.a = true;
+        assertEquals(Arrays.asList("left_stick_y=-0.73", "a=true"), SimPads.offRest(state));
+    }
+
+    @Test
+    public void aTriggerIsReportedOnceItIsPastTheThreshold() {
+        Gamepad state = new Gamepad();
+        state.right_trigger = SimPads.OFF_REST;
+        assertEquals("exactly at the threshold is still at rest",
+                Collections.emptyList(), SimPads.offRest(state));
+        state.right_trigger = 0.06f;
+        assertEquals(Collections.singletonList("right_trigger=0.06"), SimPads.offRest(state));
+    }
+
+    @Test
+    public void everyOneOfTheTwentyOneControlsCanBeReported() throws Exception {
+        Gamepad state = new Gamepad();
+        for (String name : SimArgs.AXES) {
+            Gamepad.class.getField(name).setFloat(state, 1f);
+        }
+        for (String name : SimArgs.BUTTONS) {
+            Gamepad.class.getField(name).setBoolean(state, true);
+        }
+        List<String> named = new ArrayList<>();
+        for (String control : SimPads.offRest(state)) {
+            named.add(control.substring(0, control.indexOf('=')));
+        }
+        assertEquals(21, named.size());
+        assertTrue("every control the options can set: " + named,
+                named.containsAll(SimArgs.CONTROLS));
+    }
+
     // --- the claiming gesture ---------------------------------------------
 
     private static Gamepad pressing(boolean start, boolean a, boolean b) {

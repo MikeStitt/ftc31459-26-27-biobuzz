@@ -136,6 +136,9 @@ public final class SimRun {
                 if (pads != null && SimTicker.due(tick, lastReport, SimTicker.REPORT_TICKS)) {
                     lastReport = tick;
                     pads.rescan();
+                    if (plan.form == SimArgs.Form.PAD_CHECK) {
+                        pads.report();
+                    }
                 }
                 OpModeHarness.sleep(SimTicker.startOf(origin, tick + 1)
                         - System.currentTimeMillis());

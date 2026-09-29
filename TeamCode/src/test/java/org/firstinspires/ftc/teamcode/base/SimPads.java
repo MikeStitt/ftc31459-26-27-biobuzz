@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -117,6 +118,14 @@ public final class SimPads implements AutoCloseable {
     private SimGamepad.Pad player1;
 
     private SimGamepad.Pad player2;
+
+    /**
+     * The off-rest report printed last, so a stick held still prints once.
+     *
+     * <p>Empty before the first one, which is why a run where nothing has been
+     * touched yet does not say so.
+     */
+    private String lastReport = "";
 
     /**
      * The census text printed last, so an unchanged census prints nothing.
@@ -517,8 +526,7 @@ public final class SimPads implements AutoCloseable {
     private String explain(SimGamepad.Pad pad, List<SimGamepad.Pad> all) {
         switch (state(pad, all, player1, player2)) {
             case ACTIVE:
-                return (pad == player1 ? "gamepad1, " : "gamepad2, ")
-                        + because(source.get(pad));
+                return slotOf(pad) + ", " + because(source.get(pad));
             case NOT_ACCEPTED:
                 return "no serial number, so it is not used";
             case PASSED_OVER:
@@ -531,6 +539,11 @@ public final class SimPads implements AutoCloseable {
         }
     }
 
+    /** The slot a gamepad holds, named as output names it. */
+    private String slotOf(SimGamepad.Pad pad) {
+        return pad == player1 ? "gamepad1" : "gamepad2";
+    }
+
     /** Why the gamepad in a slot is the one in it. */
     private static String because(Source from) {
         if (from == Source.ONLY_PAD) {
@@ -540,5 +553,100 @@ public final class SimPads implements AutoCloseable {
             return "remembered in local.properties by serial number";
         }
         return "claimed this run";
+    }
+
+    // --- the off-rest report ----------------------------------------------
+
+    /** How far a stick or trigger moves before the report names it. */
+    static final float OFF_REST = 0.05f;
+
+    /**
+     * Every control of one gamepad that is away from its untouched value, as
+     * {@code name=value}.
+     *
+     * <p>Pure, and the threshold is what needs saying: a stick that has been
+     * pushed and let go can sit a count or two off centre, about 0.00003 of full
+     * scale, so without it a run would name that stick for ever. A button is
+     * away when it is pressed.
+     *
+     * <p>The names come from the sets {@link SimArgs} holds and the values off
+     * {@code Gamepad}'s own fields, so this and the control options cannot come
+     * to disagree about what a control is called.
+     */
+    static List<String> offRest(Gamepad state) {
+        List<String> touched = new ArrayList<>();
+        for (String name : SimArgs.AXES) {
+            float value = axis(state, name);
+            if (Math.abs(value) > OFF_REST) {
+                touched.add(name + "=" + String.format(Locale.US, "%.2f", value));
+            }
+        }
+        for (String name : SimArgs.BUTTONS) {
+            if (button(state, name)) {
+                touched.add(name + "=true");
+            }
+        }
+        return touched;
+    }
+
+    private static float axis(Gamepad state, String name) {
+        try {
+            return Gamepad.class.getField(name).getFloat(state);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("no gamepad field called \"" + name + "\"", e);
+        }
+    }
+
+    private static boolean button(Gamepad state, String name) {
+        try {
+            return Gamepad.class.getField(name).getBoolean(state);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("no gamepad field called \"" + name + "\"", e);
+        }
+    }
+
+    /**
+     * What every gamepad being read is having done to it, and one line when
+     * everything has been let go.
+     *
+     * <p>Every twenty-fifth instant, and only when it reads differently from
+     * last time, so a stick held still says so once rather than four times a
+     * second. The reading is the one {@link #read} already took this instant for
+     * a gamepad in a slot, and a fresh one for a gamepad that is only being
+     * watched for the gesture.
+     */
+    public void report() {
+        List<SimGamepad.Pad> all = sdl.pads();
+        StringBuilder text = new StringBuilder();
+        for (SimGamepad.Pad pad : all) {
+            State s = state(pad, all, player1, player2);
+            if (s == State.NOT_ACCEPTED) {
+                continue;
+            }
+            List<String> touched = offRest(reading(pad, s));
+            if (touched.isEmpty()) {
+                continue;
+            }
+            text.append("  ").append(pad).append(" -- ")
+                    .append(s == State.ACTIVE ? slotOf(pad) : "no slot").append(':');
+            for (String control : touched) {
+                text.append(' ').append(control);
+            }
+            text.append('\n');
+        }
+        String body = text.toString();
+        if (body.equals(lastReport)) {
+            return;
+        }
+        lastReport = body;
+        out.print(body.isEmpty() ? "  Nothing is touched.\n" : body);
+    }
+
+    private Gamepad reading(SimGamepad.Pad pad, State s) {
+        if (s == State.ACTIVE) {
+            return pad == player1 ? staging1 : staging2;
+        }
+        sdl.read(pad, probe);
+        return probe;
     }
 }
