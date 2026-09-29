@@ -34,20 +34,60 @@ public final class SimPads implements AutoCloseable {
 
     static final String KEY2 = "sim.gamepad2.serial";
 
-    /** Where an assignment came from, for the line printed at startup. */
+    /**
+     * How a pad in a slot got there. Remembered, because it cannot be derived.
+     */
     enum Source {
-        /** The only pad plugged in, so no gesture was asked for. */
+        /** The only gamepad plugged in, so no gesture was asked for. */
         ONLY_PAD,
         /** Read back from {@code local.properties} by serial number. */
         STORED,
         /** Claimed with Start and A, or Start and B, during this run. */
-        GESTURE,
-        /** Not assigned to either player yet. */
-        UNCLAIMED,
-        /** Another pad reports the same serial number with a higher id. */
+        GESTURE
+    }
+
+    /**
+     * What a gamepad the library is listing is doing, which is what its census
+     * line says.
+     *
+     * <p>Derived rather than remembered: {@link #state} is a pure function of the
+     * gamepads plugged in and the two slots, so a gamepad's state can change
+     * because another gamepad moved.
+     */
+    enum State {
+        /** No serial number, so it is not read and no slot takes it. */
+        NOT_ACCEPTED,
+        /** Another gamepad reports the same serial number with a higher id. */
         PASSED_OVER,
-        /** No serial number, so it is not used at all. */
-        NOT_ACCEPTED
+        /** Filling {@code gamepad1} or {@code gamepad2}. */
+        ACTIVE,
+        /** No slot yet, and one is free for a gesture to fill. */
+        UNCLAIMED_FREE,
+        /** No slot, and both are taken by other gamepads. */
+        UNCLAIMED_FULL
+    }
+
+    /**
+     * Which of the five states a gamepad is in.
+     *
+     * <p>Pure, and the order matters: a gamepad holding a slot keeps it, so
+     * {@code ACTIVE} is asked first and a twin arriving with a higher device id
+     * does not pass an active gamepad over.
+     */
+    static State state(SimGamepad.Pad pad, List<SimGamepad.Pad> pads,
+            SimGamepad.Pad player1, SimGamepad.Pad player2) {
+        if (pad == player1 || pad == player2) {
+            return State.ACTIVE;
+        }
+        if (!accepted(pad)) {
+            return State.NOT_ACCEPTED;
+        }
+        if (passedOver(pad, pads)) {
+            return State.PASSED_OVER;
+        }
+        return player1 == null || player2 == null
+                ? State.UNCLAIMED_FREE
+                : State.UNCLAIMED_FULL;
     }
 
     private final SimGamepad sdl;
@@ -78,12 +118,20 @@ public final class SimPads implements AutoCloseable {
 
     private SimGamepad.Pad player2;
 
+    /**
+     * The census text printed last, so an unchanged census prints nothing.
+     *
+     * <p>Empty before the first one, which is why a run with nothing plugged in
+     * still says so.
+     */
+    private String lastCensus = "";
+
     SimPads(SimGamepad sdl, Path store, PrintStream out) {
         this.sdl = sdl;
         this.store = store;
         this.out = out;
         assign();
-        describe();
+        census();
     }
 
     /** Opens SDL, loads any stored assignment, and says what it found. */
@@ -133,15 +181,19 @@ public final class SimPads implements AutoCloseable {
     }
 
     /**
-     * True once every pad a gesture could move has a player.
+     * True once every gamepad a gesture could move has a slot.
      *
-     * <p>True of no pads as well, so it says nothing about whether anything is
-     * plugged in; what it decides is whether to ask for the gesture. A pad with
-     * no serial number is not counted, because no gesture moves it.
+     * <p>True of no gamepads as well, so it says nothing about whether anything
+     * is plugged in; what it decides is whether to ask for the gesture. A
+     * gamepad with no serial number is not counted, because no gesture moves it,
+     * and neither is one with both slots taken, because there is nowhere for it
+     * to go.
      */
     private boolean settled() {
-        for (Source s : source.values()) {
-            if (s == Source.UNCLAIMED || s == Source.PASSED_OVER) {
+        List<SimGamepad.Pad> all = sdl.pads();
+        for (SimGamepad.Pad pad : all) {
+            State s = state(pad, all, player1, player2);
+            if (s == State.UNCLAIMED_FREE || s == State.PASSED_OVER) {
                 return false;
             }
         }
@@ -162,8 +214,9 @@ public final class SimPads implements AutoCloseable {
      * rather than to the mean, and it is far faster than a hand with a cable.
      *
      * <p>A pad that goes away releases its player, and {@link #read} resets that
-     * player's {@code Gamepad} on the next instant. Both events print a line, in
-     * the shape the startup lines use.
+     * player's {@code Gamepad} on the next instant. Each event prints its own
+     * line and then {@link #census()} says where every gamepad now stands, so a
+     * gamepad whose state changed because another one moved shows up too.
      */
     public void rescan() {
         for (SimGamepad.Pad pad : sdl.departed()) {
@@ -179,17 +232,13 @@ public final class SimPads implements AutoCloseable {
             out.println("  gone: " + pad + " -- " + left);
         }
         List<SimGamepad.Pad> came = sdl.arrived();
-        if (came.isEmpty()) {
-            return;
+        if (!came.isEmpty()) {
+            assign();
+            for (SimGamepad.Pad pad : came) {
+                out.println("  new gamepad: " + pad);
+            }
         }
-        assign();
-        for (SimGamepad.Pad pad : came) {
-            out.println("  new pad: " + pad + " -- " + explain(pad));
-        }
-        if (!settled()) {
-            out.println("Hold Start and press A to drive as gamepad1,"
-                    + " or Start and B for gamepad2.");
-        }
+        census();
     }
 
     // --- the assignment ---------------------------------------------------
@@ -208,30 +257,15 @@ public final class SimPads implements AutoCloseable {
      * available, which is what makes the simple rule enough.
      */
     private void assign() {
+        if (player1 != null || player2 != null) {
+            return;
+        }
         List<SimGamepad.Pad> all = sdl.pads();
         List<SimGamepad.Pad> usable = new ArrayList<>();
         for (SimGamepad.Pad pad : all) {
-            if (pad == player1 || pad == player2) {
-                // A pad keeps its slot until it is unplugged or a gesture moves it,
-                // so a twin arriving with a higher id does not pass it over.
+            if (accepted(pad) && !passedOver(pad, all)) {
                 usable.add(pad);
-                continue;
             }
-            if (!accepted(pad)) {
-                source.put(pad, Source.NOT_ACCEPTED);
-                continue;
-            }
-            if (passedOver(pad, all)) {
-                source.put(pad, Source.PASSED_OVER);
-                continue;
-            }
-            usable.add(pad);
-            if (!source.containsKey(pad) || source.get(pad) == Source.PASSED_OVER) {
-                source.put(pad, Source.UNCLAIMED);
-            }
-        }
-        if (player1 != null || player2 != null) {
-            return;
         }
         if (usable.size() == 1) {
             player1 = usable.get(0);
@@ -298,9 +332,10 @@ public final class SimPads implements AutoCloseable {
 
     /** Start and A for player one, Start and B for player two. */
     private void claim() {
-        for (SimGamepad.Pad pad : sdl.pads()) {
-            Source from = source.get(pad);
-            if (from != Source.UNCLAIMED && from != Source.PASSED_OVER) {
+        List<SimGamepad.Pad> all = sdl.pads();
+        for (SimGamepad.Pad pad : all) {
+            State s = state(pad, all, player1, player2);
+            if (s == State.ACTIVE || s == State.NOT_ACCEPTED) {
                 continue;
             }
             sdl.read(pad, probe);
@@ -338,8 +373,9 @@ public final class SimPads implements AutoCloseable {
             player2 = pad;
         }
         source.put(pad, Source.GESTURE);
-        out.println("gamepad" + player + " is now " + pad + ".");
+        out.println("  claimed: " + pad + " -- gamepad" + player);
         store();
+        census();
     }
 
     // --- the store --------------------------------------------------------
@@ -444,38 +480,65 @@ public final class SimPads implements AutoCloseable {
 
     // --- the display ------------------------------------------------------
 
-    /** One line per pad, naming it and where its assignment came from. */
-    private void describe() {
-        if (sdl.pads().isEmpty()) {
-            out.println("No gamepad is plugged in. A gamepad object with no gamepad in its"
-                    + " slot reads as untouched.");
+    /**
+     * One line per gamepad the library is listing, each saying what that gamepad
+     * is doing, and nothing at all when it all reads the same as last time.
+     *
+     * <p>Startup is the first census rather than a shape of its own, so the
+     * lines a student sees before a run are the lines a cable coming out
+     * produces. The event lines that name what happened are printed by whoever
+     * saw it happen; this says where everything stands afterwards.
+     */
+    private void census() {
+        StringBuilder text = new StringBuilder();
+        List<SimGamepad.Pad> all = sdl.pads();
+        if (all.isEmpty()) {
+            text.append("No gamepad is plugged in. A gamepad object with no gamepad in its"
+                    + " slot reads as untouched.\n");
+        } else {
+            for (SimGamepad.Pad pad : all) {
+                text.append("  ").append(pad).append(" -- ").append(explain(pad, all))
+                        .append('\n');
+            }
+            if (!settled()) {
+                text.append("Hold Start and press A to drive as gamepad1,"
+                        + " or Start and B for gamepad2.\n");
+            }
+        }
+        String body = text.toString();
+        if (body.equals(lastCensus)) {
             return;
         }
-        for (SimGamepad.Pad pad : sdl.pads()) {
-            out.println("  " + pad + " -- " + explain(pad));
-        }
-        if (!settled()) {
-            out.println("Hold Start and press A to drive as gamepad1,"
-                    + " or Start and B for gamepad2.");
-        }
+        lastCensus = body;
+        out.print(body);
     }
 
-    private String explain(SimGamepad.Pad pad) {
-        Source from = source.get(pad);
-        String player = pad == player1 ? "gamepad1" : pad == player2 ? "gamepad2" : null;
-        switch (from) {
-            case ONLY_PAD:
-                return player + ", the only pad plugged in";
-            case STORED:
-                return player + ", remembered in local.properties by serial";
-            case GESTURE:
-                return player + ", claimed this run";
+    /** What one gamepad's census line says after the two dashes. */
+    private String explain(SimGamepad.Pad pad, List<SimGamepad.Pad> all) {
+        switch (state(pad, all, player1, player2)) {
+            case ACTIVE:
+                return (pad == player1 ? "gamepad1, " : "gamepad2, ")
+                        + because(source.get(pad));
             case NOT_ACCEPTED:
                 return "no serial number, so it is not used";
             case PASSED_OVER:
-                return "passed over; another pad reports this serial number with a higher id";
+                return "passed over; another gamepad reports this serial number"
+                        + " with a higher device id";
+            case UNCLAIMED_FULL:
+                return "not claimed, and both slots are taken";
             default:
                 return "not claimed yet";
         }
+    }
+
+    /** Why the gamepad in a slot is the one in it. */
+    private static String because(Source from) {
+        if (from == Source.ONLY_PAD) {
+            return "the only gamepad plugged in";
+        }
+        if (from == Source.STORED) {
+            return "remembered in local.properties by serial number";
+        }
+        return "claimed this run";
     }
 }

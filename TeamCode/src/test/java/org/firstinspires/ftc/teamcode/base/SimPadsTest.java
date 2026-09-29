@@ -151,6 +151,52 @@ public final class SimPadsTest {
         assertFalse(SimPads.accepted(pads.get(1)));
     }
 
+    // --- which of the five states a gamepad is in -------------------------
+
+    @Test
+    public void aGamepadInASlotIsActive() {
+        List<SimGamepad.Pad> pads = Arrays.asList(pad(1, "AAA"), pad(2, "BBB"));
+        assertEquals(SimPads.State.ACTIVE,
+                SimPads.state(pads.get(0), pads, pads.get(0), null));
+        assertEquals(SimPads.State.ACTIVE,
+                SimPads.state(pads.get(1), pads, null, pads.get(1)));
+    }
+
+    @Test
+    public void aGamepadWithNoSerialNumberIsNotAccepted() {
+        List<SimGamepad.Pad> pads = Arrays.asList(pad(1, null), pad(2, ""));
+        assertEquals(SimPads.State.NOT_ACCEPTED,
+                SimPads.state(pads.get(0), pads, null, null));
+        assertEquals("an empty string is no serial number either",
+                SimPads.State.NOT_ACCEPTED, SimPads.state(pads.get(1), pads, null, null));
+    }
+
+    @Test
+    public void theLowerDeviceIdOfTwoAnsweringToOneSerialNumberIsPassedOver() {
+        List<SimGamepad.Pad> pads = Arrays.asList(pad(3, "SAME"), pad(7, "SAME"));
+        assertEquals(SimPads.State.PASSED_OVER,
+                SimPads.state(pads.get(0), pads, null, null));
+        assertEquals(SimPads.State.UNCLAIMED_FREE,
+                SimPads.state(pads.get(1), pads, null, null));
+    }
+
+    @Test
+    public void aGamepadHoldingASlotIsNotPassedOverByATwinWithAHigherId() {
+        List<SimGamepad.Pad> pads = Arrays.asList(pad(3, "SAME"), pad(7, "SAME"));
+        assertEquals("a slot is kept until the cable comes out or a gesture moves it",
+                SimPads.State.ACTIVE, SimPads.state(pads.get(0), pads, pads.get(0), null));
+    }
+
+    @Test
+    public void anUnclaimedGamepadSaysWhetherAGestureHasAnywhereToPutIt() {
+        List<SimGamepad.Pad> pads = Arrays.asList(pad(1, "AAA"), pad(2, "BBB"),
+                pad(3, "CCC"));
+        assertEquals(SimPads.State.UNCLAIMED_FREE,
+                SimPads.state(pads.get(2), pads, pads.get(0), null));
+        assertEquals(SimPads.State.UNCLAIMED_FULL,
+                SimPads.state(pads.get(2), pads, pads.get(0), pads.get(1)));
+    }
+
     // --- the claiming gesture ---------------------------------------------
 
     private static Gamepad pressing(boolean start, boolean a, boolean b) {
