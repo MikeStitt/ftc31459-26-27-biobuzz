@@ -93,6 +93,13 @@ tasks/l17
 
 ```{toctree}
 :maxdepth: 1
+:caption: Reference
+
+reference/pedro-routes
+```
+
+```{toctree}
+:maxdepth: 1
 :caption: The back of the book
 
 tasks/glossary
