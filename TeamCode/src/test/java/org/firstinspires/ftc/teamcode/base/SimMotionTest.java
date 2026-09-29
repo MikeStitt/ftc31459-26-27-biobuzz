@@ -74,6 +74,36 @@ public class SimMotionTest {
         assertEquals("heading", first.heading(), again.heading(), 0);
     }
 
+    /** The same simulated second, as forty passes of 25 ms rather than a hundred. */
+    private static OpModeHarness driveForwardInSlowPasses() {
+        OpModeHarness h = new OpModeHarness(new SimOpModes.Tank());
+        h.init();
+        h.start();
+        h.gamepad1.left_stick_y = -1.0f;
+        h.gamepad1.right_stick_y = -1.0f;
+        for (int i = 0; i < 40; i++) {
+            h.loop(25);                     // 40 x 25 ms is the same second
+        }
+        return h;
+    }
+
+    /**
+     * How far the robot goes is what the clock was advanced by, not how many
+     * times {@code loop} was called. A real run measures how long its last pass
+     * took and hands that in, so a slow OpMode still moves the robot at the speed
+     * it would move on the field.
+     *
+     * <p>The two runs differ by 0.0032 in over the second, which is the step size
+     * showing: 54.7497421494739 in at 10 ms steps against 54.74657244990345 in at
+     * 25 ms. The tolerance admits that and nothing near a missed step.
+     */
+    @Test
+    public void aSlowPassCoversTheGroundItsTimeIsWorth() {
+        double quick = driveForward().robot.localizer.state().pose().x();
+        double slow = driveForwardInSlowPasses().robot.localizer.state().pose().x();
+        assertEquals("the same second covers the same ground", quick, slow, 0.01);
+    }
+
     /**
      * Without {@code SimDrive.delegate}, this fails with all four powers at
      * {@code 0.0}, and takes L9 and L10 with it: their paths end where they

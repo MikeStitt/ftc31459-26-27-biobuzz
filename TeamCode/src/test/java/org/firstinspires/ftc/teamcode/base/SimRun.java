@@ -35,11 +35,13 @@ import java.lang.reflect.Field;
  * than to the periods after it, and an instant it ran through is skipped rather
  * than caught up.
  *
- * <p>So one pass is 10 ms of simulated time, but not necessarily 10 ms of real
- * time. Measured on this bench on 2026-09-28: {@code Thread.sleep(10)} takes
- * 13.4 ms, so the loop wakes on every second instant and the robot moves at
- * about half the speed it would on the field. The work in a pass is 0.03 ms of
- * that, so it is the waiting and not the simulating.
+ * <p>A pass advances the simulated clock by the real time since the last pass
+ * rather than by one instant, so the robot moves at the speed it would move on
+ * the field however long a pass takes. Measured on this bench on 2026-09-29,
+ * driving straight at full power and reading the pose off NetworkTables: an
+ * OpMode burning 25 ms in every loop ran at 0.398 of real time while a pass
+ * advanced a fixed 10 ms, and at 1.001 once it advanced what it measured. An
+ * OpMode with nothing in its loop runs at 1.000 either way.
  *
  * <p>Passes when: SimRunTest, SimArgsTest.
  */
@@ -96,6 +98,10 @@ public final class SimRun {
      * <p>Every instant reads the gamepads first, so everything due at that
      * instant reads the same state. Then whatever is due runs, and the pass waits
      * for the next instant rather than for a fixed time after itself.
+     *
+     * <p>The step is handed the clock's own measure of how long it has been since
+     * the last step, so how far the robot goes follows real time rather than the
+     * number of passes it took to get there.
      */
     private static void loop(SimArgs.Plan plan, OpModeHarness harness, Gamepad typed) {
         Gamepad slot1 = harness == null ? new Gamepad() : harness.gamepad1;
@@ -112,8 +118,10 @@ public final class SimRun {
                 harness.start();
             }
             long origin = System.currentTimeMillis();
+            long nowMs = origin;
             long tick = 0;
             long lastStep = -1;
+            long lastStepMs = origin;
             long lastGestures = -1;
             long lastReport = -1;
             while (running) {
@@ -126,9 +134,10 @@ public final class SimRun {
                 if (SimTicker.due(tick, lastStep, SimTicker.STEP_TICKS)) {
                     lastStep = tick;
                     if (harness != null) {
-                        harness.loop();
+                        harness.loop(nowMs - lastStepMs);
                         out.publish();
                     }
+                    lastStepMs = nowMs;
                 }
                 if (pads != null && SimTicker.due(tick, lastGestures, SimTicker.GESTURE_TICKS)) {
                     lastGestures = tick;
@@ -143,7 +152,8 @@ public final class SimRun {
                 }
                 OpModeHarness.sleep(SimTicker.startOf(origin, tick + 1)
                         - System.currentTimeMillis());
-                tick = SimTicker.tickAt(origin, System.currentTimeMillis());
+                nowMs = System.currentTimeMillis();
+                tick = SimTicker.tickAt(origin, nowMs);
             }
             if (harness != null) {
                 harness.stop();
