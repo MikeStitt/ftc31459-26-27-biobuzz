@@ -13,6 +13,48 @@ themselves and stop matching the moment either branch moves. Built on
 - [What the student writes](https://mikestitt.github.io/ftc31459-26-27-biobuzz/review/) — every
   blank with the answer beside it, 55 across 17 lessons.
 
+### Cheat sheet: the commands
+
+Run these from the repository root. `:TeamCode:test` skips the lessons package,
+because a blank and a regression look the same there; `:TeamCode:testLessons`
+runs it on its own.
+
+| What | Command |
+| --- | --- |
+| Build the app | `./gradlew :TeamCode:assembleDebug` |
+| Everything except the lessons | `./gradlew :TeamCode:test` |
+| The lessons only | `./gradlew :TeamCode:testLessons` |
+| One lesson's test | `./gradlew :TeamCode:testDebugUnitTest --tests '*LessonsTest.l9*'` |
+| The solutions, which should be green | `./gradlew :TeamCode:testLessons` on `solutions-03` |
+| Watch a lesson drive | `./gradlew :TeamCode:simRun --args="lessons.L2bTankOpMode --pad"` |
+| Drive it without a gamepad | `./gradlew :TeamCode:simRun --args="lessons.L2bTankOpMode --left_stick_y=-1 --right_stick_y=-1"` |
+| Every option the simulator takes | `./gradlew :TeamCode:simRun --args="--help"` |
+| Check a gamepad, beside a running lesson | `./gradlew :TeamCode:simRun --args="--pad-check"` |
+| Hot reload TeamCode only | `./gradlew deploySloth` — see [PANELS.md](./PANELS.md); it does not configure in this checkout |
+| Build the guide | `ninja book` in `book/`, with `book/.venv/bin` on `PATH` |
+
+The OpMode name is whatever follows `org.firstinspires.ftc.teamcode`, so a lesson
+is `lessons.L2bTankOpMode` and not `L2bTankOpMode`.
+
+### Cheat sheet: the links
+
+| | |
+| --- | --- |
+| [Pedro Pathing](https://pedropathing.com/) | the path follower this code drives with |
+| [Ivy](https://pedropathing.com/docs/ivy) | the command scheduler on top of it |
+| [Panels](https://panels.bylazar.com/) | the dashboard: telemetry, graphs, field view, at `192.168.43.1:8001` |
+| [Sloth](https://github.com/Dairy-Foundation/Sloth) | hot reload, which pushes TeamCode alone in about a second |
+| [PANELS.md](./PANELS.md) | what those two need set up here, once |
+| [FTC programming docs](https://ftc-docs.firstinspires.org/) | the SDK, Android Studio, the IMU, AprilTags |
+| [gm0](https://gm0.org/) | Game Manual 0, the community's how-to for everything else |
+| [Game and season materials](https://ftc.game/) | this season's manuals and field drawings |
+| [FIRST Inspires](https://www.firstinspires.org/) | the organisation, registration and events |
+| [AdvantageScope](https://docs.advantagescope.org/) | what opens a flight log, and what the simulator publishes to |
+| [goBILDA](https://www.gobilda.com/) | the Pinpoint, the pods and most of the hardware |
+| [REV Robotics](https://www.revrobotics.com/) | the hubs and the motors |
+| [AndyMark](https://www.andymark.com/) | field elements and more hardware |
+| [spiresfrc9106/ftc31459-26-27-biobuz](https://github.com/spiresfrc9106/ftc31459-26-27-biobuz) | the team's repository, which this one tracks |
+
 ### TODO 
 - [ ] Monitor the sloth plugin for updates to Gradle version [see](PANELS.md#one-time-setup) - 1. Gradle version
 
