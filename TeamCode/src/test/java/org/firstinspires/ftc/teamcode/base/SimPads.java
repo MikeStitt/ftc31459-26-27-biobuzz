@@ -132,18 +132,13 @@ public final class SimPads implements AutoCloseable {
         target.copy(staging);
     }
 
-    /** True while nothing is plugged in at all, so there is nothing to assign. */
-    public boolean empty() {
-        return sdl.pads().isEmpty();
-    }
-
     /**
      * True once every pad plugged in has a player.
      *
-     * <p>True of no pads, which is why {@link #main} asks {@link #empty()} as
-     * well: zero pads all having a player is not a reason to stop waiting.
+     * <p>True of no pads as well, so it says nothing about whether anything is
+     * plugged in; what it decides is whether to ask for the gesture.
      */
-    public boolean settled() {
+    private boolean settled() {
         for (Source s : source.values()) {
             if (s == Source.UNCLAIMED) {
                 return false;
@@ -409,8 +404,8 @@ public final class SimPads implements AutoCloseable {
     /** One line per pad, naming it and where its assignment came from. */
     private void describe() {
         if (sdl.pads().isEmpty()) {
-            out.println("No gamepad found. The lesson runs with the sticks at rest;"
-                    + " simRun's own arguments still set them.");
+            out.println("No gamepad is plugged in. A gamepad object with no gamepad in its"
+                    + " slot reads as untouched.");
             return;
         }
         for (SimGamepad.Pad pad : sdl.pads()) {
@@ -435,40 +430,5 @@ public final class SimPads implements AutoCloseable {
             default:
                 return "not claimed yet";
         }
-    }
-
-    /**
-     * Does the assignment on its own, so it is done before a lesson rather than
-     * during one. {@code ./gradlew :TeamCode:simPads}.
-     */
-    public static void main(String[] args) {
-        long seconds = args.length > 0 ? Long.parseLong(args[0]) : 60;
-        try (SimPads pads = SimPads.open()) {
-            long end = System.currentTimeMillis() + seconds * 1000;
-            Gamepad ignored1 = new Gamepad();
-            Gamepad ignored2 = new Gamepad();
-            while ((pads.empty() || !pads.settled()) && System.currentTimeMillis() < end) {
-                pads.update(ignored1, ignored2);
-                OpModeHarness.sleep(20);
-            }
-            System.out.println(verdict(pads.empty(), pads.settled(), seconds));
-        }
-    }
-
-    /**
-     * The line that ends a {@code simPads} run.
-     *
-     * <p>Three cases, not two. Before a pad could arrive mid-run there was no
-     * point waiting for one, and no pad at all ended the run saying every pad
-     * had a player, which was true and useless.
-     */
-    static String verdict(boolean empty, boolean settled, long seconds) {
-        if (empty) {
-            return "No pad was plugged in after " + seconds + " s.";
-        }
-        if (settled) {
-            return "Every pad has a player; run a lesson.";
-        }
-        return "Gave up after " + seconds + " s with a pad unclaimed.";
     }
 }

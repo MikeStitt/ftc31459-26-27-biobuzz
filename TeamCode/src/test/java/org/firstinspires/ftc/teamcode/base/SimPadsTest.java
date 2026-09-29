@@ -197,21 +197,4 @@ public final class SimPadsTest {
         Path missing = folder.getRoot().toPath().resolve("nothing-here.properties");
         assertEquals(Collections.emptyMap(), SimPads.read(missing));
     }
-
-    @Test
-    public void noPadAtAllSaysSo() {
-        assertEquals("No pad was plugged in after 60 s.", SimPads.verdict(true, true, 60));
-        assertEquals("No pad was plugged in after 5 s.", SimPads.verdict(true, false, 5));
-    }
-
-    @Test
-    public void aPadWithAPlayerSaysRunALesson() {
-        assertEquals("Every pad has a player; run a lesson.", SimPads.verdict(false, true, 60));
-    }
-
-    @Test
-    public void aPadLeftUnclaimedSaysItGaveUp() {
-        assertEquals("Gave up after 60 s with a pad unclaimed.",
-                SimPads.verdict(false, false, 60));
-    }
 }

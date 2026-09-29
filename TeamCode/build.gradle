@@ -195,31 +195,21 @@ tasks.register('testLessons') {
     dependsOn 'testDebugUnitTest'
 }
 
-// Runs a lesson in the simulator, publishing to NetworkTables. The classpath is
+// Runs an OpMode in the simulator, publishing to NetworkTables, or checks
+// gamepads with --pad-check. One tool: the arguments say which. The classpath is
 // the unit test one, because that is where the simulation lives and where
 // ntcore is declared; the Android test task is asked for it rather than rebuilt
 // here, so the two can never disagree.
 afterEvaluate {
     tasks.register('simRun', JavaExec) {
         group = 'verification'
-        description = 'Run a lesson in the simulator for AdvantageScope. --args="L2bTankOpMode left_stick_y=-1"'
+        description = 'Run an OpMode in the simulator, or check gamepads. --args="--help"'
         dependsOn 'compileDebugUnitTestJavaWithJavac'
         mainClass = 'org.firstinspires.ftc.teamcode.base.SimRun'
         classpath = tasks.named('testDebugUnitTest').get().classpath
         // Ctrl-C is how this task ends, and a JVM killed by SIGINT exits
         // 130. Without this, the intended way to stop it reports a build
         // failure.
-        ignoreExitValue = true
-    }
-
-    // Assigns the gamepads on their own, before a lesson rather than during one.
-    // Same classpath and the same reason for ignoreExitValue.
-    tasks.register('simPads', JavaExec) {
-        group = 'verification'
-        description = 'Claim the gamepads with Start and A, or Start and B. --args="30" for 30 s.'
-        dependsOn 'compileDebugUnitTestJavaWithJavac'
-        mainClass = 'org.firstinspires.ftc.teamcode.base.SimPads'
-        classpath = tasks.named('testDebugUnitTest').get().classpath
         ignoreExitValue = true
     }
 }
