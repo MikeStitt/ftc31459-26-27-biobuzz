@@ -270,25 +270,60 @@ public final class SimPads implements AutoCloseable {
                 usable.add(pad);
             }
         }
-        if (usable.size() == 1) {
-            player1 = usable.get(0);
-            source.put(player1, Source.ONLY_PAD);
-            return;
-        }
-        Map<String, String> stored = read(store);
-        player1 = highestWithSerial(all, stored.get(KEY1));
-        player2 = highestWithSerial(all, stored.get(KEY2));
-        if (player1 != null && player1 == player2) {
-            // One serial written to both keys names one pad for both players.
-            player1 = null;
-            player2 = null;
-        }
+        Opening open = opening(all, usable, read(store));
+        player1 = open.pad1;
+        player2 = open.pad2;
         if (player1 != null) {
-            source.put(player1, Source.STORED);
+            source.put(player1, open.from);
         }
         if (player2 != null) {
-            source.put(player2, Source.STORED);
+            source.put(player2, open.from);
         }
+    }
+
+    /** Which gamepad each slot starts with, and why. */
+    static final class Opening {
+        final SimGamepad.Pad pad1;
+        final SimGamepad.Pad pad2;
+        /** Shared, because one rule fills both slots or neither; null for neither. */
+        final Source from;
+
+        Opening(SimGamepad.Pad pad1, SimGamepad.Pad pad2, Source from) {
+            this.pad1 = pad1;
+            this.pad2 = pad2;
+            this.from = from;
+        }
+    }
+
+    /**
+     * Which slots are filled before any gesture, and why.
+     *
+     * <p>A slot named in {@code local.properties} wins over the one-gamepad
+     * rule, because a gamepad whose serial number is stored fills the slot named
+     * there and only a gamepad not named there falls into a free one. So a
+     * gesture that put the only gamepad on {@code gamepad2} still has it there
+     * next run, which is how a robot is driven from the second slot with one
+     * gamepad in hand.
+     *
+     * <p>A serial number written to both keys names one gamepad for two slots,
+     * so the file is ignored rather than half honoured, and the one-gamepad rule
+     * is what is left.
+     */
+    static Opening opening(List<SimGamepad.Pad> all, List<SimGamepad.Pad> usable,
+            Map<String, String> stored) {
+        SimGamepad.Pad first = highestWithSerial(all, stored.get(KEY1));
+        SimGamepad.Pad second = highestWithSerial(all, stored.get(KEY2));
+        if (first != null && first == second) {
+            first = null;
+            second = null;
+        }
+        if (first != null || second != null) {
+            return new Opening(first, second, Source.STORED);
+        }
+        if (usable.size() == 1) {
+            return new Opening(usable.get(0), null, Source.ONLY_PAD);
+        }
+        return new Opening(null, null, null);
     }
 
     /**

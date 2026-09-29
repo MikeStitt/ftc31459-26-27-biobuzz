@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -90,6 +91,72 @@ public final class SimPadsTest {
         assertTrue(SimPads.accepted(pad(1, "1DD5F3D")));
         assertFalse("no serial number at all", SimPads.accepted(pad(1, null)));
         assertFalse("an empty string is not a serial number", SimPads.accepted(pad(1, "")));
+    }
+
+    // --- what fills a slot before any gesture -----------------------------
+
+    private static Map<String, String> storedAs(String... keysAndValues) {
+        Map<String, String> out = new HashMap<>();
+        for (int i = 0; i < keysAndValues.length; i += 2) {
+            out.put(keysAndValues[i], keysAndValues[i + 1]);
+        }
+        return out;
+    }
+
+    @Test
+    public void aStoredSecondSlotBeatsTheOneGamepadRule() {
+        List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
+        SimPads.Opening open = SimPads.opening(pads, pads, storedAs(SimPads.KEY2, "AAA"));
+        assertNull("gamepad1 stays empty, so a robot can be driven from gamepad2", open.pad1);
+        assertSame("the gamepad the file names is in the slot it names", pads.get(0), open.pad2);
+        assertEquals(SimPads.Source.STORED, open.from);
+    }
+
+    @Test
+    public void theOnlyGamepadTakesTheFirstSlotWhenTheFileNamesNothing() {
+        List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
+        SimPads.Opening open = SimPads.opening(pads, pads, storedAs());
+        assertSame(pads.get(0), open.pad1);
+        assertNull(open.pad2);
+        assertEquals(SimPads.Source.ONLY_PAD, open.from);
+    }
+
+    @Test
+    public void aStoredSerialNumberNothingAnswersToLeavesTheOneGamepadRule() {
+        List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
+        SimPads.Opening open = SimPads.opening(pads, pads, storedAs(SimPads.KEY2, "BBB"));
+        assertSame("the stored gamepad is not plugged in, so the one that is takes gamepad1",
+                pads.get(0), open.pad1);
+        assertEquals(SimPads.Source.ONLY_PAD, open.from);
+    }
+
+    @Test
+    public void oneSerialNumberInBothSlotsIsIgnoredRatherThanHalfHonoured() {
+        List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
+        SimPads.Opening open =
+                SimPads.opening(pads, pads, storedAs(SimPads.KEY1, "AAA", SimPads.KEY2, "AAA"));
+        assertSame("one gamepad plugged in still takes gamepad1", pads.get(0), open.pad1);
+        assertNull(open.pad2);
+        assertEquals(SimPads.Source.ONLY_PAD, open.from);
+    }
+
+    @Test
+    public void twoGamepadsAndAnEmptyFileFillNoSlotAtAll() {
+        List<SimGamepad.Pad> pads = Arrays.asList(pad(1, "AAA"), pad(2, "BBB"));
+        SimPads.Opening open = SimPads.opening(pads, pads, storedAs());
+        assertNull("neither slot, so the gesture is what fills them", open.pad1);
+        assertNull(open.pad2);
+        assertNull("and no source, because no slot was filled", open.from);
+    }
+
+    @Test
+    public void bothStoredSlotsAreFilledWhenBothGamepadsAreThere() {
+        List<SimGamepad.Pad> pads = Arrays.asList(pad(1, "AAA"), pad(2, "BBB"));
+        SimPads.Opening open =
+                SimPads.opening(pads, pads, storedAs(SimPads.KEY1, "BBB", SimPads.KEY2, "AAA"));
+        assertSame(pads.get(1), open.pad1);
+        assertSame(pads.get(0), open.pad2);
+        assertEquals(SimPads.Source.STORED, open.from);
     }
 
     // --- whether a stored serial number is trusted ------------------------
