@@ -105,6 +105,44 @@ public class SimMotionTest {
     }
 
     /**
+     * How far one step goes is what that step was worth. Recorded on 2026-09-29
+     * over forty steps of 25 ms: the first covers nothing, because a step is an
+     * interval and the first one has no start to measure from; the next four
+     * cover 0.268 in, 0.492 in, 0.678 in and 0.834 in as the lag lets the wheels
+     * take hold; and by the fortieth a step covers 1.608686 in, which is 25 ms of
+     * 64.4 in/s less what is left of the lag.
+     *
+     * <p>With {@code loop(long)} advancing {@code stepMs} instead of what it was
+     * given, the fortieth step covers 0.6003162255933034 in rather than
+     * 1.608686 in, and this fails on the stride. That is not a settled step
+     * either: forty steps of 10 ms is 400 ms, and the lag has not finished
+     * letting go.
+     */
+    @Test
+    public void everyStepCoversTheGroundItsOwnTimeIsWorth() {
+        OpModeHarness h = new OpModeHarness(new SimOpModes.Tank());
+        h.init();
+        h.start();
+        h.gamepad1.left_stick_y = -1.0f;
+        h.gamepad1.right_stick_y = -1.0f;
+
+        double[] each = new double[40];
+        double last = h.robot.localizer.state().pose().x();
+        for (int i = 0; i < each.length; i++) {
+            h.loop(25);
+            double x = h.robot.localizer.state().pose().x();
+            each[i] = x - last;
+            last = x;
+        }
+
+        assertEquals("the first step has no interval behind it", 0, each[0], 0);
+        assertTrue("and the second has one: " + each[1], each[1] > 0);
+        assertEquals("a settled 25 ms step is 25 ms of 64.4 in/s",
+                1.608686, each[each.length - 1], 1e-6);
+        h.stop();
+    }
+
+    /**
      * Without {@code SimDrive.delegate}, this fails with all four powers at
      * {@code 0.0}, and takes L9 and L10 with it: their paths end where they
      * started, {@code expected:<96.0> but was:<72.0>}.

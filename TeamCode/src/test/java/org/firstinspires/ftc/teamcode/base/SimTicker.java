@@ -31,6 +31,9 @@ final class SimTicker {
     /** Printing what changed and what is off rest, in instants: 250 ms. */
     static final long REPORT_TICKS = 25;
 
+    /** The most simulated time one step is allowed to be worth, in milliseconds. */
+    static final long MAX_STEP_MS = 100;
+
     /** Which instant a clock reading falls on, counting from the origin. */
     static long tickAt(long originMs, long nowMs) {
         return Math.floorDiv(nowMs - originMs, GRID_MS);
@@ -39,6 +42,25 @@ final class SimTicker {
     /** When an instant begins, by the same clock the origin was read from. */
     static long startOf(long originMs, long tick) {
         return originMs + tick * GRID_MS;
+    }
+
+    /**
+     * How much simulated time a step is worth, given how long the pass before it
+     * took in real milliseconds.
+     *
+     * <p>The pass in progress cannot know its own cost, so what a step is handed
+     * is always the pass before it: whatever the OpMode's loop spends lands on
+     * the next step, wherever in the loop it was spent. Simulated time is
+     * therefore one pass behind real time, by a constant rather than a growing
+     * amount.
+     *
+     * <p>Bounded at {@value #MAX_STEP_MS} ms, so a pass held up by a suspended
+     * laptop or a long collection does not integrate that whole span in one
+     * stride; the run falls behind instead. Bounded below at 0, because a clock
+     * that went backwards must not move the robot backwards.
+     */
+    static long stepWorth(long elapsedMs) {
+        return Math.min(MAX_STEP_MS, Math.max(0, elapsedMs));
     }
 
     /**

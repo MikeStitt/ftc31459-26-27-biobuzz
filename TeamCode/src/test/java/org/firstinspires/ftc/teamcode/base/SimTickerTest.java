@@ -108,4 +108,30 @@ public final class SimTickerTest {
                 SimTicker.due(10, 6, SimTicker.GESTURE_TICKS));
         assertFalse("and 9 is not", SimTicker.due(9, 6, SimTicker.GESTURE_TICKS));
     }
+
+    @Test
+    public void aStepIsWorthTheRealTimeThePassBeforeItTook() {
+        assertEquals("an ordinary pass", 10, SimTicker.stepWorth(10));
+        assertEquals("a slow one", 25, SimTicker.stepWorth(25));
+        assertEquals("a pass with nothing measurable in it", 0, SimTicker.stepWorth(0));
+    }
+
+    /**
+     * A laptop that suspended for a minute, or a collection that stalled a pass,
+     * hands in a span no robot could have driven in one stride. The run falls
+     * behind rather than integrating it.
+     */
+    @Test
+    public void aStepIsWorthNoMoreThanTheCeiling() {
+        assertEquals("one minute", SimTicker.MAX_STEP_MS, SimTicker.stepWorth(60000));
+        assertEquals("exactly the ceiling",
+                SimTicker.MAX_STEP_MS, SimTicker.stepWorth(SimTicker.MAX_STEP_MS));
+        assertEquals("one millisecond under it",
+                SimTicker.MAX_STEP_MS - 1, SimTicker.stepWorth(SimTicker.MAX_STEP_MS - 1));
+    }
+
+    @Test
+    public void aClockThatWentBackwardsDoesNotDriveTheRobotBackwards() {
+        assertEquals("negative is no time at all", 0, SimTicker.stepWorth(-40));
+    }
 }

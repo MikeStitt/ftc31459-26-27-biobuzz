@@ -134,7 +134,7 @@ public final class SimRun {
                 if (SimTicker.due(tick, lastStep, SimTicker.STEP_TICKS)) {
                     lastStep = tick;
                     if (harness != null) {
-                        harness.loop(nowMs - lastStepMs);
+                        harness.loop(SimTicker.stepWorth(nowMs - lastStepMs));
                         out.publish();
                     }
                     lastStepMs = nowMs;

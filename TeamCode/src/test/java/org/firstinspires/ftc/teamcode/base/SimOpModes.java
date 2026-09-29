@@ -67,6 +67,45 @@ final class SimOpModes {
         }
     }
 
+    /**
+     * Tank sticks, and a loop that costs {@value Slow#BURN_MS} ms to run.
+     *
+     * <p>For watching what the simulated clock does when a pass takes far longer
+     * than one instant on the grid, which is the case a student's own loop makes.
+     * Measured on 2026-09-29: a fixed 10 ms step ran this at 0.398 of field
+     * speed, and measuring the pass runs it at 1.001 with a coarser stride.
+     *
+     * <p>The burn is charged to the next step and not to this one, wherever in
+     * the loop it sits, because a pass cannot know its own cost until it is over.
+     */
+    public static class Slow extends CorbelsTeleOp {
+
+        /** What one loop costs, in real milliseconds. */
+        static final long BURN_MS = 25;
+
+        private CorbelsMecanum drivetrain;
+
+        @Override
+        public void init() {
+            initBefore();
+            drivetrain = new CorbelsMecanum(hardware);
+            initAfter(drivetrain);
+        }
+
+        @Override
+        public void loop() {
+            loopBefore();
+            double left = -gamepad1.left_stick_y;
+            double right = -gamepad1.right_stick_y;
+            drivetrain.setCommandedWheels(left, right, left, right);
+            long end = System.nanoTime() + BURN_MS * 1_000_000L;
+            while (System.nanoTime() < end) {
+                // a loop that takes its time, so a pass overruns the grid
+            }
+            loopAfter();
+        }
+    }
+
     /** Nothing but a drivetrain the follower can reach. */
     public static class Driven extends CorbelsTeleOp {
 
