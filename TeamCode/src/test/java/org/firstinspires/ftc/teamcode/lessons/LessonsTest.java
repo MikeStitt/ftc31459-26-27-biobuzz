@@ -366,29 +366,35 @@ public class LessonsTest {
         Follower follower = h.robot.follower;
         h.init();
         assertEquals("placed at the start pose", 72.0, follower.pose().x(), EPS);
+        assertEquals("against the wall, half a robot out", 10.5, follower.pose().y(), EPS);
+        assertEquals("facing +y", 90.0, Math.toDegrees(follower.pose().heading()), EPS);
         h.start();
         runUntilDone(h, follower, 3.0);
         h.stop();
 
-        assertEquals("ends 24 inches further along x", 96.0, follower.pose().x(), 1.0);
-        assertEquals("and does not wander in y", 72.0, follower.pose().y(), 1.0);
+        // Forward is +y at heading 90, so the 24 inches are in y and x holds.
+        assertEquals("ends 24 inches further along y", 34.5, follower.pose().y(), 1.0);
+        assertEquals("and does not wander in x", 72.0, follower.pose().x(), 1.0);
+        assertEquals("and still faces +y", 90.0, Math.toDegrees(follower.pose().heading()), 15.0);
     }
 
     // -------------------------------------------------------------- L10
 
     @Test
-    public void l10_autoDrivesTwoLegsAndEndsTurned() {
-        OpModeHarness h = new OpModeHarness(new L10PathWithTurnOpMode());
+    public void l10_autoDrivesForwardThenStrafesSideways() {
+        OpModeHarness h = new OpModeHarness(new L10ForwardThenStrafeOpMode());
         Follower follower = h.robot.follower;
         h.init();
         h.start();
         runUntilDone(h, follower, 6.0);
         h.stop();
 
+        // Forward to (72, 72), then 24 inches of strafe to the robot's right.
         Pose end = follower.pose();
-        assertEquals(96.0, end.x(), 2.0);
-        assertEquals(96.0, end.y(), 2.0);
-        assertEquals("finishes facing +y", 90.0, Math.toDegrees(end.heading()), 15.0);
+        assertEquals("strafed 24 inches in x", 96.0, end.x(), 2.0);
+        assertEquals("and stayed on the line it drove up", 72.0, end.y(), 2.0);
+        assertEquals("never turned, so it still faces +y",
+                90.0, Math.toDegrees(end.heading()), 15.0);
     }
 
     // -------------------------------------------------------------- L11

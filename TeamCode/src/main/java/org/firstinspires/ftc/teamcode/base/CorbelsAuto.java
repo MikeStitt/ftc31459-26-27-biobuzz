@@ -12,6 +12,9 @@ import com.pedropathing.math.Pose;
  */
 public abstract class CorbelsAuto extends CorbelsOpMode {
 
+    @Override
+    protected final boolean isAuto() { return true; }
+
     /** Where the robot is placed before the match. */
     protected abstract Pose startPose();
 

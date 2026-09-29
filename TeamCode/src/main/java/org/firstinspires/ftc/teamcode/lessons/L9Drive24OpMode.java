@@ -22,8 +22,11 @@ public class L9Drive24OpMode extends CorbelsAuto {
 
     private static final PoseFactory POSES = PoseFactory.degrees();
 
-    private final Pose start = POSES.of(72, 72, 0);
-    private final Pose end = POSES.of(96, 72, 0);
+    double robotHalfLengthIn = 9.0;
+    double fieldPerimeterWidthIn = 1.5;
+    double botStartYIn = robotHalfLengthIn + fieldPerimeterWidthIn;
+    private final Pose start = POSES.of(72, botStartYIn, 90);
+    private final Pose end = POSES.of(72, botStartYIn+24, 90);
 
 
     private L6FollowerDriveTrain drivetrain;
@@ -67,8 +70,10 @@ public class L9Drive24OpMode extends CorbelsAuto {
     @Override
     protected Command routine() {
         // TODO: return a sequence with one step: follow a straight line from
-        //       start to end, holding heading 0.
-        //           return sequential(follow(follower, line(start, end).constant(0)));
+        //       start to end, holding the heading it starts at.
+        //           return sequential(follow(follower, line(start, end).constant(start)));
+        //       .constant(pose) takes the heading from a pose. The number form,
+        //       .constant(0), is radians, so .constant(90) is not 90 degrees.
         //       Use .constant(), not .linear() -- Pedro 3.0.1 issues #176 and #181.
         return Command.NOOP;
     }

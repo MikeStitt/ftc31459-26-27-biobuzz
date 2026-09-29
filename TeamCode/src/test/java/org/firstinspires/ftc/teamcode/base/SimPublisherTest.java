@@ -107,7 +107,9 @@ public class SimPublisherTest {
                 double inches = h.robot.localizer.state().pose().x();
                 assertEquals("x is metres from the centre of the field",
                         (inches - 72) * 0.0254, pose[0], 1e-9);
-                assertEquals("y is still on the centre line", -72 * 0.0254, pose[1], 1e-9);
+                double acrossIn = h.robot.localizer.state().pose().y();
+                assertEquals("y is metres from the centre of the field",
+                        (acrossIn - 72) * 0.0254, pose[1], 1e-9);
 
                 double[] wheels = {
                         out.instance().getDoubleTopic("sim/wheels/frontLeft").subscribe(0).get(),

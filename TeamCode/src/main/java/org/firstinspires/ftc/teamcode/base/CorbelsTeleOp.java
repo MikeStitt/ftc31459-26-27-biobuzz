@@ -17,6 +17,9 @@ public abstract class CorbelsTeleOp extends CorbelsOpMode {
     }
 
     @Override
+    protected final boolean isAuto() { return false; }
+
+    @Override
     protected final void onStart() {
         buttons = new Buttons();
         bindings();

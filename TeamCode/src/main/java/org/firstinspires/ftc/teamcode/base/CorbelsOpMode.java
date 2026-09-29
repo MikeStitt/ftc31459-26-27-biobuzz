@@ -5,6 +5,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.ivy.Scheduler;
 import com.pedropathing.math.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import org.firstinspires.ftc.teamcode.OpModeStorage;
 
 
 /**
@@ -54,6 +55,8 @@ public abstract class CorbelsOpMode extends OpMode {
     protected ShadowLocalizers shadowLocalizers;
 
     // ------------------------------------------------------------ hooks
+
+    protected abstract boolean isAuto();
 
     /** After the hardware and follower exist, before the first update. */
     protected void onInit() {
@@ -108,6 +111,9 @@ public abstract class CorbelsOpMode extends OpMode {
     protected final void initAfter(Drivetrain heldDrivetrain) {
         this.heldDrivetrain = heldDrivetrain;
         follower = RobotFactory.follower.apply(hardwareMap, heldDrivetrain);
+        if (!isAuto()) {
+            follower.setPose(OpModeStorage.autonomousEndPose);
+        }
         onInit();
         follower.update();
         Tracker.printToDs("Panels: http://192.168.43.1:8001");
@@ -170,6 +176,9 @@ public abstract class CorbelsOpMode extends OpMode {
     protected final void stopAfter() {
         follower.manual(0, 0, 0);
         follower.update();
+        if (isAuto()) {
+            OpModeStorage.autonomousEndPose = follower.pose();
+        }
         // The drivetrain, not the follower: a lesson that commanded the wheels
         // has them ignoring the follower, so the zero above never reaches a
         // motor. stop() hands them back and writes four zeros.

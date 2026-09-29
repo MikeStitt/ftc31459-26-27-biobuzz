@@ -6,7 +6,10 @@ import static org.junit.Assert.assertTrue;
 
 import com.pedropathing.math.Pose;
 
+import org.firstinspires.ftc.teamcode.OpModeStorage;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -26,6 +29,42 @@ public class SimMotionTest {
     /** Where a failure left its flight log. */
     @Rule
     public final SimLogs logs = new SimLogs();
+
+    /**
+     * A teleop starts where the last OpMode stopped, and {@code stopAfter()}
+     * writes that back, so a test that runs one to the end changes where the
+     * next test's robot stands. Saved and restored so these stay independent.
+     */
+    private Pose savedStart;
+
+    @Before
+    public void saveStart() {
+        savedStart = OpModeStorage.autonomousEndPose;
+    }
+
+    @After
+    public void restoreStart() {
+        OpModeStorage.autonomousEndPose = savedStart;
+    }
+
+    /** Where a teleop is put down, which is what these measure movement from. */
+    private static Pose start() {
+        return OpModeStorage.autonomousEndPose;
+    }
+
+    /** How far the robot went along the way it was facing when it started. */
+    private static double forwardOf(Pose now) {
+        Pose s = start();
+        return (now.x() - s.x()) * Math.cos(s.heading())
+                + (now.y() - s.y()) * Math.sin(s.heading());
+    }
+
+    /** How far it slid across that line, which for a tank drive is nothing. */
+    private static double lateralOf(Pose now) {
+        Pose s = start();
+        return -(now.x() - s.x()) * Math.sin(s.heading())
+                + (now.y() - s.y()) * Math.cos(s.heading());
+    }
 
     private static double[] motorPowers(OpModeHarness h) {
         return new double[]{
@@ -59,9 +98,9 @@ public class SimMotionTest {
                 new double[]{1, 1, 1, 1}, motorPowers(h), 1e-9);
 
         Pose pose = h.robot.localizer.state().pose();
-        assertTrue("drove forward, and got a fair way: " + pose.x(), pose.x() > 40);
-        assertEquals("no sideways drift", 0, pose.y(), 1e-9);
-        assertEquals("no turn", 0, pose.heading(), 1e-9);
+        assertTrue("drove forward, and got a fair way: " + forwardOf(pose), forwardOf(pose) > 40);
+        assertEquals("no sideways drift", 0, lateralOf(pose), 1e-9);
+        assertEquals("no turn", start().heading(), pose.heading(), 1e-9);
         h.stop();
     }
 
@@ -99,8 +138,8 @@ public class SimMotionTest {
      */
     @Test
     public void aSlowPassCoversTheGroundItsTimeIsWorth() {
-        double quick = driveForward().robot.localizer.state().pose().x();
-        double slow = driveForwardInSlowPasses().robot.localizer.state().pose().x();
+        double quick = forwardOf(driveForward().robot.localizer.state().pose());
+        double slow = forwardOf(driveForwardInSlowPasses().robot.localizer.state().pose());
         assertEquals("the same second covers the same ground", quick, slow, 0.01);
     }
 
@@ -127,12 +166,12 @@ public class SimMotionTest {
         h.gamepad1.right_stick_y = -1.0f;
 
         double[] each = new double[40];
-        double last = h.robot.localizer.state().pose().x();
+        double last = forwardOf(h.robot.localizer.state().pose());
         for (int i = 0; i < each.length; i++) {
             h.loop(25);
-            double x = h.robot.localizer.state().pose().x();
-            each[i] = x - last;
-            last = x;
+            double gone = forwardOf(h.robot.localizer.state().pose());
+            each[i] = gone - last;
+            last = gone;
         }
 
         assertEquals("the first step has no interval behind it", 0, each[0], 0);
