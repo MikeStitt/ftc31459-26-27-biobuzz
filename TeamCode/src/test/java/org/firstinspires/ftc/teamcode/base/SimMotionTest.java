@@ -42,7 +42,7 @@ public class SimMotionTest {
         h.start();
         h.gamepad1.left_stick_y = -1.0f;    // the stick reads negative forward
         h.gamepad1.right_stick_y = -1.0f;
-        h.loops(200, 0);                    // 200 x 5 ms of simulated time
+        h.loops(100, 0);                    // 100 x 10 ms of simulated time
         return h;
     }
 
@@ -72,6 +72,74 @@ public class SimMotionTest {
         assertEquals("x", first.x(), again.x(), 0);
         assertEquals("y", first.y(), again.y(), 0);
         assertEquals("heading", first.heading(), again.heading(), 0);
+    }
+
+    /** The same simulated second, as forty passes of 25 ms rather than a hundred. */
+    private static OpModeHarness driveForwardInSlowPasses() {
+        OpModeHarness h = new OpModeHarness(new SimOpModes.Tank());
+        h.init();
+        h.start();
+        h.gamepad1.left_stick_y = -1.0f;
+        h.gamepad1.right_stick_y = -1.0f;
+        for (int i = 0; i < 40; i++) {
+            h.loop(25);                     // 40 x 25 ms is the same second
+        }
+        return h;
+    }
+
+    /**
+     * How far the robot goes is what the clock was advanced by, not how many
+     * times {@code loop} was called. A real run measures how long its last pass
+     * took and hands that in, so a slow OpMode still moves the robot at the speed
+     * it would move on the field.
+     *
+     * <p>The two runs differ by 0.0032 in over the second, which is the step size
+     * showing: 54.7497421494739 in at 10 ms steps against 54.74657244990345 in at
+     * 25 ms. The tolerance admits that and nothing near a missed step.
+     */
+    @Test
+    public void aSlowPassCoversTheGroundItsTimeIsWorth() {
+        double quick = driveForward().robot.localizer.state().pose().x();
+        double slow = driveForwardInSlowPasses().robot.localizer.state().pose().x();
+        assertEquals("the same second covers the same ground", quick, slow, 0.01);
+    }
+
+    /**
+     * How far one step goes is what that step was worth. Recorded on 2026-09-29
+     * over forty steps of 25 ms: the first covers nothing, because a step is an
+     * interval and the first one has no start to measure from; the next four
+     * cover 0.268 in, 0.492 in, 0.678 in and 0.834 in as the lag lets the wheels
+     * take hold; and by the fortieth a step covers 1.608686 in, which is 25 ms of
+     * 64.4 in/s less what is left of the lag.
+     *
+     * <p>With {@code loop(long)} advancing {@code stepMs} instead of what it was
+     * given, the fortieth step covers 0.6003162255933034 in rather than
+     * 1.608686 in, and this fails on the stride. That is not a settled step
+     * either: forty steps of 10 ms is 400 ms, and the lag has not finished
+     * letting go.
+     */
+    @Test
+    public void everyStepCoversTheGroundItsOwnTimeIsWorth() {
+        OpModeHarness h = new OpModeHarness(new SimOpModes.Tank());
+        h.init();
+        h.start();
+        h.gamepad1.left_stick_y = -1.0f;
+        h.gamepad1.right_stick_y = -1.0f;
+
+        double[] each = new double[40];
+        double last = h.robot.localizer.state().pose().x();
+        for (int i = 0; i < each.length; i++) {
+            h.loop(25);
+            double x = h.robot.localizer.state().pose().x();
+            each[i] = x - last;
+            last = x;
+        }
+
+        assertEquals("the first step has no interval behind it", 0, each[0], 0);
+        assertTrue("and the second has one: " + each[1], each[1] > 0);
+        assertEquals("a settled 25 ms step is 25 ms of 64.4 in/s",
+                1.608686, each[each.length - 1], 1e-6);
+        h.stop();
     }
 
     /**
