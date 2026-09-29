@@ -103,71 +103,131 @@ public final class SimPadsTest {
         return out;
     }
 
-    @Test
-    public void aStoredSecondSlotBeatsTheOneGamepadRule() {
-        List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
-        SimPads.Opening open = SimPads.opening(pads, pads, storedAs(SimPads.KEY2, "AAA"));
-        assertNull("gamepad1 stays empty, so a robot can be driven from gamepad2", open.pad1);
-        assertSame("the gamepad the file names is in the slot it names", pads.get(0), open.pad2);
-        assertEquals(SimPads.Source.STORED, open.from);
+    private static SimPads.Opening open(List<SimGamepad.Pad> pads, Map<String, String> stored) {
+        return SimPads.opening(pads, pads, stored, null, null);
     }
 
     @Test
-    public void theOnlyGamepadTakesTheFirstSlotWhenTheFileNamesNothing() {
+    public void aStoredSecondSlotBeatsAFreeFirstSlot() {
         List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
-        SimPads.Opening open = SimPads.opening(pads, pads, storedAs());
-        assertSame(pads.get(0), open.pad1);
-        assertNull(open.pad2);
-        assertEquals(SimPads.Source.ONLY_PAD, open.from);
+        SimPads.Opening got = open(pads, storedAs(SimPads.KEY2, "AAA"));
+        assertNull("gamepad1 stays empty, so a robot can be driven from gamepad2", got.pad1);
+        assertSame("the gamepad the file names is in the slot it names", pads.get(0), got.pad2);
+        assertEquals(SimPads.Source.STORED, got.from2);
     }
 
     @Test
-    public void aStoredSerialNumberNothingAnswersToLeavesTheOneGamepadRule() {
+    public void aGamepadTheFileDoesNotNameTakesTheFirstFreeSlot() {
         List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
-        SimPads.Opening open = SimPads.opening(pads, pads, storedAs(SimPads.KEY2, "BBB"));
-        assertSame("the stored gamepad is not plugged in, so the one that is takes gamepad1",
-                pads.get(0), open.pad1);
-        assertEquals(SimPads.Source.ONLY_PAD, open.from);
+        SimPads.Opening got = open(pads, storedAs());
+        assertSame(pads.get(0), got.pad1);
+        assertNull(got.pad2);
+        assertEquals(SimPads.Source.FREE_SLOT, got.from1);
+    }
+
+    @Test
+    public void anEntryNamingAnAbsentGamepadHoldsItsSlotAndPushesTheOtherGamepadOn() {
+        List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
+        SimPads.Opening got = open(pads, storedAs(SimPads.KEY1, "BBB"));
+        assertNull("gamepad1 is held for BBB, which is not plugged in", got.pad1);
+        assertSame("so the gamepad that is takes the slot the file leaves free",
+                pads.get(0), got.pad2);
+        assertEquals(SimPads.Source.FREE_SLOT, got.from2);
+    }
+
+    @Test
+    public void bothEntriesNamingAbsentGamepadsLeaveEveryGamepadUnclaimed() {
+        List<SimGamepad.Pad> pads = Arrays.asList(pad(1, "AAA"), pad(2, "BBB"));
+        SimPads.Opening got = open(pads, storedAs(SimPads.KEY1, "CCC", SimPads.KEY2, "DDD"));
+        assertNull("no slot is free, so the robot sits still until a gesture", got.pad1);
+        assertNull(got.pad2);
     }
 
     @Test
     public void oneSerialNumberInBothSlotsFillsTheFirstAndLeavesTheSecondEmpty() {
         List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
-        SimPads.Opening open =
-                SimPads.opening(pads, pads, storedAs(SimPads.KEY1, "AAA", SimPads.KEY2, "AAA"));
-        assertSame("the gamepad the file names still drives", pads.get(0), open.pad1);
-        assertNull("one gamepad cannot fill two slots", open.pad2);
+        SimPads.Opening got = open(pads, storedAs(SimPads.KEY1, "AAA", SimPads.KEY2, "AAA"));
+        assertSame("the gamepad the file names still drives", pads.get(0), got.pad1);
+        assertNull("one gamepad cannot fill two slots", got.pad2);
         assertEquals("the file named it, so that is where the slot came from",
-                SimPads.Source.STORED, open.from);
+                SimPads.Source.STORED, got.from1);
     }
 
     @Test
     public void oneSerialNumberInBothSlotsFillsTheFirstWithOtherGamepadsPluggedIn() {
         List<SimGamepad.Pad> pads = Arrays.asList(pad(1, "AAA"), pad(2, "BBB"));
-        SimPads.Opening open =
-                SimPads.opening(pads, pads, storedAs(SimPads.KEY1, "AAA", SimPads.KEY2, "AAA"));
-        assertSame("the gamepad the file names takes gamepad1", pads.get(0), open.pad1);
-        assertNull("and the one it does not name waits for a gesture", open.pad2);
-        assertEquals(SimPads.Source.STORED, open.from);
+        SimPads.Opening got = open(pads, storedAs(SimPads.KEY1, "AAA", SimPads.KEY2, "AAA"));
+        assertSame("the gamepad the file names takes gamepad1", pads.get(0), got.pad1);
+        assertNull("the second entry still names AAA, so the slot is not free this pass",
+                got.pad2);
+        assertEquals(SimPads.Source.STORED, got.from1);
     }
 
     @Test
-    public void twoGamepadsAndAnEmptyFileFillNoSlotAtAll() {
+    public void twoGamepadsAndAnEmptyFileFillBothSlotsInTheOrderTheyAppear() {
         List<SimGamepad.Pad> pads = Arrays.asList(pad(1, "AAA"), pad(2, "BBB"));
-        SimPads.Opening open = SimPads.opening(pads, pads, storedAs());
-        assertNull("neither slot, so the gesture is what fills them", open.pad1);
-        assertNull(open.pad2);
-        assertNull("and no source, because no slot was filled", open.from);
+        SimPads.Opening got = open(pads, storedAs());
+        assertSame("gamepad1 first", pads.get(0), got.pad1);
+        assertSame(pads.get(1), got.pad2);
+        assertEquals(SimPads.Source.FREE_SLOT, got.from1);
+        assertEquals(SimPads.Source.FREE_SLOT, got.from2);
+    }
+
+    @Test
+    public void aThirdGamepadFindsNoFreeSlotOnceTheFileNamesBoth() {
+        List<SimGamepad.Pad> pads =
+                Arrays.asList(pad(1, "AAA"), pad(2, "BBB"), pad(3, "CCC"));
+        SimPads.Opening got = SimPads.opening(pads, pads,
+                storedAs(SimPads.KEY1, "AAA", SimPads.KEY2, "BBB"), pads.get(0), pads.get(1));
+        assertSame(pads.get(0), got.pad1);
+        assertSame(pads.get(1), got.pad2);
+        assertNull("nothing was filled this pass, so nothing is written", got.from1);
+        assertNull(got.from2);
+    }
+
+    @Test
+    public void aGamepadHoldingASlotKeepsItWhenTheRulesRunAgain() {
+        List<SimGamepad.Pad> pads = Arrays.asList(pad(1, "AAA"), pad(2, "BBB"));
+        SimPads.Opening got = SimPads.opening(pads, pads,
+                storedAs(SimPads.KEY1, "BBB"), pads.get(0), null);
+        assertSame("the file names BBB for gamepad1, but AAA is holding it", pads.get(0), got.pad1);
+        assertNull("and BBB does not fall into gamepad2, because the file names it for gamepad1",
+                got.pad2);
     }
 
     @Test
     public void bothStoredSlotsAreFilledWhenBothGamepadsAreThere() {
         List<SimGamepad.Pad> pads = Arrays.asList(pad(1, "AAA"), pad(2, "BBB"));
-        SimPads.Opening open =
-                SimPads.opening(pads, pads, storedAs(SimPads.KEY1, "BBB", SimPads.KEY2, "AAA"));
-        assertSame(pads.get(1), open.pad1);
-        assertSame(pads.get(0), open.pad2);
-        assertEquals(SimPads.Source.STORED, open.from);
+        SimPads.Opening got = open(pads, storedAs(SimPads.KEY1, "BBB", SimPads.KEY2, "AAA"));
+        assertSame(pads.get(1), got.pad1);
+        assertSame(pads.get(0), got.pad2);
+        assertEquals(SimPads.Source.STORED, got.from1);
+        assertEquals(SimPads.Source.STORED, got.from2);
+    }
+
+    @Test
+    public void aBlankEntryIsNoEntryAtAllAndLeavesTheSlotFree() {
+        List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
+        assertTrue("no entry", SimPads.freeInFile(storedAs(), SimPads.KEY1));
+        assertTrue("a blank value names nobody", SimPads.freeInFile(storedAs(SimPads.KEY1, " "),
+                SimPads.KEY1));
+        assertFalse("an entry naming somebody holds the slot",
+                SimPads.freeInFile(storedAs(SimPads.KEY1, "BBB"), SimPads.KEY1));
+        SimPads.Opening got = open(pads, storedAs(SimPads.KEY1, ""));
+        assertSame("so the gamepad takes gamepad1", pads.get(0), got.pad1);
+    }
+
+    @Test
+    public void anEmptySlotKeepsAnEntryHoldingItForAGamepadThatIsUnplugged() {
+        List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
+        assertEquals("the reservation survives a write for the other slot",
+                "GONE", SimPads.slotLine(null, "GONE", pads));
+        assertNull("nothing held it and nothing was reserved",
+                SimPads.slotLine(null, null, pads));
+        assertEquals("a gamepad in the slot writes its own serial number",
+                "AAA", SimPads.slotLine(pads.get(0), "GONE", pads));
+        assertNull("an entry naming a gamepad that is here is stale, so it goes",
+                SimPads.slotLine(null, "AAA", pads));
     }
 
     // --- whether a stored serial number is trusted ------------------------
@@ -313,13 +373,13 @@ public final class SimPadsTest {
         SimGamepad.Pad nameless = pad(2, null);
         SimGamepad.Pad waiting = pad(3, "CCC");
         List<SimGamepad.Pad> pads = Arrays.asList(driving, nameless, waiting);
-        assertEquals("  \"pad 1\", serial AAA, id 1 -- gamepad1, the only gamepad plugged in\n"
+        assertEquals("  \"pad 1\", serial AAA, id 1 -- gamepad1, a slot local.properties left free\n"
                         + "  \"pad 2\", no serial number, id 2"
                         + " -- no serial number, so it is not used\n"
                         + "  \"pad 3\", serial CCC, id 3 -- not claimed yet\n"
                         + "Hold Start and press A to drive as gamepad1,"
                         + " or Start and B for gamepad2.\n",
-                SimPads.censusText(pads, driving, null, from(driving, SimPads.Source.ONLY_PAD)));
+                SimPads.censusText(pads, driving, null, from(driving, SimPads.Source.FREE_SLOT)));
     }
 
     @Test

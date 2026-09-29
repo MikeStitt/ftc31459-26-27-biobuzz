@@ -39,8 +39,8 @@ public final class SimPads implements AutoCloseable {
      * How a pad in a slot got there. Remembered, because it cannot be derived.
      */
     enum Source {
-        /** The only gamepad plugged in, so no gesture was asked for. */
-        ONLY_PAD,
+        /** Put in a slot {@code local.properties} left free, with no gesture. */
+        FREE_SLOT,
         /** Read back from {@code local.properties} by serial number. */
         STORED,
         /** Claimed with Start and A, or Start and B, during this run. */
@@ -260,9 +260,6 @@ public final class SimPads implements AutoCloseable {
      * available, which is what makes the simple rule enough.
      */
     private void assign() {
-        if (player1 != null || player2 != null) {
-            return;
-        }
         List<SimGamepad.Pad> all = sdl.pads();
         List<SimGamepad.Pad> usable = new ArrayList<>();
         for (SimGamepad.Pad pad : all) {
@@ -270,29 +267,49 @@ public final class SimPads implements AutoCloseable {
                 usable.add(pad);
             }
         }
-        Opening open = opening(all, usable, read(store));
+        Opening open = opening(all, usable, read(store), player1, player2);
+        if (open.pad1 == player1 && open.pad2 == player2) {
+            return;
+        }
         player1 = open.pad1;
         player2 = open.pad2;
-        if (player1 != null) {
-            source.put(player1, open.from);
+        if (open.from1 != null) {
+            source.put(player1, open.from1);
         }
-        if (player2 != null) {
-            source.put(player2, open.from);
+        if (open.from2 != null) {
+            source.put(player2, open.from2);
         }
+        store();
     }
 
-    /** Which gamepad each slot starts with, and why. */
+    /** Which gamepad each slot holds, and why, after one pass of the rules. */
     static final class Opening {
         final SimGamepad.Pad pad1;
         final SimGamepad.Pad pad2;
-        /** Shared, because one rule fills both slots or neither; null for neither. */
-        final Source from;
+        /** Why {@code pad1} has the slot, or null when this pass did not fill it. */
+        final Source from1;
+        /** Why {@code pad2} has the slot, or null when this pass did not fill it. */
+        final Source from2;
 
-        Opening(SimGamepad.Pad pad1, SimGamepad.Pad pad2, Source from) {
+        Opening(SimGamepad.Pad pad1, SimGamepad.Pad pad2, Source from1, Source from2) {
             this.pad1 = pad1;
             this.pad2 = pad2;
-            this.from = from;
+            this.from1 = from1;
+            this.from2 = from2;
         }
+    }
+
+    /**
+     * Whether {@code local.properties} leaves this slot free.
+     *
+     * <p>An entry naming a gamepad that is not plugged in is not free: it holds
+     * the slot for that gamepad, which is how two gamepads can both be unclaimed
+     * with the robot sitting still. A blank value names nobody and so is no
+     * entry at all.
+     */
+    static boolean freeInFile(Map<String, String> stored, String key) {
+        String serial = stored.get(key);
+        return serial == null || serial.trim().isEmpty();
     }
 
     /**
@@ -305,27 +322,52 @@ public final class SimPads implements AutoCloseable {
      * next run, which is how a robot is driven from the second slot with one
      * gamepad in hand.
      *
+     * <p>A gamepad the file does not name takes a slot the file leaves free,
+     * {@code gamepad1} first, and the caller writes that assignment back so the
+     * file goes on being the slot table. A gamepad with no free slot is left for
+     * a gesture.
+     *
+     * <p>A gamepad already holding a slot keeps it: the two held slots go in as
+     * arguments and come back untouched, which is the rule that a slot is kept
+     * until the cable comes out or a gesture moves it.
+     *
      * <p>A serial number written to both keys names one gamepad for two slots,
-     * which one gamepad cannot fill. The first slot wins and the second is left
-     * empty, so the file is half honoured on purpose rather than thrown away:
-     * the gamepad it names still drives. Writing the file back without the
-     * second line is allowed and is not done, because only a gesture writes the
-     * file.
+     * which one gamepad cannot fill. The first slot wins and the second entry
+     * names nobody, so the write that follows clears it and the second slot is
+     * free on the next pass rather than on this one.
      */
     static Opening opening(List<SimGamepad.Pad> all, List<SimGamepad.Pad> usable,
-            Map<String, String> stored) {
-        SimGamepad.Pad first = highestWithSerial(all, stored.get(KEY1));
-        SimGamepad.Pad second = highestWithSerial(all, stored.get(KEY2));
-        if (first != null && first == second) {
-            second = null;
+            Map<String, String> stored, SimGamepad.Pad held1, SimGamepad.Pad held2) {
+        SimGamepad.Pad slot1 = held1;
+        SimGamepad.Pad slot2 = held2;
+        Source from1 = null;
+        Source from2 = null;
+        SimGamepad.Pad named1 = highestWithSerial(all, stored.get(KEY1));
+        SimGamepad.Pad named2 = highestWithSerial(all, stored.get(KEY2));
+        if (named1 != null && named1 == named2) {
+            named2 = null;
         }
-        if (first != null || second != null) {
-            return new Opening(first, second, Source.STORED);
+        if (slot1 == null && named1 != null && named1 != slot2) {
+            slot1 = named1;
+            from1 = Source.STORED;
         }
-        if (usable.size() == 1) {
-            return new Opening(usable.get(0), null, Source.ONLY_PAD);
+        if (slot2 == null && named2 != null && named2 != slot1) {
+            slot2 = named2;
+            from2 = Source.STORED;
         }
-        return new Opening(null, null, null);
+        for (SimGamepad.Pad pad : usable) {
+            if (pad == slot1 || pad == slot2 || pad == named1 || pad == named2) {
+                continue;
+            }
+            if (slot1 == null && freeInFile(stored, KEY1)) {
+                slot1 = pad;
+                from1 = Source.FREE_SLOT;
+            } else if (slot2 == null && freeInFile(stored, KEY2)) {
+                slot2 = pad;
+                from2 = Source.FREE_SLOT;
+            }
+        }
+        return new Opening(slot1, slot2, from1, from2);
     }
 
     /**
@@ -489,8 +531,27 @@ public final class SimPads implements AutoCloseable {
     }
 
     private void store() {
-        write(store, player1 == null ? null : player1.serial,
-                player2 == null ? null : player2.serial);
+        Map<String, String> stored = read(store);
+        List<SimGamepad.Pad> all = sdl.pads();
+        write(store, slotLine(player1, stored.get(KEY1), all),
+                slotLine(player2, stored.get(KEY2), all));
+    }
+
+    /**
+     * What the file should say about one slot, given what holds it.
+     *
+     * <p>A gamepad in the slot writes its own serial number. An empty slot keeps
+     * the entry it had when no gamepad present answers to it, because that entry
+     * is holding the slot for a gamepad that is unplugged and only a gesture
+     * changes it. An empty slot whose entry names a gamepad that is plugged in
+     * loses it: that gamepad is somewhere else, or the entry is the second half
+     * of one serial number written to both slots.
+     */
+    static String slotLine(SimGamepad.Pad held, String stored, List<SimGamepad.Pad> all) {
+        if (held != null) {
+            return held.serial;
+        }
+        return highestWithSerial(all, stored) == null ? stored : null;
     }
 
     /**
@@ -614,8 +675,8 @@ public final class SimPads implements AutoCloseable {
 
     /** Why the gamepad in a slot is the one in it. */
     static String because(Source from) {
-        if (from == Source.ONLY_PAD) {
-            return "the only gamepad plugged in";
+        if (from == Source.FREE_SLOT) {
+            return "a slot local.properties left free";
         }
         if (from == Source.STORED) {
             return "remembered in local.properties by serial number";
