@@ -86,4 +86,33 @@ public final class SimGamepadTest {
         List<SimGamepad.Pad> held = new ArrayList<>(Arrays.asList(pad(1), pad(4)));
         assertEquals(2, SimGamepad.goneFrom(new int[] {}, held).size());
     }
+
+    // --- the line a pad is named by ---------------------------------------
+
+    @Test
+    public void aPadsLineIsItsNameThenItsSerialNumberThenItsDeviceId() {
+        assertEquals("\"Xbox 360 Controller\", serial 1DD5F3D, id 4",
+                new SimGamepad.Pad(4, 0L, "Xbox 360 Controller", "1DD5F3D").toString());
+    }
+
+    @Test
+    public void aPadWithNoSerialNumberSaysThatInItsLine() {
+        assertEquals("\"Some Pad\", no serial number, id 2",
+                new SimGamepad.Pad(2, 0L, "Some Pad", null).toString());
+        assertEquals("an empty serial number reads the same way",
+                "\"Some Pad\", no serial number, id 2",
+                new SimGamepad.Pad(2, 0L, "Some Pad", "").toString());
+    }
+
+    /**
+     * The device id is last, so nothing in a line can be read as a slot. A slot
+     * is {@code gamepad1} or {@code gamepad2} and never a bare number.
+     */
+    @Test
+    public void aPadsLineDoesNotBeginWithANumber() {
+        String line = new SimGamepad.Pad(1, 0L, "Xbox 360 Controller", "1DD5F3D").toString();
+        assertTrue("it begins with the name: " + line, line.startsWith("\"Xbox"));
+        assertTrue("and the id comes after the serial number: " + line,
+                line.indexOf("serial") < line.indexOf("id "));
+    }
 }

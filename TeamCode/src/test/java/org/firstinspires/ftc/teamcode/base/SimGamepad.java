@@ -105,10 +105,19 @@ public final class SimGamepad implements AutoCloseable {
             this.serial = serial;
         }
 
+        /**
+         * The name, then the serial number, then the device id.
+         *
+         * <p>The device id comes last because it decides one thing only, which
+         * gamepad a serial number names when two report the same one. Leading
+         * with it put a number next to a slot name with nothing to tell them
+         * apart: {@code gamepad1 is now id 1 "Xbox 360 Controller"}.
+         */
         @Override
         public String toString() {
-            return "id " + id + " \"" + name + "\""
-                    + (serial == null ? ", no serial" : ", serial " + serial);
+            return "\"" + name + "\", "
+                    + (serial == null || serial.isEmpty() ? "no serial number" : "serial " + serial)
+                    + ", id " + id;
         }
     }
 
