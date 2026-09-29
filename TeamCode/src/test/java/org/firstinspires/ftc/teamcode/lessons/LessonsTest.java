@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 
 import org.firstinspires.ftc.teamcode.base.CorbelsOpMode;
+import org.firstinspires.ftc.teamcode.OpModeStorage;
 import org.firstinspires.ftc.teamcode.base.OpModeHarness;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
@@ -144,10 +145,26 @@ public class LessonsTest {
         h.gamepad1.right_stick_y = -1.0f;
         h.loops(100, 0);                      // 100 x 10 ms of simulated time
 
+        // A teleop starts where the last autonomous left the robot, so these
+        // are measured from there and along the way it is facing.
         Pose pose = h.robot.localizer.state().pose();
-        assertTrue("drove forward, and got a fair way: " + pose.x(), pose.x() > 40);
-        assertEquals("no sideways drift", 0, pose.y(), EPS);
+        assertTrue("drove forward, and got a fair way: " + forwardOf(pose), forwardOf(pose) > 40);
+        assertEquals("no sideways drift", 0, lateralOf(pose), EPS);
         h.stop();
+    }
+
+    /** How far the robot went along the way it was facing when it started. */
+    private static double forwardOf(Pose now) {
+        Pose s = OpModeStorage.autonomousEndPose;
+        return (now.x() - s.x()) * Math.cos(s.heading())
+                + (now.y() - s.y()) * Math.sin(s.heading());
+    }
+
+    /** How far it slid across that line, which for a tank drive is nothing. */
+    private static double lateralOf(Pose now) {
+        Pose s = OpModeStorage.autonomousEndPose;
+        return -(now.x() - s.x()) * Math.sin(s.heading())
+                + (now.y() - s.y()) * Math.cos(s.heading());
     }
 
     // -------------------------------------------------------------- L3a
