@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.base;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -235,8 +236,9 @@ public final class SimArgsTest {
         assertTrue("--pad", usage.contains("--pad "));
         assertTrue("--help", usage.contains("--help"));
         assertTrue("a control option", usage.contains("--control=value"));
-        String prefix = SimRun.PACKAGE.substring(0, SimRun.PACKAGE.length() - 1);
         assertTrue("the package, without the dot that joins it to a name",
-                usage.contains(prefix));
+                usage.contains(SimArgs.packageName()));
+        assertFalse("the dot that joins the package to a name",
+                usage.contains(SimRun.PACKAGE + ":"));
     }
 }

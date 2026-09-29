@@ -60,7 +60,7 @@ public final class SimRun {
             opMode = opMode(plan.opMode);
         } catch (ReflectiveOperationException | ClassCastException e) {
             System.err.println("simRun: no OpMode called \"" + plan.opMode + "\" under "
-                    + PACKAGE + "; see --help");
+                    + SimArgs.packageName() + "; see --help");
             System.exit(2);
             return;
         }

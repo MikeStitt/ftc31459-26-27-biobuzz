@@ -260,7 +260,7 @@ final class SimArgs {
     }
 
     /** The package an OpMode name follows, without the dot that joins them. */
-    private static String packageName() {
+    static String packageName() {
         return SimRun.PACKAGE.substring(0, SimRun.PACKAGE.length() - 1);
     }
 
