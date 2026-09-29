@@ -1,0 +1,81 @@
+# Everything the guide checks: `ninja book`.
+#
+# Run it with book/.venv active, or with any Python that has
+# book/requirements.txt installed: the Sphinx build and the reading-level check
+# both need it.
+#
+# `ninja -k 0 book` runs every check even when the first fails, which is what
+# you want when fixing rather than gating.
+#
+# Each check is a script under tools/ rather than a one-liner here, because its
+# scope rule is worth reading. No output is declared, which is how ninja is told
+# to run them all on every invocation.
+
+ninja_required_version = 1.10
+
+py = python3
+tools = PYTHONPATH=tools $py
+
+rule sphinx
+  command = sphinx-build -W -b html source build/html
+  description = the guide builds, with every warning an error
+  pool = console
+
+rule wrap
+  command = $tools tools/check_wrap.py
+  description = prose wrapped at 100 columns
+  pool = console
+
+rule reading
+  command = $tools tools/check_reading_level.py
+  description = student pages at grade 8 or below
+  pool = console
+
+rule keep
+  command = $tools tools/check_keep.py
+  description = kept passages unchanged
+  pool = console
+
+rule words
+  command = $tools tools/check_words.py
+  description = pages under their word ceilings
+  pool = console
+
+rule answers
+  command = $tools tools/answers.py --check
+  description = answer pages match the two lesson lines
+  pool = console
+
+rule figures
+  command = $tools tools/check_figures.py
+  description = pencilled figures match FIGURES.md
+  pool = console
+
+rule cheatsheet
+  command = $tools tools/cheatsheet.py --check
+  description = the cheat sheet matches the lesson code
+  pool = console
+
+build check-sphinx: sphinx | source/conf.py
+build check-wrap: wrap | tools/check_wrap.py tools/bookpaths.py
+build check-reading: reading | tools/check_reading_level.py tools/bookpaths.py
+build check-keep: keep | tools/check_keep.py tools/register.py keep.toml
+build check-words: words | tools/check_words.py tools/register.py keep.toml
+build check-figures: figures | tools/check_figures.py tools/bookpaths.py FIGURES.md
+build check-answers: answers | tools/answers.py tools/register.py keep.toml
+build check-cheatsheet: cheatsheet | tools/cheatsheet.py tools/answers.py tools/register.py keep.toml
+
+build book: phony check-sphinx check-wrap check-reading check-keep check-words check-figures $
+    check-answers check-cheatsheet
+
+default book
+
+# Not a check, and not part of `ninja book`: a view of what each blank asks a
+# student to write, for reading rather than gating. Its pages are generated and
+# not committed.
+rule diffs
+  command = $tools tools/diffs.py --build
+  description = what the student writes, one blank at a time
+  pool = console
+
+build review: diffs | tools/diffs.py tools/answers.py tools/register.py keep.toml
