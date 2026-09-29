@@ -5,8 +5,8 @@ package org.firstinspires.ftc.teamcode.base;
  *
  * <p>A test of the simulator that drove a lesson would fail on the lessons
  * branch, where the lessons are blanks, and a failure outside the
- * {@code lessons} package there is a defect rather than the point. These two
- * are complete on both branches. That a real lesson's sticks move the
+ * {@code lessons} package there is a defect rather than the point. Every teleop
+ * here is complete on both branches. That a real lesson's sticks move the
  * simulated robot is {@code LessonsTest.l2_theSticksMoveTheSimulatedRobot},
  * where a blank L2 failing is expected.
  */

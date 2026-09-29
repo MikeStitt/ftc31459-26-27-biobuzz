@@ -30,9 +30,10 @@ import java.lang.reflect.Field;
  * <p>Everything periodic runs on {@link SimTicker}'s 10 ms grid, measured from
  * the clock read when the run starts: the gamepads are read and the simulated
  * robot steps every instant it wakes on, the gestures are read every fifth
- * instant and the rescan runs every twenty-fifth. A slow pass is charged to
- * itself rather than to the periods after it, and an instant it ran through is
- * skipped rather than caught up.
+ * instant, and the rescan runs every twenty-fifth with the off-rest report
+ * beside it for {@code --pad-check}. A slow pass is charged to itself rather
+ * than to the periods after it, and an instant it ran through is skipped rather
+ * than caught up.
  *
  * <p>So one pass is 10 ms of simulated time, but not necessarily 10 ms of real
  * time. Measured on this bench on 2026-09-28: {@code Thread.sleep(10)} takes
