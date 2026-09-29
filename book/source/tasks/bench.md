@@ -70,18 +70,18 @@ A test says where the robot ended up. It does not show you the robot. For that, 
 its own:
 
 ```
-./gradlew :TeamCode:simRun --args="L2bTankOpMode --left_stick_y=-1 --right_stick_y=-1"
+./gradlew :TeamCode:simRun --args="lessons.L2bTankOpMode --left_stick_y=-1 --right_stick_y=-1"
 ```
 
-The first word inside the quotes is the lesson's class name. Each option after it holds one gamepad
-control at one value for the whole run, named the way the gamepad names it. So `--left_stick_y=-1`
-is the left stick pushed fully forward, and `--a=true` is the A button held down. Ask for
-`--args="--help"` and it lists every control you can set.
+The first word inside the quotes is the lesson's class name, with the package it sits in before it.
+Each option after it holds one gamepad control at one value for the whole run, named the way the
+gamepad names it. So `--left_stick_y=-1` is the left stick pushed fully forward, and `--a=true` is
+the A button held down. Ask for `--args="--help"` and it lists every control you can set.
 
 To push the sticks yourself, plug a gamepad into the laptop and add `--pad`:
 
 ```
-./gradlew :TeamCode:simRun --args="L2bTankOpMode --pad"
+./gradlew :TeamCode:simRun --args="lessons.L2bTankOpMode --pad"
 ```
 
 One gamepad becomes `gamepad1` on its own. With two plugged in, hold Start and press A on the one

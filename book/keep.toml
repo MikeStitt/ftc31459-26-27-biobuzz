@@ -48,9 +48,15 @@ words = 1000
 # paragraph. What came out was the sentence about the simulator's own three
 # tests, which `BUILD SUCCESSFUL` now covers, and the one saying the sticks
 # cannot be pushed.
+#
+# Raised again to 1150 on 2026-09-29. Both simRun commands named the lesson class
+# without its package, which sim.opmode.any made wrong: the name is what follows
+# org.firstinspires.ftc.teamcode, so a student following either one got
+# "no OpMode called ..." and exit 2. The commands and the sentence explaining them
+# carry the package now. Mike raised the ceiling rather than cut a sentence.
 [[page]]
 path = "source/tasks/bench.md"
-words = 1100
+words = 1150
 
 [[page]]
 path = "source/tasks/pinpoint.md"
