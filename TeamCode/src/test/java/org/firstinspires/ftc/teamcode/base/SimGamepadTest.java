@@ -1,10 +1,7 @@
 package org.firstinspires.ftc.teamcode.base;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import com.qualcomm.robotcore.hardware.Gamepad;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -88,31 +85,5 @@ public final class SimGamepadTest {
     public void everyPadHasGoneWhenNothingIsListed() {
         List<SimGamepad.Pad> held = new ArrayList<>(Arrays.asList(pad(1), pad(4)));
         assertEquals(2, SimGamepad.goneFrom(new int[] {}, held).size());
-    }
-
-    @Test
-    public void restUndoesEverythingReadWrites() {
-        Gamepad g = new Gamepad();
-        g.left_stick_y = -1f;
-        g.right_stick_x = 0.5f;
-        g.left_trigger = 1f;
-        g.right_trigger = 1f;
-        g.a = true;
-        g.start = true;
-        g.dpad_left = true;
-        g.left_bumper = true;
-        g.right_stick_button = true;
-
-        SimGamepad.rest(g);
-
-        assertEquals("left_stick_y", 0f, g.left_stick_y, 0f);
-        assertEquals("right_stick_x", 0f, g.right_stick_x, 0f);
-        assertEquals("left_trigger", 0f, g.left_trigger, 0f);
-        assertEquals("right_trigger", 0f, g.right_trigger, 0f);
-        assertFalse("a", g.a);
-        assertFalse("start", g.start);
-        assertFalse("dpad_left", g.dpad_left);
-        assertFalse("left_bumper", g.left_bumper);
-        assertFalse("right_stick_button", g.right_stick_button);
     }
 }

@@ -64,6 +64,19 @@ public final class SimPads implements AutoCloseable {
     /** Scratch, so a pad can be read for its gesture without reaching a lesson. */
     private final Gamepad probe = new Gamepad();
 
+    /**
+     * Where a pad's reading is held before it is copied, one per slot.
+     *
+     * <p>A reading goes into one of these and is then handed to the slot's own
+     * {@code Gamepad.copy}, which is how the robot fills a gamepad: the nine
+     * derived fields and every {@code WasPressed} method come out of that call
+     * rather than out of this code. Held rather than made each loop, so a pass
+     * allocates nothing.
+     */
+    private final Gamepad staging1 = new Gamepad();
+
+    private final Gamepad staging2 = new Gamepad();
+
     private final Map<SimGamepad.Pad, Source> source = new LinkedHashMap<>();
 
     private SimGamepad.Pad player1;
@@ -90,21 +103,33 @@ public final class SimPads implements AutoCloseable {
      * Reads the pads, hands each player's readings to its {@code Gamepad}, and
      * watches an unassigned pad for its claiming gesture.
      *
-     * <p>Called once a loop. A {@code Gamepad} with no pad behind it is left
-     * exactly as it was, which is resting.
+     * <p>Called once a loop. A {@code Gamepad} with no pad behind it reads as
+     * untouched.
      */
     public void update(Gamepad gamepad1, Gamepad gamepad2) {
         sdl.update();
-        rescan(gamepad1, gamepad2);
+        rescan();
         if (player1 == null || player2 == null) {
             claim();
         }
-        if (player1 != null) {
-            sdl.read(player1, gamepad1);
+        fill(player1, staging1, gamepad1);
+        fill(player2, staging2, gamepad2);
+    }
+
+    /**
+     * Fills one slot's {@code Gamepad} the way the robot fills it.
+     *
+     * <p>An empty slot is reset instead, every loop rather than once when the
+     * pad went away, so a robot being driven forward stops when the cable comes
+     * out and stays stopped.
+     */
+    private void fill(SimGamepad.Pad pad, Gamepad staging, Gamepad target) {
+        if (pad == null) {
+            target.reset();
+            return;
         }
-        if (player2 != null) {
-            sdl.read(player2, gamepad2);
-        }
+        sdl.read(pad, staging);
+        target.copy(staging);
     }
 
     /** True while nothing is plugged in at all, so there is nothing to assign. */
@@ -136,12 +161,11 @@ public final class SimPads implements AutoCloseable {
      * Picks up a pad plugged in since the last look, and lets go of one
      * unplugged, at most every {@value #RESCAN_MS} ms.
      *
-     * <p>A pad that goes away releases its player and that player's
-     * {@code Gamepad} is written back to rest, so a robot being driven forward
-     * stops rather than holding the last reading. Both events print a line, in
-     * the shape the startup lines use.
+     * <p>A pad that goes away releases its player, and {@link #fill} resets
+     * that player's {@code Gamepad} on this same loop. Both events print a
+     * line, in the shape the startup lines use.
      */
-    private void rescan(Gamepad gamepad1, Gamepad gamepad2) {
+    private void rescan() {
         long now = System.currentTimeMillis();
         if (now < nextScan) {
             return;
@@ -152,11 +176,9 @@ public final class SimPads implements AutoCloseable {
             String left = "was not claimed";
             if (pad == player1) {
                 player1 = null;
-                SimGamepad.rest(gamepad1);
                 left = "gamepad1 is back to rest";
             } else if (pad == player2) {
                 player2 = null;
-                SimGamepad.rest(gamepad2);
                 left = "gamepad2 is back to rest";
             }
             out.println("  gone: " + pad + " -- " + left);

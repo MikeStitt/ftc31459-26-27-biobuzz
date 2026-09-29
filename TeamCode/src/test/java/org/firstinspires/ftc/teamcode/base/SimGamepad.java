@@ -268,39 +268,6 @@ public final class SimGamepad implements AutoCloseable {
         return null;
     }
 
-    /**
-     * Every field {@link #read} writes, back to the value a pad at rest gives.
-     *
-     * <p>A pad that is unplugged leaves its last reading behind, so a robot
-     * being driven forward would keep driving. This is the rule that stops it,
-     * written here rather than inherited from whatever the driver reports for a
-     * pad that is gone.
-     */
-    public static void rest(Gamepad into) {
-        into.left_stick_x = 0f;
-        into.left_stick_y = 0f;
-        into.right_stick_x = 0f;
-        into.right_stick_y = 0f;
-        into.left_trigger = 0f;
-        into.right_trigger = 0f;
-
-        into.a = false;
-        into.b = false;
-        into.x = false;
-        into.y = false;
-        into.back = false;
-        into.guide = false;
-        into.start = false;
-        into.left_stick_button = false;
-        into.right_stick_button = false;
-        into.left_bumper = false;
-        into.right_bumper = false;
-        into.dpad_up = false;
-        into.dpad_down = false;
-        into.dpad_left = false;
-        into.dpad_right = false;
-    }
-
     /** The pads SDL has open, in the order it listed them. Possibly none. */
     public List<Pad> pads() {
         return Collections.unmodifiableList(pads);
@@ -333,8 +300,12 @@ public final class SimGamepad implements AutoCloseable {
      * exactly 1.0 either way, and a trigger is its reading over 32767 for FTC's
      * 0.0 to 1.0.
      *
-     * <p>FTC's PS4 aliases and its two {@code _trigger_pressed} fields are left
-     * alone, because no lesson reads one.
+     * <p>This writes the 21 controls a pad has and nothing else. The nine
+     * fields the SDK derives from them, the PS4 aliases and both
+     * {@code _trigger_pressed} among them, and the 50 {@code WasPressed} and
+     * {@code WasReleased} methods, come from handing this reading to
+     * {@code Gamepad.copy}, which is {@link SimPads}'s job. So {@code into} is
+     * a staging pad rather than the one an OpMode reads.
      */
     public void read(Pad pad, Gamepad into) {
         into.left_stick_x = stick(pad, SDL_GAMEPAD_AXIS_LEFTX);

@@ -7,9 +7,12 @@ import static org.junit.Assert.assertSame;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -19,9 +22,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 /**
- * The two parts of {@link SimPads} that can go wrong without a pad plugged in:
- * whether a stored serial is trusted, and whether writing the assignment leaves
- * the rest of somebody's {@code local.properties} alone.
+ * The parts of {@link SimPads} that can go wrong without a pad plugged in:
+ * whether an empty slot reads untouched, whether a stored serial is trusted, and
+ * whether writing the assignment leaves the rest of somebody's
+ * {@code local.properties} alone.
  *
  * <p>The gesture itself needs a hand on a pad and is not here.
  */
@@ -32,6 +36,43 @@ public final class SimPadsTest {
 
     private static SimGamepad.Pad pad(int id, String serial) {
         return new SimGamepad.Pad(id, 0L, "pad " + id, serial);
+    }
+
+    // --- an empty slot reads untouched ------------------------------------
+
+    /**
+     * {@code reset()} is what an empty slot gets, in place of a list of fields
+     * written out by hand. This compares every field the SDK declares, so a
+     * field added to {@code Gamepad} later cannot slip past by being missing
+     * from a list nobody updated.
+     */
+    @Test
+    public void anEmptySlotReadsLikeAFreshGamepad() throws Exception {
+        Gamepad held = new Gamepad();
+        held.left_stick_y = -1f;
+        held.right_stick_x = 0.5f;
+        held.left_trigger = 1f;
+        held.right_trigger = 1f;
+        held.a = true;
+        held.start = true;
+        held.dpad_left = true;
+        held.left_bumper = true;
+        held.right_stick_button = true;
+
+        held.reset();
+
+        Gamepad fresh = new Gamepad();
+        List<String> differing = new ArrayList<>();
+        for (Field f : Gamepad.class.getFields()) {
+            if (Modifier.isStatic(f.getModifiers())) {
+                continue;
+            }
+            if (!String.valueOf(f.get(held)).equals(String.valueOf(f.get(fresh)))) {
+                differing.add(f.getName());
+            }
+        }
+        assertEquals("fields a fresh pad and a reset one disagree on",
+                Collections.emptyList(), differing);
     }
 
     // --- whether a stored serial is trusted -------------------------------
