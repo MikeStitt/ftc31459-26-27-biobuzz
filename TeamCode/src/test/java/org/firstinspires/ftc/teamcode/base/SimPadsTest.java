@@ -18,7 +18,11 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -196,6 +200,98 @@ public final class SimPadsTest {
                 SimPads.state(pads.get(2), pads, pads.get(0), null));
         assertEquals(SimPads.State.UNCLAIMED_FULL,
                 SimPads.state(pads.get(2), pads, pads.get(0), pads.get(1)));
+    }
+
+    @Test
+    public void unpluggingTheTwinLeavesTheOneThatWasPassedOverNamedByItsSerialNumber() {
+        SimGamepad.Pad lower = pad(3, "SAME");
+        List<SimGamepad.Pad> both = Arrays.asList(lower, pad(7, "SAME"));
+        assertEquals(SimPads.State.PASSED_OVER, SimPads.state(lower, both, null, null));
+        List<SimGamepad.Pad> alone = Collections.singletonList(lower);
+        assertEquals("the higher device id is gone, so this one answers to the serial number",
+                SimPads.State.UNCLAIMED_FREE, SimPads.state(lower, alone, null, null));
+    }
+
+    // --- what the census says ---------------------------------------------
+
+    private static Map<SimGamepad.Pad, SimPads.Source> from(SimGamepad.Pad pad,
+            SimPads.Source source) {
+        Map<SimGamepad.Pad, SimPads.Source> map = new LinkedHashMap<>();
+        map.put(pad, source);
+        return map;
+    }
+
+    @Test
+    public void theCensusOfNoGamepadsSaysSoRatherThanSayingNothing() {
+        assertEquals("No gamepad is plugged in. A gamepad object with no gamepad in its"
+                        + " slot reads as untouched.\n",
+                SimPads.censusText(Collections.<SimGamepad.Pad>emptyList(), null, null,
+                        Collections.<SimGamepad.Pad, SimPads.Source>emptyMap()));
+    }
+
+    @Test
+    public void everyGamepadGetsALineSayingWhatItIsDoing() {
+        SimGamepad.Pad driving = pad(1, "AAA");
+        SimGamepad.Pad nameless = pad(2, null);
+        SimGamepad.Pad waiting = pad(3, "CCC");
+        List<SimGamepad.Pad> pads = Arrays.asList(driving, nameless, waiting);
+        assertEquals("  \"pad 1\", serial AAA, id 1 -- gamepad1, the only gamepad plugged in\n"
+                        + "  \"pad 2\", no serial number, id 2"
+                        + " -- no serial number, so it is not used\n"
+                        + "  \"pad 3\", serial CCC, id 3 -- not claimed yet\n"
+                        + "Hold Start and press A to drive as gamepad1,"
+                        + " or Start and B for gamepad2.\n",
+                SimPads.censusText(pads, driving, null, from(driving, SimPads.Source.ONLY_PAD)));
+    }
+
+    @Test
+    public void theSameGamepadsAndTheSameSlotsGiveTheSameCensus() {
+        SimGamepad.Pad one = pad(1, "AAA");
+        List<SimGamepad.Pad> pads = Collections.singletonList(one);
+        Map<SimGamepad.Pad, SimPads.Source> source = from(one, SimPads.Source.GESTURE);
+        assertEquals("nothing changed, so there is nothing to print",
+                SimPads.censusText(pads, one, null, source),
+                SimPads.censusText(pads, one, null, source));
+    }
+
+    @Test
+    public void everySlotSourceHasItsOwnWords() {
+        Set<String> words = new LinkedHashSet<>();
+        for (SimPads.Source source : SimPads.Source.values()) {
+            words.add(SimPads.because(source));
+        }
+        assertEquals("a source with no words of its own falls through to another's: " + words,
+                SimPads.Source.values().length, words.size());
+    }
+
+    @Test
+    public void aGamepadInASlotSaysWhereItsSlotCameFrom() {
+        SimGamepad.Pad one = pad(1, "AAA");
+        List<SimGamepad.Pad> pads = Collections.singletonList(one);
+        assertTrue(SimPads.censusText(pads, one, null, from(one, SimPads.Source.STORED))
+                .contains("gamepad1, remembered in local.properties by serial number"));
+        assertTrue(SimPads.censusText(pads, one, null, from(one, SimPads.Source.GESTURE))
+                .contains("gamepad1, claimed this run"));
+    }
+
+    @Test
+    public void bothSlotsAreNamedGamepad1AndGamepad2AndNeitherIsANumber() {
+        SimGamepad.Pad one = pad(1, "AAA");
+        SimGamepad.Pad two = pad(2, "BBB");
+        Map<SimGamepad.Pad, SimPads.Source> source = from(one, SimPads.Source.GESTURE);
+        source.put(two, SimPads.Source.GESTURE);
+        assertEquals("  \"pad 1\", serial AAA, id 1 -- gamepad1, claimed this run\n"
+                        + "  \"pad 2\", serial BBB, id 2 -- gamepad2, claimed this run\n",
+                SimPads.censusText(Arrays.asList(one, two), one, two, source));
+    }
+
+    @Test
+    public void aCensusWithEveryGamepadDrivingDoesNotAskForAGesture() {
+        SimGamepad.Pad one = pad(1, "AAA");
+        SimGamepad.Pad two = pad(2, "BBB");
+        String full = SimPads.censusText(Arrays.asList(one, two), one, two,
+                from(one, SimPads.Source.STORED));
+        assertFalse("nothing is waiting for a slot: " + full, full.contains("Hold Start"));
     }
 
     // --- which controls the report names -----------------------------------
@@ -381,6 +477,43 @@ public final class SimPadsTest {
                         "sdk.dir=/sdk",
                         SimPads.KEY1 + "=AAA"),
                 Files.readAllLines(file, StandardCharsets.UTF_8));
+    }
+
+    // --- what a run lasting a practice session holds on to -----------------
+
+    /**
+     * Used heap after asking for a collection, which is what a leak shows up in.
+     *
+     * <p>Garbage the loop makes and drops does not: a collection takes it away
+     * again. What this sees is what the loop holds on to, which is the thing a
+     * run lasting a practice session cannot afford.
+     */
+    private static long settledHeap() {
+        Runtime runtime = Runtime.getRuntime();
+        for (int i = 0; i < 3; i++) {
+            System.gc();
+        }
+        return runtime.totalMemory() - runtime.freeMemory();
+    }
+
+    @Test
+    public void millionsOfLoopsThroughTheCopyPathHoldOnToNothing() {
+        Gamepad staging = new Gamepad();
+        Gamepad slot = new Gamepad();
+        for (int warm = 0; warm < 200_000; warm++) {
+            slot.copy(staging);
+            slot.reset();
+        }
+        long before = settledHeap();
+        for (int loop = 0; loop < 4_000_000; loop++) {
+            staging.left_stick_y = loop % 2 == 0 ? -1f : 1f;
+            staging.a = loop % 3 == 0;
+            slot.copy(staging);
+        }
+        slot.reset();
+        long grew = settledHeap() - before;
+        assertTrue("4 million loops held on to " + grew / 1024 + " KB",
+                grew < 4L * 1024 * 1024);
     }
 
     @Test

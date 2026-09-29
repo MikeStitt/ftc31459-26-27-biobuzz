@@ -203,25 +203,6 @@ public final class SimPads implements AutoCloseable {
         target.copy(staging);
     }
 
-    /**
-     * True once every gamepad a gesture could move has a slot.
-     *
-     * <p>True of no gamepads as well, so it says nothing about whether anything
-     * is plugged in; what it decides is whether to ask for the gesture. Only a
-     * gamepad with no serial number is not counted, because that is the only one
-     * no gesture moves.
-     */
-    private boolean settled() {
-        List<SimGamepad.Pad> all = sdl.pads();
-        for (SimGamepad.Pad pad : all) {
-            State s = state(pad, all, player1, player2);
-            if (s != State.ACTIVE && s != State.NOT_ACCEPTED) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     @Override
     public void close() {
         sdl.close();
@@ -535,22 +516,7 @@ public final class SimPads implements AutoCloseable {
      * saw it happen; this says where everything stands afterwards.
      */
     private void census() {
-        StringBuilder text = new StringBuilder();
-        List<SimGamepad.Pad> all = sdl.pads();
-        if (all.isEmpty()) {
-            text.append("No gamepad is plugged in. A gamepad object with no gamepad in its"
-                    + " slot reads as untouched.\n");
-        } else {
-            for (SimGamepad.Pad pad : all) {
-                text.append("  ").append(pad).append(" -- ").append(explain(pad, all))
-                        .append('\n');
-            }
-            if (!settled()) {
-                text.append("Hold Start and press A to drive as gamepad1,"
-                        + " or Start and B for gamepad2.\n");
-            }
-        }
-        String body = text.toString();
+        String body = censusText(sdl.pads(), player1, player2, source);
         if (body.equals(lastCensus)) {
             return;
         }
@@ -558,11 +524,45 @@ public final class SimPads implements AutoCloseable {
         out.print(body);
     }
 
+    /**
+     * The whole census as text: one line per gamepad, and the line asking for
+     * the gesture when some gamepad has no slot.
+     *
+     * <p>Pure, so that what the census says can be read in a test where two
+     * gamepads and a shared serial number are a list rather than a bench. The
+     * same gamepads and the same slots give the same text, which is how
+     * {@link #census()} knows nothing changed.
+     */
+    static String censusText(List<SimGamepad.Pad> pads, SimGamepad.Pad player1,
+            SimGamepad.Pad player2, Map<SimGamepad.Pad, Source> source) {
+        if (pads.isEmpty()) {
+            return "No gamepad is plugged in. A gamepad object with no gamepad in its"
+                    + " slot reads as untouched.\n";
+        }
+        StringBuilder text = new StringBuilder();
+        boolean settled = true;
+        for (SimGamepad.Pad pad : pads) {
+            State s = state(pad, pads, player1, player2);
+            if (s != State.ACTIVE && s != State.NOT_ACCEPTED) {
+                // Only a gamepad with no serial number is one no gesture moves.
+                settled = false;
+            }
+            text.append("  ").append(pad).append(" -- ")
+                    .append(explain(pad, s, player1, source)).append('\n');
+        }
+        if (!settled) {
+            text.append("Hold Start and press A to drive as gamepad1,"
+                    + " or Start and B for gamepad2.\n");
+        }
+        return text.toString();
+    }
+
     /** What one gamepad's census line says after the two dashes. */
-    private String explain(SimGamepad.Pad pad, List<SimGamepad.Pad> all) {
-        switch (state(pad, all, player1, player2)) {
+    private static String explain(SimGamepad.Pad pad, State s, SimGamepad.Pad player1,
+            Map<SimGamepad.Pad, Source> source) {
+        switch (s) {
             case ACTIVE:
-                return slotOf(pad) + ", " + because(source.get(pad));
+                return (pad == player1 ? "gamepad1, " : "gamepad2, ") + because(source.get(pad));
             case NOT_ACCEPTED:
                 return "no serial number, so it is not used";
             case PASSED_OVER:
@@ -575,13 +575,8 @@ public final class SimPads implements AutoCloseable {
         }
     }
 
-    /** The slot a gamepad holds, named as output names it. */
-    private String slotOf(SimGamepad.Pad pad) {
-        return pad == player1 ? "gamepad1" : "gamepad2";
-    }
-
     /** Why the gamepad in a slot is the one in it. */
-    private static String because(Source from) {
+    static String because(Source from) {
         if (from == Source.ONLY_PAD) {
             return "the only gamepad plugged in";
         }
@@ -663,8 +658,9 @@ public final class SimPads implements AutoCloseable {
             if (touched.isEmpty()) {
                 continue;
             }
-            text.append("  ").append(pad).append(" -- ")
-                    .append(s == State.ACTIVE ? slotOf(pad) : "no slot").append(':');
+            String slot = s != State.ACTIVE ? "no slot"
+                    : pad == player1 ? "gamepad1" : "gamepad2";
+            text.append("  ").append(pad).append(" -- ").append(slot).append(':');
             for (String control : touched) {
                 text.append(' ').append(control);
             }
