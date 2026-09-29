@@ -39,7 +39,11 @@ def pins() -> tuple[str, str]:
 
 
 def resolved(ref: str) -> str:
-    """A ref with the commit it resolves to, so a stale tree says so in its output."""
+    """A ref with the commit it resolves to, for the console.
+
+    Not for a generated page: a page naming HEAD's commit stops matching the
+    generator the moment that page is committed, because the commit moves HEAD.
+    """
     return f"{ref} ({git('rev-parse', '--short', ref).strip()})"
 
 
@@ -127,7 +131,7 @@ def fence(block: list[str]) -> str:
 def page(path: str, blank: list[str], filled: list[str], solutions: str) -> str:
     name = Path(path).stem
     out = [f"# {name}", ""]
-    out.append(f"The blanks in this file, filled in from `{resolved(solutions)}`:")
+    out.append(f"The blanks in this file, filled in from `{solutions}`:")
     out.append("")
     out.append(f"`{path}`")
     out.append("")
@@ -153,15 +157,13 @@ def page(path: str, blank: list[str], filled: list[str], solutions: str) -> str:
     return "\n".join(out)
 
 
-def index(names: list[str], note: str) -> str:
+def index(names: list[str]) -> str:
     entries = "\n".join(names)
     return (
         "# Answers\n"
         "\n"
         "The real code, out of the solutions line. Use it when you are stuck, not instead of being\n"
         "stuck.\n"
-        "\n"
-        f"{note}\n"
         "\n"
         "```{toctree}\n"
         ":maxdepth: 1\n"
@@ -174,13 +176,12 @@ def index(names: list[str], note: str) -> str:
 def generate() -> dict[str, str]:
     lessons, solutions = pins()
     pages = {}
-    index_note = f"Generated from {resolved(lessons)} and {resolved(solutions)}."
 
     for path in lesson_files(lessons):
         blank = git("show", f"{lessons}:{path}").splitlines()
         filled = git("show", f"{solutions}:{path}").splitlines()
         pages[Path(path).stem + ".md"] = page(path, blank, filled, solutions)
-    pages["index.md"] = index(sorted(name[:-3] for name in pages), index_note)
+    pages["index.md"] = index(sorted(name[:-3] for name in pages))
     return pages
 
 
@@ -189,6 +190,9 @@ def main() -> int:
     parser.add_argument("--check", action="store_true",
                         help="compare with what is committed instead of writing")
     args = parser.parse_args()
+
+    lessons, solutions = pins()
+    print(f"reading {resolved(lessons)} and {resolved(solutions)}")
 
     out = book_root() / OUT
     pages = generate()

@@ -1,6 +1,6 @@
 # L13HeadingHoldOpMode
 
-The blanks in this file, filled in from `solutions-sim-gamepad (d7af257)`:
+The blanks in this file, filled in from `solutions-sim-gamepad`:
 
 `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L13HeadingHoldOpMode.java`
 

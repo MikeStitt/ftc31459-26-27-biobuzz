@@ -3,8 +3,6 @@
 The real code, out of the solutions line. Use it when you are stuck, not instead of being
 stuck.
 
-Generated from HEAD (39cc993) and solutions-sim-gamepad (d7af257).
-
 ```{toctree}
 :maxdepth: 1
 

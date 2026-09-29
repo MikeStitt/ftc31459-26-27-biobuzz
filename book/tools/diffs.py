@@ -189,9 +189,8 @@ def page(lesson: str, files: list[tuple[str, list[dict]]]) -> str:
 def index(rows: list[tuple[str, int, int, int]], lessons: str, solutions: str,
           wrong: list[str]) -> str:
     out = ["# What the student writes", ""]
-    out.append(f"Every blank on the lessons line at `{answers.resolved(lessons)}`, filled one at a")
-    out.append(f"time from the solutions line at `{answers.resolved(solutions)}`, and grouped by the")
-    out.append("lesson that asks for it. Each")
+    out.append(f"Every blank on the lessons line at `{lessons}`, filled one at a time from the")
+    out.append(f"solutions line at `{solutions}`, and grouped by the lesson that asks for it. Each")
     out.append("page is one lesson, each section one file, and each diff is one edit a student")
     out.append("makes.")
     out.append("")
