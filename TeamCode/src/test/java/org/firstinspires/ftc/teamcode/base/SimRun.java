@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.base;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -19,8 +20,10 @@ import java.util.List;
  * </pre>
  *
  * <p>Any field of {@code Gamepad} can be set, so buttons work the same way as
- * sticks: {@code a=true}. The values are set once, before the lesson starts,
- * and held.
+ * sticks: {@code a=true}. The values are read once, before the lesson starts,
+ * and then copied into {@code gamepad1} every loop, which is how a control held
+ * down from before the match begins behaves: {@code a} stays true for the whole
+ * run, and {@code aWasPressed()} is true on the first loop and false after.
  *
  * <p>The word {@code pad} on its own reads a real gamepad every loop instead:
  *
@@ -54,11 +57,15 @@ public final class SimRun {
         String lesson = args.length > 0 ? args[0] : "L15CombinedOpMode";
         OpModeHarness harness = new OpModeHarness(lesson(lesson));
         boolean readPads = false;
+        Gamepad typed = null;
         for (int i = 1; i < args.length; i++) {
             if (args[i].equals("pad")) {
                 readPads = true;
             } else {
-                set(harness, args[i]);
+                if (typed == null) {
+                    typed = new Gamepad();
+                }
+                set(typed, args[i]);
             }
         }
 
@@ -82,6 +89,9 @@ public final class SimRun {
                 if (pads != null) {
                     pads.update(harness.gamepad1, harness.gamepad2);
                 }
+                if (typed != null) {
+                    harness.gamepad1.copy(typed);
+                }
                 harness.loop();
                 out.publish();
                 OpModeHarness.sleep(harness.stepMs);
@@ -97,7 +107,6 @@ public final class SimRun {
         return (OpMode) type.getDeclaredConstructor().newInstance();
     }
 
-    /** One {@code name=value} onto {@code gamepad1}, by the field's own name. */
     /**
      * Why these arguments cannot be used together, or null if they can.
      *
@@ -121,7 +130,15 @@ public final class SimRun {
                 + String.join(", ", settings);
     }
 
-    static void set(OpModeHarness harness, String assignment) throws ReflectiveOperationException {
+    /**
+     * One {@code name=value} onto {@code into}, by the field's own name.
+     *
+     * <p>{@code into} is the pad the arguments are collected in, which is copied
+     * into {@code gamepad1} every loop rather than written there once. So a
+     * typed control and a real gamepad reach a lesson by the same path, and the
+     * SDK derives the aliases and the edges from both.
+     */
+    static void set(Gamepad into, String assignment) throws ReflectiveOperationException {
         int equals = assignment.indexOf('=');
         if (equals < 1) {
             throw new IllegalArgumentException(
@@ -131,16 +148,16 @@ public final class SimRun {
         String value = assignment.substring(equals + 1);
         Field field;
         try {
-            field = harness.gamepad1.getClass().getField(name);
+            field = into.getClass().getField(name);
         } catch (NoSuchFieldException e) {
             throw new IllegalArgumentException("no gamepad field called \"" + name
                     + "\"; the sticks are left_stick_x, left_stick_y, right_stick_x"
                     + " and right_stick_y", e);
         }
         if (field.getType() == float.class) {
-            field.setFloat(harness.gamepad1, Float.parseFloat(value));
+            field.setFloat(into, Float.parseFloat(value));
         } else if (field.getType() == boolean.class) {
-            field.setBoolean(harness.gamepad1, Boolean.parseBoolean(value));
+            field.setBoolean(into, Boolean.parseBoolean(value));
         } else {
             throw new IllegalArgumentException(name + " is a " + field.getType().getSimpleName()
                     + ", and only the float and boolean fields can be set");
