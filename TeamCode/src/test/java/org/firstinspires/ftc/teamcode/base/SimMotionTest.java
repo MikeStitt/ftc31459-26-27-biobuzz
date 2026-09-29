@@ -42,7 +42,7 @@ public class SimMotionTest {
         h.start();
         h.gamepad1.left_stick_y = -1.0f;    // the stick reads negative forward
         h.gamepad1.right_stick_y = -1.0f;
-        h.loops(200, 0);                    // 200 x 5 ms of simulated time
+        h.loops(100, 0);                    // 100 x 10 ms of simulated time
         return h;
     }
 

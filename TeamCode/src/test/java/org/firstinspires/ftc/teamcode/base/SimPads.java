@@ -30,15 +30,6 @@ import java.util.Map;
  */
 public final class SimPads implements AutoCloseable {
 
-    /**
-     * How often the pads plugged in are looked at again.
-     *
-     * <p>A rescan costs about 1 us against the simulator's 5 ms step, so this is
-     * not about the mean. It is about the outlier: 2000 rescans had one at
-     * 842 us, and a quarter of a second is far faster than a hand with a cable.
-     */
-    private static final long RESCAN_MS = 250;
-
     static final String KEY1 = "sim.gamepad1.serial";
 
     static final String KEY2 = "sim.gamepad2.serial";
@@ -87,15 +78,12 @@ public final class SimPads implements AutoCloseable {
 
     private SimGamepad.Pad player2;
 
-    private long nextScan;
-
     SimPads(SimGamepad sdl, Path store, PrintStream out) {
         this.sdl = sdl;
         this.store = store;
         this.out = out;
         assign();
         describe();
-        nextScan = System.currentTimeMillis() + RESCAN_MS;
     }
 
     /** Opens SDL, loads any stored assignment, and says what it found. */
@@ -104,20 +92,28 @@ public final class SimPads implements AutoCloseable {
     }
 
     /**
-     * Reads the pads, hands each player's readings to its {@code Gamepad}, and
-     * watches an unassigned pad for its claiming gesture.
+     * Reads every pad and hands each player's reading to its {@code Gamepad}.
      *
-     * <p>Called once a loop. A {@code Gamepad} with no pad behind it reads as
-     * untouched.
+     * <p>Called once per instant on {@link SimTicker}'s grid, before anything
+     * else that instant, so every job that runs sees the same reading. A
+     * {@code Gamepad} with no pad behind it reads as untouched.
      */
-    public void update(Gamepad gamepad1, Gamepad gamepad2) {
+    public void read(Gamepad gamepad1, Gamepad gamepad2) {
         sdl.update();
-        rescan();
+        fill(player1, staging1, gamepad1);
+        fill(player2, staging2, gamepad2);
+    }
+
+    /**
+     * Watches every pad without a slot for Start and A, or Start and B.
+     *
+     * <p>Every fifth instant. Faster buys nothing: the gesture is held rather
+     * than a press, so 50 ms cannot miss one.
+     */
+    public void gestures() {
         if (player1 == null || player2 == null) {
             claim();
         }
-        fill(player1, staging1, gamepad1);
-        fill(player2, staging2, gamepad2);
     }
 
     /**
@@ -159,18 +155,17 @@ public final class SimPads implements AutoCloseable {
 
     /**
      * Picks up a pad plugged in since the last look, and lets go of one
-     * unplugged, at most every {@value #RESCAN_MS} ms.
+     * unplugged.
      *
-     * <p>A pad that goes away releases its player, and {@link #fill} resets
-     * that player's {@code Gamepad} on this same loop. Both events print a
-     * line, in the shape the startup lines use.
+     * <p>Every twenty-fifth instant, which is four times a second: a rescan
+     * costs about 1 us, measured, so the period is politeness to the outlier
+     * rather than to the mean, and it is far faster than a hand with a cable.
+     *
+     * <p>A pad that goes away releases its player, and {@link #read} resets that
+     * player's {@code Gamepad} on the next instant. Both events print a line, in
+     * the shape the startup lines use.
      */
-    private void rescan() {
-        long now = System.currentTimeMillis();
-        if (now < nextScan) {
-            return;
-        }
-        nextScan = now + RESCAN_MS;
+    public void rescan() {
         for (SimGamepad.Pad pad : sdl.departed()) {
             source.remove(pad);
             String left = "was not claimed";

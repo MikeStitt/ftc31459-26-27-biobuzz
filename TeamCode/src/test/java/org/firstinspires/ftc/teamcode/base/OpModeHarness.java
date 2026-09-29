@@ -157,8 +157,14 @@ public final class OpModeHarness {
 
     public final SimClock clock = new SimClock();
 
-    /** How long one {@link #loop} takes, in simulated milliseconds. */
-    public long stepMs = 5;
+    /**
+     * How long one {@link #loop} takes, in simulated milliseconds.
+     *
+     * <p>{@link SimTicker#GRID_MS}, so a run's simulated time and its real time
+     * advance together while it keeps up. It says nothing about how long a pass
+     * waits: {@code SimRun} waits until the next instant on the grid.
+     */
+    public long stepMs = SimTicker.GRID_MS;
 
     public final SimRobot robot = new SimRobot(clock::nanos);
     public final Gamepad gamepad1 = new Gamepad();

@@ -142,7 +142,7 @@ public class LessonsTest {
 
         h.gamepad1.left_stick_y = -1.0f;      // both sticks fully forward
         h.gamepad1.right_stick_y = -1.0f;
-        h.loops(200, 0);                      // 200 x 5 ms of simulated time
+        h.loops(100, 0);                      // 100 x 10 ms of simulated time
 
         Pose pose = h.robot.localizer.state().pose();
         assertTrue("drove forward, and got a fair way: " + pose.x(), pose.x() > 40);

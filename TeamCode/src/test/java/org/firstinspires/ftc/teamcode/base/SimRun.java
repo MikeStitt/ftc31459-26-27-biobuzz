@@ -27,8 +27,18 @@ import java.lang.reflect.Field;
  * into {@code gamepad1} every loop, and {@code --pad} fills both slots from real
  * gamepads instead; {@link SimPads} says which gamepad is which.
  *
- * <p>Each loop is {@code stepMs} of simulated time and sleeps the same in real
- * time, so the robot moves at about the speed it would on the field.
+ * <p>Everything periodic runs on {@link SimTicker}'s 10 ms grid, measured from
+ * the clock read when the run starts: the gamepads are read and the simulated
+ * robot steps every instant it wakes on, the gestures are read every fifth
+ * instant and the rescan runs every twenty-fifth. A slow pass is charged to
+ * itself rather than to the periods after it, and an instant it ran through is
+ * skipped rather than caught up.
+ *
+ * <p>So one pass is 10 ms of simulated time, but not necessarily 10 ms of real
+ * time. Measured on this bench on 2026-09-28: {@code Thread.sleep(10)} takes
+ * 13.4 ms, so the loop wakes on every second instant and the robot moves at
+ * about half the speed it would on the field. The work in a pass is 0.03 ms of
+ * that, so it is the waiting and not the simulating.
  *
  * <p>Passes when: SimRunTest, SimArgsTest.
  */
@@ -51,20 +61,19 @@ public final class SimRun {
             return;
         }
         stopOnCtrlC(Thread.currentThread());
-        if (plan.form == SimArgs.Form.PAD_CHECK) {
-            padCheck();
-            return;
+        OpModeHarness harness = null;
+        if (plan.form != SimArgs.Form.PAD_CHECK) {
+            OpMode opMode;
+            try {
+                opMode = opMode(plan.opMode);
+            } catch (ReflectiveOperationException | ClassCastException e) {
+                System.err.println("simRun: no OpMode called \"" + plan.opMode + "\" under "
+                        + SimArgs.packageName() + "; see --help");
+                System.exit(2);
+                return;
+            }
+            harness = new OpModeHarness(opMode);
         }
-        OpMode opMode;
-        try {
-            opMode = opMode(plan.opMode);
-        } catch (ReflectiveOperationException | ClassCastException e) {
-            System.err.println("simRun: no OpMode called \"" + plan.opMode + "\" under "
-                    + SimArgs.packageName() + "; see --help");
-            System.exit(2);
-            return;
-        }
-        OpModeHarness harness = new OpModeHarness(opMode);
         Gamepad typed = null;
         for (String control : plan.controls) {
             if (typed == null) {
@@ -72,47 +81,72 @@ public final class SimRun {
             }
             set(typed, control);
         }
-        boolean readPads = plan.form == SimArgs.Form.OPMODE_PAD;
-
-        try (SimPublisher out = new SimPublisher(harness);
-                SimPads pads = readPads ? SimPads.open() : null) {
-            System.out.println(plan.opMode + " running. Connect AdvantageScope to 127.0.0.1"
-                    + " as NetworkTables 4, and Ctrl-C to stop.");
-            harness.init();
-            harness.start();
-            while (running) {
-                if (pads != null) {
-                    pads.update(harness.gamepad1, harness.gamepad2);
-                }
-                if (typed != null) {
-                    harness.gamepad1.copy(typed);
-                }
-                harness.loop();
-                out.publish();
-                OpModeHarness.sleep(harness.stepMs);
-            }
-            harness.stop();
-        }
-        System.out.println("Flight logs: " + harness.logFolder);
+        loop(plan, harness, typed);
     }
 
     /**
-     * Gamepads and nothing else, until Ctrl-C.
+     * One loop for both forms, over the instants on {@link SimTicker}'s grid.
      *
-     * <p>No OpMode, no simulated robot, no WPILOG and no NetworkTables port, so
-     * this runs beside a {@code simRun} that is running an OpMode. The two
-     * gamepad objects are real ones that no lesson reads, filled the same way a
-     * lesson's are, which is what makes the slots and the gestures the same
-     * rules here as there.
+     * <p>{@code --pad-check} is this loop with the simulated robot, the WPILOG
+     * and the NetworkTables server left out, which is what makes the slots, the
+     * gestures and the rescan one implementation rather than two. Its two gamepad
+     * objects are real ones that no lesson reads.
+     *
+     * <p>Every instant reads the gamepads first, so everything due at that
+     * instant reads the same state. Then whatever is due runs, and the pass waits
+     * for the next instant rather than for a fixed time after itself.
      */
-    private static void padCheck() {
-        Gamepad slot1 = new Gamepad();
-        Gamepad slot2 = new Gamepad();
-        try (SimPads pads = SimPads.open()) {
-            while (running) {
-                pads.update(slot1, slot2);
-                OpModeHarness.sleep(10);
+    private static void loop(SimArgs.Plan plan, OpModeHarness harness, Gamepad typed) {
+        Gamepad slot1 = harness == null ? new Gamepad() : harness.gamepad1;
+        Gamepad slot2 = harness == null ? new Gamepad() : harness.gamepad2;
+        boolean usePads = plan.form == SimArgs.Form.OPMODE_PAD
+                || plan.form == SimArgs.Form.PAD_CHECK;
+
+        try (SimPublisher out = harness == null ? null : new SimPublisher(harness);
+                SimPads pads = usePads ? SimPads.open() : null) {
+            if (harness != null) {
+                System.out.println(plan.opMode + " running. Connect AdvantageScope to 127.0.0.1"
+                        + " as NetworkTables 4, and Ctrl-C to stop.");
+                harness.init();
+                harness.start();
             }
+            long origin = System.currentTimeMillis();
+            long tick = 0;
+            long lastStep = -1;
+            long lastGestures = -1;
+            long lastReport = -1;
+            while (running) {
+                if (pads != null) {
+                    pads.read(slot1, slot2);
+                }
+                if (typed != null) {
+                    slot1.copy(typed);
+                }
+                if (SimTicker.due(tick, lastStep, SimTicker.STEP_TICKS)) {
+                    lastStep = tick;
+                    if (harness != null) {
+                        harness.loop();
+                        out.publish();
+                    }
+                }
+                if (pads != null && SimTicker.due(tick, lastGestures, SimTicker.GESTURE_TICKS)) {
+                    lastGestures = tick;
+                    pads.gestures();
+                }
+                if (pads != null && SimTicker.due(tick, lastReport, SimTicker.REPORT_TICKS)) {
+                    lastReport = tick;
+                    pads.rescan();
+                }
+                OpModeHarness.sleep(SimTicker.startOf(origin, tick + 1)
+                        - System.currentTimeMillis());
+                tick = SimTicker.tickAt(origin, System.currentTimeMillis());
+            }
+            if (harness != null) {
+                harness.stop();
+            }
+        }
+        if (harness != null) {
+            System.out.println("Flight logs: " + harness.logFolder);
         }
     }
 

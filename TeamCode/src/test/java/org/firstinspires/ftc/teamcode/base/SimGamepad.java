@@ -194,7 +194,7 @@ public final class SimGamepad implements AutoCloseable {
      * {@link #pads()}.
      *
      * <p>How often this is called is {@link SimPads}'s business, which owns the
-     * policy. A rescan costs about 1 us against the simulator's 5 ms step, and
+     * policy. A rescan costs about 1 us against the grid's 10 ms step, and
      * {@link #departed()} lists again rather than sharing the result, because
      * 1 us twice is not worth a shape that has to hand an array around.
      */
