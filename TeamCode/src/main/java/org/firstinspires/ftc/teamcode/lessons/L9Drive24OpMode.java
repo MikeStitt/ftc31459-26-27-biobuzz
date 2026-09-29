@@ -12,14 +12,21 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.base.CorbelsAuto;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 
-/** L9: the first autonomous -- drive 24 inches forward, and stop there. */
+/**
+ * L9: the first autonomous -- drive 24 inches forward, and stop there.
+ *
+ * <p>Passes when: LessonsTest.l9_autoDrives24InchesForwardAndStops
+ */
 @Autonomous(name = "L9 Drive 24", group = "Lessons")
 public class L9Drive24OpMode extends CorbelsAuto {
 
     private static final PoseFactory POSES = PoseFactory.degrees();
 
-    private final Pose start = POSES.of(72, 72, 0);
-    private final Pose end = POSES.of(96, 72, 0);
+    double robotHalfLengthIn = 9.0;
+    double fieldPerimeterWidthIn = 1.5;
+    double botStartYIn = robotHalfLengthIn + fieldPerimeterWidthIn;
+    private final Pose start = POSES.of(72, botStartYIn, 90);
+    private final Pose end = POSES.of(72, botStartYIn+24, 90);
 
 
     private L6FollowerDriveTrain drivetrain;
@@ -63,7 +70,7 @@ public class L9Drive24OpMode extends CorbelsAuto {
     @Override
     protected Command routine() {
         return sequential(
-                follow(follower, line(start, end).constant(0))
+                follow(follower, line(start, end).constant(start))
         );
     }
 }

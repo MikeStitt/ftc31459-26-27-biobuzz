@@ -34,9 +34,12 @@ public class DriveForward24OpMode extends CorbelsAuto {
     /** How far to drive, in inches. */
     private static final double DISTANCE_IN = 24.0;
 
-    private final PoseFactory poses = PoseFactory.degrees();
-    private final Pose start = poses.of(0, 0, 0);
-    private final Pose end = poses.of(DISTANCE_IN, 0, 0);
+    private static final PoseFactory POSES = PoseFactory.degrees();
+    double robotHalfLengthIn = 9.0;
+    double fieldPerimeterWidthIn = 1.5;
+    double botStartYIn = robotHalfLengthIn + fieldPerimeterWidthIn;
+    private final Pose start = POSES.of(72, botStartYIn, 90);
+    private final Pose end = POSES.of(72, botStartYIn+DISTANCE_IN, 90);
 
     @Override
     public void init() {
