@@ -121,5 +121,5 @@ words = 400
 [answers]
 lessons = "HEAD"
 lessons_commit = ""
-solutions = "solutions-sim-gamepad"
+solutions = "solutions-03"
 solutions_commit = ""
