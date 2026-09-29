@@ -1,6 +1,6 @@
 # L6FollowerDriveTrain
 
-The blanks in this file, filled in from `solutions-sim-gamepad`:
+The blanks in this file, filled in from `solutions-03`:
 
 `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L6FollowerDriveTrain.java`
 

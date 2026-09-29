@@ -82,4 +82,4 @@ A key ending in `...` has a name added to the end of it, one per wheel or per lo
 | `stick/right_shaped` | `L3aDeadbandOpMode`, `L3bSquaredOpMode` |
 | `wheel/...` | `LessonsDriveTrain` |
 
-Generated from the lessons line at `HEAD` and the solutions line at `solutions-sim-gamepad`.
+Generated from the lessons line at `HEAD` and the solutions line at `solutions-03`.

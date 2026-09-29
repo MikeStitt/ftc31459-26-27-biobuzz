@@ -6,7 +6,7 @@ stuck.
 ```{toctree}
 :maxdepth: 1
 
-L10PathWithTurnOpMode
+L10ForwardThenStrafeOpMode
 L11FieldRelativeOpMode
 L12RobotRelativeButtonOpMode
 L13HeadingHoldOpMode

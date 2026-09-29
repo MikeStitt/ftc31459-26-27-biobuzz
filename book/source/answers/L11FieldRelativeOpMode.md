@@ -1,6 +1,6 @@
 # L11FieldRelativeOpMode
 
-The blanks in this file, filled in from `solutions-sim-gamepad`:
+The blanks in this file, filled in from `solutions-03`:
 
 `TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L11FieldRelativeOpMode.java`
 
