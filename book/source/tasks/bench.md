@@ -70,26 +70,27 @@ A test says where the robot ended up. It does not show you the robot. For that, 
 its own:
 
 ```
-./gradlew :TeamCode:simRun --args="L2bTankOpMode left_stick_y=-1 right_stick_y=-1"
+./gradlew :TeamCode:simRun --args="L2bTankOpMode --left_stick_y=-1 --right_stick_y=-1"
 ```
 
-The first word inside the quotes is the lesson's class name. Everything after it holds one gamepad
-control at one value for the whole run, named the way the gamepad names it. So `left_stick_y=-1` is
-the left stick pushed fully forward, and `a=true` is the A button held down.
+The first word inside the quotes is the lesson's class name. Each option after it holds one gamepad
+control at one value for the whole run, named the way the gamepad names it. So `--left_stick_y=-1`
+is the left stick pushed fully forward, and `--a=true` is the A button held down. Ask for
+`--args="--help"` and it lists every control you can set.
 
-To push the sticks yourself, plug a gamepad into the laptop and add the word `pad`:
+To push the sticks yourself, plug a gamepad into the laptop and add `--pad`:
 
 ```
-./gradlew :TeamCode:simRun --args="L2bTankOpMode pad"
+./gradlew :TeamCode:simRun --args="L2bTankOpMode --pad"
 ```
 
-One pad becomes `gamepad1` on its own. With two plugged in, hold Start and press A on the one you
-want to drive with.
+One gamepad becomes `gamepad1` on its own. With two plugged in, hold Start and press A on the one
+you want to drive with.
 
-Plug the pad in before the run or during it, whichever suits. Pull it out and the sticks go back to
-rest, so the robot stops. Plug it back in and it is yours again.
+Plug it in before the run or during it, whichever suits. Pull it out and the sticks go back to rest,
+so the robot stops. Plug it back in and it is yours again.
 
-Use `pad`, or set the sticks with arguments, but not both. Together they are an error, and the run
+Use `--pad`, or set the controls yourself, but not both. Together they are an error, and the run
 names the setting that clashed.
 
 It prints where it is listening, then runs:
