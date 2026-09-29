@@ -1,0 +1,32 @@
+# L9
+
+1 blank(s) in 1 file(s), 3 line(s) for the student to write.
+
+## L9Drive24OpMode
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L9Drive24OpMode.java`
+
+### TODO
+
+Delete 7 blank lines, write 3 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -69,12 +69,8 @@
+ 
+     @Override
+     protected Command routine() {
+-        // TODO: return a sequence with one step: follow a straight line from
+-        //       start to end, holding the heading it starts at.
+-        //           return sequential(follow(follower, line(start, end).constant(start)));
+-        //       .constant(pose) takes the heading from a pose. The number form,
+-        //       .constant(0), is radians, so .constant(90) is not 90 degrees.
+-        //       Use .constant(), not .linear() -- Pedro 3.0.1 issues #176 and #181.
+-        return Command.NOOP;
++        return sequential(
++                follow(follower, line(start, end).constant(start))
++        );
+     }
+ }
+```

@@ -1,0 +1,190 @@
+# L6
+
+7 blank(s) in 3 file(s), 29 line(s) for the student to write.
+
+## L6FollowerDriveTrain
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L6FollowerDriveTrain.java`
+
+### TODO 1
+
+Delete 6 blank lines, write 4 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -36,12 +36,10 @@
+      * {@link LessonsDriveTrain} sets out.
+      */
+     public void sticks(double forwardSpeed, double strafeLeftSpeed, double turnCcwSpeed) {
+-        // TODO 1: wrap the three numbers in a new DrivePowers(...) in its own
+-        //         variable, hand that to mix() into a second variable, hand that
+-        //         to normalized() into a third, and pass the four slots to
+-        //         setCommandedWheels(). One call to a line; nothing nested.
+-        //         Going through mix() is the point: the sticks and the follower
+-        //         then agree about which wheel does what.
++        DrivePowers drivePowers = new DrivePowers(forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
++        double[] mixed = mix(drivePowers);
++        double[] scaled = normalized(mixed);
++        setCommandedWheels(scaled[FL], scaled[FR], scaled[BL], scaled[BR]);
+     }
+ 
+     /**
+```
+
+### TODO 2
+
+Delete 2 blank lines, write 4 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -56,8 +56,10 @@
+         double turnCcwSpeed = powers.turn();
+ 
+         double[] wheels = new double[4];
+-        // TODO 2: fill each slot in, one line each, naming it with FL, FR, BL or
+-        //         BR. The four sums are the same ones L5HolonomicDriveTrain uses.
++        wheels[FL] = forwardSpeed - strafeLeftSpeed - turnCcwSpeed;
++        wheels[FR] = forwardSpeed + strafeLeftSpeed + turnCcwSpeed;
++        wheels[BL] = forwardSpeed + strafeLeftSpeed - turnCcwSpeed;
++        wheels[BR] = forwardSpeed - strafeLeftSpeed + turnCcwSpeed;
+         return wheels;
+     }
+ }
+```
+
+## L6WheelsFollowerOpMode
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L6WheelsFollowerOpMode.java`
+
+### TODO 1
+
+Delete 4 blank lines, write 1 real line.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -31,10 +31,7 @@
+ @TeleOp(name = "L6 Follower Wheels", group = "Lessons")
+ public class L6WheelsFollowerOpMode extends CorbelsTeleOp {
+ 
+-    // TODO 1: L5 made an L5HolonomicDriveTrain. This lesson needs an
+-    //         L6FollowerDriveTrain instead, here and on the line below that
+-    //         builds it.
+-    private L5HolonomicDriveTrain drivetrain;
++    private L6FollowerDriveTrain drivetrain;
+ 
+     @Override
+     public void init() {
+```
+
+### TODO 2
+
+Delete 7 blank lines, write 2 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -36,13 +36,8 @@
+     @Override
+     public void init() {
+         initBefore();
+-        drivetrain = new L5HolonomicDriveTrain(hardware);
+-        // TODO 2: hand the drivetrain to initAfter(), so the follower holds
+-        //         it. L2 through L5 called initAfter() with nothing, because
+-        //         they drove their own wheels.
+-        //         Works when: L6FollowerDriveTrainTest passes and the robot
+-        //         drives on the sticks.
+-        initAfter();
++        drivetrain = new L6FollowerDriveTrain(hardware);
++        initAfter(drivetrain);
+     }
+ 
+     @Override
+```
+
+## LessonsDriveTrain
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/LessonsDriveTrain.java`
+
+### TODO 4
+
+Delete 2 blank lines, write 5 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -212,8 +212,11 @@
+      */
+     public void setCommandedWheels(double frontLeftPower, double frontRightPower,
+                                    double backLeftPower, double backRightPower) {
+-        // TODO 4 (L6): make a new four-slot array in commandedWheels and put each
+-        //         power in its own slot, the same way driveWheelsNow does.
++        commandedWheels = new double[4];
++        commandedWheels[FL] = frontLeftPower;
++        commandedWheels[FR] = frontRightPower;
++        commandedWheels[BL] = backLeftPower;
++        commandedWheels[BR] = backRightPower;
+     }
+ 
+     /** Hands the wheels back to the follower. */
+```
+
+### TODO 5
+
+Delete 3 blank lines, write 1 real line.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -221,9 +221,7 @@
+ 
+     /** Hands the wheels back to the follower. */
+     public void releaseCommandedWheels() {
+-        // TODO 5 (L6): forget the four powers, so drive() goes back to asking mix().
+-        //         Setting commandedWheels to null is how a field says "nothing
+-        //         here".
++        commandedWheels = null;
+     }
+ 
+     /** True while a lesson is driving the wheels itself. */
+```
+
+### TODO 6
+
+Delete 10 blank lines, write 12 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -248,16 +248,18 @@
+         applyBrakeMode(manual);
+         lastDrivePowers = powers;
+ 
+-        // TODO 6 (L6): work out where the four powers come from, and send them on.
+-        //         Declare a double[] sourcePowers with nothing in it. If a lesson
+-        //         has not commanded the wheels, ask mix() for them into its own
+-        //         variable, hand that to normalized(), and point sourcePowers at
+-        //         what comes back. If a lesson has commanded them, point
+-        //         sourcePowers at commandedWheels instead. An if and an else, not
+-        //         a ?. Then copy every slot of sourcePowers into wheelPowers in a
+-        //         loop with i as the index, and call writeWheels().
+-        //         Works when: L6FollowerDriveTrainTest passes, the robot drives on
+-        //         the sticks in L6, and L9 drives its 24 inches.
++        double[] sourcePowers;
++        if (commandedWheels == null) {
++            double[] mixed = mix(powers);
++            sourcePowers = normalized(mixed);
++        } else {
++            sourcePowers = commandedWheels;
++        }
++        for (int i = 0; i < wheelPowers.length; i++) {
++            wheelPowers[i] = sourcePowers[i];
++        }
++
++        writeWheels();
+     }
+ 
+     // ------------------------------------------------- L3a and L3b write these, L11 the third
+```

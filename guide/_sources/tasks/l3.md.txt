@@ -1,0 +1,121 @@
+# L3: make the sticks feel right
+
+## What you will have when this is done
+
+The robot sits still when both sticks are let go, and a gently pushed stick makes it move gently.
+Same wheels, same tank drive as L2. What changes is what happens to the stick number on its way to
+the motors.
+
+## Before you start
+
+- [L2](l2.md) is finished, so `L2b Tank` drives.
+- [task.directions](directions.md) is done, so a wheel that goes the wrong way is not in the way of
+  reading what these two lessons do.
+- About 2 m of clear floor.
+
+You write in three files. `LessonsDriveTrain.java` gets the two new methods, and
+`L3aDeadbandOpMode.java` and `L3bSquaredOpMode.java` each use one more of them than the last.
+
+:::{admonition} fig-stick-shaping
+:class: pencil
+Three graphs side by side, each with the stick from -1 to 1 along the bottom and the power out from
+-1 to 1 up the side: the raw stick as a straight line, the deadbanded stick as a line with a flat
+step at the middle, and the squared stick as an S through the middle.
+:::
+
+## The steps
+
+### Step 1: ignore a stick that was let go
+
+A stick that has been let go does not read 0. It reads a few hundredths, and a few hundredths of
+power is enough to make the robot crawl across the floor on its own. A **deadband** is the answer:
+any reading smaller than the band counts as let go.
+
+Write `deadband` in `LessonsDriveTrain.java`, TODO 7. It takes the stick and the band, and answers
+either 0 or the stick itself.
+
+`Math.abs` is the part worth thinking about. A stick pulled back reads -0.5, and -0.5 is smaller
+than 0.05 the way a thermometer means smaller. What you want to compare is how far from the middle
+it is, with the minus sign taken off, and that is what `Math.abs` does.
+
+Then open `L3aDeadbandOpMode.java`. TODO 1 is the band itself, and the number is your choice: 0.05
+is a good first guess. TODO 2 puts each stick through `deadband` and hands the two on.
+
+**You'll know it worked when** this prints `BUILD SUCCESSFUL`:
+
+```
+./gradlew :TeamCode:testDebugUnitTest --tests '*LessonsTest.l3a*'
+```
+
+**If it didn't**, open the report gradle names.
+
+- `outside the band, the stick is passed through untouched expected:<0.5> but was:<0.0>`. Nothing
+  reached the wheels, so TODO 2 has not handed the two shaped sticks to `drivetrain.sticks()`.
+- `inside the deadband, so the robot does not creep expected:<0.0> but was:<0.029999999329447746>`.
+  The band is still 0, so nothing is ever inside it. That long number is the stick the test pushed:
+  a gamepad axis is a `float`, which keeps fewer digits than a `double`, and 0.03 is not one of the
+  numbers it can hold exactly.
+
+### Step 2: drive it with your hands off the sticks
+
+Send the code to the robot. Run `L3a Deadband`, press PLAY, and let go of both sticks.
+
+**You'll know it worked when** the robot sits still. Then push a stick a long way and let go again,
+and it stops.
+
+**If it didn't**, and it still creeps, the band is smaller than what this gamepad reads when it is
+let go. Raise it a little: 0.05 to 0.1 is the usual range. A band much bigger than that starts to
+throw away real driving.
+
+### Step 3: make a gentle push mean gently
+
+With the deadband in, the stick is either ignored or passed straight through. Passed straight
+through means a tenth of a push is a tenth of the power, and near the middle that is more robot than
+a driver wants. Squaring fixes it: half a push becomes a quarter of the power, and a full push is
+still full power.
+
+Write `squared` in `LessonsDriveTrain.java`, TODO 8. Squaring a negative number the ordinary way
+loses the minus sign, and a driver asking for backwards and getting forwards is worse than no
+squaring at all. So work out the size first, then put the sign back.
+
+Then fill `L3bSquaredOpMode.java`, TODO 1 and TODO 2. It deadbands each stick and then squares it,
+one step to a line. Each lesson keeps its own band, so the number you picked in step 1 gets picked
+again here.
+
+**You'll know it worked when** this prints `BUILD SUCCESSFUL`:
+
+```
+./gradlew :TeamCode:testDebugUnitTest --tests '*LessonsTest.l3b*'
+```
+
+**If it didn't**, open the report.
+
+- `and squaring keeps the sign expected:<-0.25> but was:<0.25>`. The sign was not put back, so
+  backwards came out forwards.
+- `and squaring keeps the sign expected:<-0.25> but was:<0.0>`. This one is `deadband`, not
+  `squared`: `Math.abs` is missing, so every negative stick reads as smaller than the band and gets
+  thrown away. The robot drives forwards and refuses to back up. The L3a test does not catch it,
+  because every stick it pushes outside the band is a forwards one.
+
+### Step 4: drive it gently
+
+Run `L3b Squared`. Push a stick about a third of the way and hold it.
+
+**You'll know it worked when** the robot creeps along under control. Push the stick all the way and
+it still gives everything the robot has.
+
+**If it didn't**, and it backs up but will not go forward, the sign is wrong. Or the other way
+round. Step 3's second message is the same fault, seen from the bench.
+
+## What you just did
+
+Both new methods sit between the stick and the wheels. Neither one knows what a wheel is. That is
+why they live in `LessonsDriveTrain` and not in the lesson. L15 and L16 drive through the same two
+methods, and they call the ones you wrote here. There is no second copy. Squaring is also the first
+time this guide bends what a stick means. Half a push really is a quarter of the power. So the
+numbers in Panels are no longer the numbers your hand is making, and that is why
+`stick/left_raw` sits beside `stick/left_shaped`. You can watch both at once.
+
+## Where next
+
+- [task.l4](l4.md) gives the robot one stick to drive with and one to turn with.

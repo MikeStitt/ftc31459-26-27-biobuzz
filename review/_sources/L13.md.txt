@@ -1,0 +1,51 @@
+# L13
+
+2 blank(s) in 1 file(s), 6 line(s) for the student to write.
+
+## L13HeadingHoldOpMode
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L13HeadingHoldOpMode.java`
+
+### TODO 1
+
+Delete 2 blank lines, write 1 real line.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -18,8 +18,7 @@
+ 
+     @Override
+     protected void bindings() {
+-        // TODO 1: build a HeadingHold from the tuned controller:
+-        //         new HeadingHold(Constants.foresightConfig.headingFeedback.get())
++        heading = new HeadingHold(Constants.foresightConfig.headingFeedback.get());
+     }
+ 
+     private L6FollowerDriveTrain drivetrain;
+```
+
+### TODO 2
+
+Delete 4 blank lines, write 5 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -39,10 +39,11 @@
+     @Override
+     public void loop() {
+         loopBefore();
+-        // TODO 2 (L13): ask heading.turn(follower, -gamepad1.right_stick_x) for the
+-        //         turn power, then drive field relative with it through
+-        //         drivetrain.fieldRelative(...). Log heading/holding and
+-        //         heading/deg so Panels can show the hold.
++        double turnCcwSpeed = heading.turn(follower, -gamepad1.right_stick_x);
++        drivetrain.fieldRelative(follower.pose().heading(),
++                -gamepad1.left_stick_y, -gamepad1.left_stick_x, turnCcwSpeed);
++        Tracker.publish("heading/holding", heading.target() != null);
++        Tracker.publish("heading/deg", Math.toDegrees(follower.pose().heading()));
+         loopAfter();
+     }
+ 
+```

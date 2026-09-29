@@ -1,0 +1,505 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="L8: work out where the robot is from the drive wheels" href="l8.html"><link rel="prev" title="L6: let the path follower hold the drivetrain" href="l6.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Mount the Pinpoint and plug it in - Biobuz lessons</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/pencil.css?v=fe295335" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">Biobuz lessons</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <span class="sidebar-brand-text">Biobuz lessons</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Get the robot moving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="directions.html">Are the motors turning the right way?</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Drive it with the sticks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="l2.html">L2: the sticks drive the wheels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l3.html">L3: make the sticks feel right</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l4.html">L4: one stick to drive, one to turn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l5.html">L5: slide it sideways</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See what it is doing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="panels.html">Watch the numbers while it drives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bench.html">Check your work without a robot</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Hand the wheels to the follower</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="l6.html">L6: let the path follower hold the drivetrain</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Know where it is</span></p>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Mount the Pinpoint and plug it in</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l8.html">L8: work out where the robot is from the drive wheels</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Drive it without a driver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="l9.html">L9: the first autonomous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l10.html">L10: two legs, and a turn on the way</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Drive it like a driver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="l11.html">L11: make the sticks mean the field</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l12.html">L12: give the driver both</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l13.html">L13: hold the heading the driver left</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l14.html">L14: give the driver a button that parks the robot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l15.html">L15: one OpMode a driver could take to a match</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l16.html">L16: ask the wheels for a speed</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Measure the robot</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="l17.html">L17: measure the two numbers L16 trusted</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">The back of the book</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cheatsheet.html">Cheat sheet</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Where this came from</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">The answers</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../answers/index.html">Answers</a><input aria-label="Toggle navigation of Answers" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L10PathWithTurnOpMode.html">L10PathWithTurnOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L11FieldRelativeOpMode.html">L11FieldRelativeOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L12RobotRelativeButtonOpMode.html">L12RobotRelativeButtonOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L13HeadingHoldOpMode.html">L13HeadingHoldOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L14DriveToPoseOpMode.html">L14DriveToPoseOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L15CombinedOpMode.html">L15CombinedOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L16VelocityDriveOpMode.html">L16VelocityDriveOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L2TankDriveTrain.html">L2TankDriveTrain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L2aSticksOpMode.html">L2aSticksOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L2bTankOpMode.html">L2bTankOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L3aDeadbandOpMode.html">L3aDeadbandOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L3bSquaredOpMode.html">L3bSquaredOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L4ArcadeDriveTrain.html">L4ArcadeDriveTrain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L4ArcadeOpMode.html">L4ArcadeOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L5HolonomicDriveTrain.html">L5HolonomicDriveTrain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L5HolonomicOpMode.html">L5HolonomicOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L6FollowerDriveTrain.html">L6FollowerDriveTrain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L6WheelsFollowerOpMode.html">L6WheelsFollowerOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L8CompareLocalizersOpMode.html">L8CompareLocalizersOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L9Drive24OpMode.html">L9Drive24OpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/LessonsDriveTrain.html">LessonsDriveTrain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/MecanumEncoderLocalizer.html">MecanumEncoderLocalizer</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/tasks/pinpoint.md.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="mount-the-pinpoint-and-plug-it-in">
+<h1>Mount the Pinpoint and plug it in<a class="headerlink" href="#mount-the-pinpoint-and-plug-it-in" title="Link to this heading">¶</a></h1>
+<section id="what-you-will-have-when-this-is-done">
+<h2>What you will have when this is done<a class="headerlink" href="#what-you-will-have-when-this-is-done" title="Link to this heading">¶</a></h2>
+<p>The Pinpoint is bolted on, its two pods are in the right sockets, and the Control Hub finds it when
+you press INIT. The robot does not yet know how far the pods sit from its middle. That is
+<code class="docutils literal notranslate"><span class="pre">task.autotune</span></code>, and this page is what it needs first.</p>
+</section>
+<section id="before-you-start">
+<h2>Before you start<a class="headerlink" href="#before-you-start" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="l6.html"><span class="std std-doc">L6</span></a> is finished. From L6 on the follower holds the drivetrain, and the follower is what
+builds the Pinpoint.</p></li>
+<li><p>The robot, the two odometry pods, and whatever driver the robot’s own screws take.</p></li>
+<li><p>The I2C cable the Pinpoint came with.</p></li>
+</ul>
+<div class="pencil admonition">
+<p class="admonition-title">fig-pinpoint-mounting</p>
+<p>The Pinpoint on the robot from above, with the forward pod and the strafe pod drawn at right angles
+to each other, each labelled with the socket it plugs into, and the sticker side marked facing up.</p>
+</div>
+</section>
+<section id="the-steps">
+<h2>The steps<a class="headerlink" href="#the-steps" title="Link to this heading">¶</a></h2>
+<section id="step-1-put-one-pod-along-the-robot-and-one-across-it">
+<h3>Step 1: put one pod along the robot and one across it<a class="headerlink" href="#step-1-put-one-pod-along-the-robot-and-one-across-it" title="Link to this heading">¶</a></h3>
+<p>The Pinpoint counts two wheels that nothing drives. One rolls along the length of the chassis, and
+that one is the <strong>forward</strong> pod. The other rolls across it, and that one is the <strong>strafe</strong> pod.</p>
+<p>Both have to touch the floor the whole time, and neither may be able to lift. A pod that skips loses
+count, and nothing downstream can tell that it did.</p>
+<p>Then plug each one into its own socket. The forward pod goes in the <strong>x</strong> socket. The strafe pod
+goes in the <strong>y</strong> socket.</p>
+<p><strong>You’ll know it worked when</strong> both pod wheels move as you push the robot forward. The forward pod
+turns. The strafe pod drags sideways.</p>
+<p><strong>If it didn’t</strong>, and a pod wheel does not turn at all, it is not reaching the floor. Most mounts
+have a slot for that.</p>
+</section>
+<section id="step-2-use-an-i2c-port-that-is-not-port-0">
+<h3>Step 2: use an I2C port that is not port 0<a class="headerlink" href="#step-2-use-an-i2c-port-that-is-not-port-0" title="Link to this heading">¶</a></h3>
+<p>The Pinpoint talks to the Control Hub over I2C, and it has to be on a port <strong>other than port 0</strong>.
+Port 0 already has the Control Hub’s own IMU on it.</p>
+<p>While you are in there, the sticker side of the Pinpoint, the side the ports are on, faces <strong>up</strong>.</p>
+<p>Then open the Robot Configuration on the Driver Station and give it the name <code class="docutils literal notranslate"><span class="pre">pinpoint</span></code>, spelled
+exactly that way. That is the name the code asks for:</p>
+<div class="highlight-java notranslate"><div class="highlight"><pre><span></span><span class="n">c</span><span class="p">.</span><span class="na">name</span><span class="p">.</span><span class="na">set</span><span class="p">(</span><span class="s">"pinpoint"</span><span class="p">);</span>
+</pre></div>
+</div>
+<p><strong>You’ll know it worked when</strong> <code class="docutils literal notranslate"><span class="pre">L6</span> <span class="pre">Follower</span> <span class="pre">Wheels</span></code> gets through INIT without an error. Building the
+follower is what looks the Pinpoint up, so INIT finishing means it was found.</p>
+<p><strong>If it didn’t</strong>, and the Driver Station shows this, the name in the configuration is not the name
+in the code:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Unable</span> <span class="n">to</span> <span class="n">find</span> <span class="n">a</span> <span class="n">hardware</span> <span class="n">device</span> <span class="k">with</span> <span class="n">name</span> <span class="s2">"pinpoint"</span> <span class="ow">and</span> <span class="nb">type</span> <span class="n">GoBildaPinpointDriver</span>
+</pre></div>
+</div>
+</section>
+<section id="step-3-hold-the-robot-still-while-it-inits">
+<h3>Step 3: hold the robot still while it inits<a class="headerlink" href="#step-3-hold-the-robot-still-while-it-inits" title="Link to this heading">¶</a></h3>
+<p>Pressing INIT builds the follower. The follower builds the Pinpoint. The Pinpoint then recalibrates
+its own gyro, which takes about a quarter of a second. The robot has to sit still for it.</p>
+<p>So press INIT with the robot on the floor and your hands off it. If somebody was carrying it, wait
+until it is down.</p>
+<p><strong>You’ll know it worked when</strong> the heading holds steady. Leave the robot alone after INIT and watch
+<code class="docutils literal notranslate"><span class="pre">heading</span></code> in Panels, or drive a slow square and see whether the nose angle comes back to where it
+started.</p>
+<p><strong>If it didn’t</strong>, and the heading crawls one way while the robot sits still, INIT happened while the
+robot was moving. Press STOP and INIT again without touching it.</p>
+</section>
+<section id="step-4-let-autotune-measure-the-pods">
+<h3>Step 4: let AutoTune measure the pods<a class="headerlink" href="#step-4-let-autotune-measure-the-pods" title="Link to this heading">¶</a></h3>
+<p>Four numbers are still missing: which way each pod counts, and how far each one sits from the middle
+of the robot. They are in <code class="docutils literal notranslate"><span class="pre">Constants.java</span></code>, in <code class="docutils literal notranslate"><span class="pre">localizerConfig</span></code>, and they were put there by
+AutoTune.</p>
+<p>What they mean, from the goBILDA driver’s own notes: the x offset is how far <strong>sideways</strong> the
+forward pod is from the point the robot turns about, and left counts up. The y offset is how far
+<strong>forward</strong> the strafe pod is from that point, and forward counts up. This robot’s are about
+1.06 in and about 3.36 in.</p>
+<p>Running the procedure that measures them is <code class="docutils literal notranslate"><span class="pre">task.autotune</span></code>. It pushes the robot forward, then to
+the left, then spins it 180 degrees, and prints a <code class="docutils literal notranslate"><span class="pre">PinpointConfig</span></code> to paste in.</p>
+<p><strong>You’ll know it worked when</strong> AutoTune’s localization test agrees with the robot. The pose starts
+at (0, 0). Driving forward raises x. Strafing left raises y.</p>
+<p><strong>If it didn’t</strong>, and x and y swap over, the two pods are in each other’s sockets. Step 1 is where
+that gets fixed, and no amount of tuning works around it.</p>
+<div class="note admonition">
+<p class="admonition-title">Where this page comes from</p>
+<p>Not from a robot. The three rules in steps 1 and 2 are Pedro’s, from
+<a class="reference external" href="https://pedropathing.com/docs/pathing/tuning/localization/pinpoint">its Pinpoint page</a>, read on
+2026-09-28, and no Pinpoint was wired each wrong way to see what each mistake looks like.</p>
+<p>What is read from the code rather than recalled: the missing-device message is the one
+<code class="docutils literal notranslate"><span class="pre">HardwareMap.get</span></code> throws in the SDK; the recalibration at INIT is <code class="docutils literal notranslate"><span class="pre">PinpointConfig</span></code>’s default
+<code class="docutils literal notranslate"><span class="pre">resetMode</span></code>, which <code class="docutils literal notranslate"><span class="pre">PinpointLocalizer</span></code>’s constructor acts on; the stationary robot and the quarter
+second are the goBILDA driver’s own javadoc; and the two offsets are this robot’s, from
+<code class="docutils literal notranslate"><span class="pre">Constants.localizerConfig</span></code>.</p>
+</div>
+</section>
+</section>
+<section id="what-you-just-did">
+<h2>What you just did<a class="headerlink" href="#what-you-just-did" title="Link to this heading">¶</a></h2>
+<p>Every lesson from L8 on believes the Pinpoint. L8 puts a second localizer beside it, and shows the
+drive encoders drifting away from it over a run. L17 measures the robot against it. A pod in the
+wrong socket makes all of that quietly wrong instead of loudly broken. That is why it gets a page of
+its own.</p>
+<p>The Pinpoint also explains one thing. The follower needs nothing from the drive motors to know
+where the robot is. Two wheels that nothing drives cannot be scrubbed sideways by a mecanum roller,
+and cannot be spun by a wheel that slips.</p>
+</section>
+<section id="where-next">
+<h2>Where next<a class="headerlink" href="#where-next" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">task.autotune</span></code> measures the pods and fills in the four numbers. It is not written yet.</p></li>
+<li><p><a class="reference internal" href="l8.html"><span class="std std-doc">task.l8</span></a> compares the Pinpoint against the drive encoders and logs both.</p></li>
+</ul>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="l8.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">L8: work out where the robot is from the drive wheels</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="l6.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">L6: let the path follower hold the drivetrain</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Catholic Central Spires Robotics
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Mount the Pinpoint and plug it in</a><ul>
+<li><a class="reference internal" href="#what-you-will-have-when-this-is-done">What you will have when this is done</a></li>
+<li><a class="reference internal" href="#before-you-start">Before you start</a></li>
+<li><a class="reference internal" href="#the-steps">The steps</a><ul>
+<li><a class="reference internal" href="#step-1-put-one-pod-along-the-robot-and-one-across-it">Step 1: put one pod along the robot and one across it</a></li>
+<li><a class="reference internal" href="#step-2-use-an-i2c-port-that-is-not-port-0">Step 2: use an I2C port that is not port 0</a></li>
+<li><a class="reference internal" href="#step-3-hold-the-robot-still-while-it-inits">Step 3: hold the robot still while it inits</a></li>
+<li><a class="reference internal" href="#step-4-let-autotune-measure-the-pods">Step 4: let AutoTune measure the pods</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#what-you-just-did">What you just did</a></li>
+<li><a class="reference internal" href="#where-next">Where next</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

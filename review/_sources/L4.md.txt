@@ -1,0 +1,121 @@
+# L4
+
+4 blank(s) in 3 file(s), 18 line(s) for the student to write.
+
+## L4ArcadeDriveTrain
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L4ArcadeDriveTrain.java`
+
+### TODO
+
+Delete 4 blank lines, write 3 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -32,9 +32,8 @@
+      * directions {@link LessonsDriveTrain} sets out. Both are -1 to 1.
+      */
+     public void sticks(double forwardSpeed, double turnCcwSpeed) {
+-        // TODO: turn the two numbers into a left speed and a right speed, each
+-        //       into its own variable, and hand them to driveWheelsNow the way
+-        //       L2TankDriveTrain does. Turning counter-clockwise means the left
+-        //       side goes slower and the right side faster.
++        double leftSpeed = forwardSpeed - turnCcwSpeed;
++        double rightSpeed = forwardSpeed + turnCcwSpeed;
++        driveWheelsNow(leftSpeed, rightSpeed, leftSpeed, rightSpeed);
+     }
+ }
+```
+
+## L4ArcadeOpMode
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L4ArcadeOpMode.java`
+
+### TODO
+
+Delete 7 blank lines, write 2 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -40,13 +40,8 @@
+     public void loop() {
+         loopBefore();
+ 
+-        // TODO: read the two sticks and hand them to drivetrain.sticks(forwardSpeed, turnCcwSpeed).
+-        //       forward comes from the left stick's y axis, turn from the right
+-        //       stick's x axis, and BOTH need a minus sign -- the note above says
+-        //       why the turn one does. Log them as command/forward and
+-        //       command/turn_ccw so Panels can draw them.
+-        double forwardSpeed = 0;
+-        double turnCcwSpeed = 0;
++        double forwardSpeed = -gamepad1.left_stick_y;
++        double turnCcwSpeed = -gamepad1.right_stick_x;
+         drivetrain.sticks(forwardSpeed, turnCcwSpeed);
+ 
+         loopAfter();
+```
+
+### No TODO of its own
+
+Delete 0 blank lines, write 3 real lines.
+
+These lines sit beside a blank rather than inside one, so the marker
+that asks for them is in another edit on this page.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -44,6 +44,9 @@
+         double turnCcwSpeed = -gamepad1.right_stick_x;
+         drivetrain.sticks(forwardSpeed, turnCcwSpeed);
+ 
++        Tracker.publish("command/forward", forwardSpeed);
++        Tracker.publish("command/turn_ccw", turnCcwSpeed);
++
+         loopAfter();
+     }
+ 
+```
+
+## LessonsDriveTrain
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/LessonsDriveTrain.java`
+
+### TODO 3
+
+Delete 11 blank lines, write 10 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -170,17 +170,16 @@
+      * what it divided by in {@link #powerScale}, which is what Pedro reports.
+      */
+     protected double[] normalized(double[] powers) {
+-        // TODO 3 (L4): find the biggest of the four, ignoring minus signs, or 1 if
+-        //         none of them reaches 1. Math.abs takes the minus sign off, and
+-        //         Math.max picks the bigger of two: give the magnitude its own
+-        //         variable. Put 1 divided by that number into powerScale, so the
+-        //         log says what the scaling was. Then divide every power by it, in
+-        //         a second loop with i as the index, and hand the array back.
+-        //         Handing them back untouched is what happens now, which is why
+-        //         L2b drives fine and L4 pulls to one side at full turn.
+-        //         Works when: LessonsTest.l4_arcadeUsesOneStickToDriveAndOneToTurn
+-        //         passes, and the robot drives straight with the drive stick and
+-        //         the turn stick both all the way forward.
++        double max = 1.0;
++        for (double power : powers) {
++            double magnitude = Math.abs(power);
++            max = Math.max(max, magnitude);
++        }
++
++        powerScale = 1.0 / max;
++        for (int i = 0; i < powers.length; i++) {
++            powers[i] = powers[i] / max;
++        }
+         return powers;
+     }
+ 
+```

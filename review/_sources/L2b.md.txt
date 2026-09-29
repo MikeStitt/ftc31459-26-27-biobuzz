@@ -1,0 +1,148 @@
+# L2b
+
+5 blank(s) in 3 file(s), 31 line(s) for the student to write.
+
+## L2TankDriveTrain
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L2TankDriveTrain.java`
+
+### TODO
+
+Delete 3 blank lines, write 1 real line.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -34,8 +34,6 @@
+      * one place so every lesson that drives this way says the same thing.
+      */
+     public void sticks(double leftSpeed, double rightSpeed) {
+-        // TODO (L2b): call driveWheelsNow with four powers. The left stick runs both
+-        //       left wheels and the right stick runs both right wheels, so two of
+-        //       the four are the same number.
++        driveWheelsNow(leftSpeed, rightSpeed, leftSpeed, rightSpeed);
+     }
+ }
+```
+
+## L2bTankOpMode
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L2bTankOpMode.java`
+
+### TODO 1
+
+Delete 3 blank lines, write 3 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -46,9 +46,9 @@
+     public void loop() {
+         loopBefore();
+ 
+-        // TODO 1: read both sticks' y axes into named doubles, negating each one
+-        //         the way L2a did, and hand them to the drivetrain:
+-        //         drivetrain.sticks(leftSpeed, rightSpeed);
++        double leftSpeed = -gamepad1.left_stick_y;
++        double rightSpeed = -gamepad1.right_stick_y;
++        drivetrain.sticks(leftSpeed, rightSpeed);
+ 
+         // TODO 2: log the four stick axes, the A button and the pressed and
+         //         released events, the same as L2a. The loop count and the time
+```
+
+### TODO 2
+
+Delete 5 blank lines, write 16 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -50,11 +50,22 @@
+         double rightSpeed = -gamepad1.right_stick_y;
+         drivetrain.sticks(leftSpeed, rightSpeed);
+ 
+-        // TODO 2: log the four stick axes, the A button and the pressed and
+-        //         released events, the same as L2a. The loop count and the time
+-        //         are gone: the robot logs both for itself.
+-        //         Works when: LessonsTest.l2b_theSticksDriveTheWheelsLikeATank
+-        //         and LessonsTest.l2b_theSticksMoveTheSimulatedRobot pass.
++        Tracker.publish("stick/leftY", leftSpeed);
++        Tracker.publish("stick/leftX", gamepad1.left_stick_x);
++        Tracker.publish("stick/rightY", rightSpeed);
++        Tracker.publish("stick/rightX", gamepad1.right_stick_x);
++
++        boolean buttonA = gamepad1.a;
++        Tracker.publish("driver pressed A", buttonA);
++
++        if (buttonA != previousButtonA) {
++            if (buttonA) {
++                Tracker.publish("lesson/event", "button A pressed");
++            } else {
++                Tracker.publish("lesson/event", "button A released");
++            }
++        }
++        previousButtonA = buttonA;
+ 
+         loopAfter();
+     }
+```
+
+## LessonsDriveTrain
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/LessonsDriveTrain.java`
+
+### TODO 1
+
+Delete 5 blank lines, write 4 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -132,11 +132,10 @@
+      * {@link #FL} and the others name.
+      */
+     protected void writeWheels() {
+-        // TODO 1 (L2b): send each slot of wheelPowers to the motor it belongs to,
+-        //         naming the slot with FL, FR, BL or BR. One line each:
+-        //         motors[FL].setPower(wheelPowers[FL]);  and the other three.
+-        //         Works when: LessonsTest.l2b_theSticksDriveTheWheelsLikeATank
+-        //         passes. Nothing drives at all until this is written.
++        motors[FL].setPower(wheelPowers[FL]);
++        motors[FR].setPower(wheelPowers[FR]);
++        motors[BL].setPower(wheelPowers[BL]);
++        motors[BR].setPower(wheelPowers[BR]);
+     }
+ 
+     /**
+```
+
+### TODO 2
+
+Delete 7 blank lines, write 7 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -149,13 +149,13 @@
+                                      double backLeftPower, double backRightPower) {
+         drivenDirectly = true;
+ 
+-        // TODO 2 (L2b): put each power into its own slot of wheelPowers, using
+-        //         FL, FR, BL and BR to say which slot is which. One line each.
+-        //         wheelPowers[FL] = frontLeftPower;  and so on.
+-        //         Then call normalized(wheelPowers), which is L4's job and does
+-        //         nothing yet, and writeWheels(), which you wrote just above.
+-        //         Works when: the wheels turn the way the sticks say, and
+-        //         LessonsTest.l2b_theSticksDriveTheWheelsLikeATank passes.
++        wheelPowers[FL] = frontLeftPower;
++        wheelPowers[FR] = frontRightPower;
++        wheelPowers[BL] = backLeftPower;
++        wheelPowers[BR] = backRightPower;
++
++        normalized(wheelPowers);
++        writeWheels();
+     }
+ 
+     // ------------------------------------------------- L4 writes this
+```

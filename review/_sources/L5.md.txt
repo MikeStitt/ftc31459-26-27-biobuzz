@@ -1,0 +1,82 @@
+# L5
+
+3 blank(s) in 2 file(s), 12 line(s) for the student to write.
+
+## L5HolonomicDriveTrain
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L5HolonomicDriveTrain.java`
+
+### TODO
+
+Delete 3 blank lines, write 5 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -53,8 +53,10 @@
+      * </ul>
+      */
+     public void sticks(double forwardSpeed, double strafeLeftSpeed, double turnCcwSpeed) {
+-        // TODO: work out each wheel's power, one named variable at a time, then
+-        //       hand the four to driveWheelsNow. Three numbers add up differently
+-        //       at each corner; the sources in this class's javadoc draw it.
++        double frontLeftPower = forwardSpeed - strafeLeftSpeed - turnCcwSpeed;
++        double frontRightPower = forwardSpeed + strafeLeftSpeed + turnCcwSpeed;
++        double backLeftPower = forwardSpeed + strafeLeftSpeed - turnCcwSpeed;
++        double backRightPower = forwardSpeed - strafeLeftSpeed + turnCcwSpeed;
++        driveWheelsNow(frontLeftPower, frontRightPower, backLeftPower, backRightPower);
+     }
+ }
+```
+
+## L5HolonomicOpMode
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L5HolonomicOpMode.java`
+
+### TODO
+
+Delete 6 blank lines, write 3 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -41,12 +41,9 @@
+     public void loop() {
+         loopBefore();
+ 
+-        // TODO: three numbers now, not two. left comes from the left stick's x
+-        //       axis; LEFT is positive and the stick reads positive to the RIGHT,
+-        //       so that one needs negating too. Log all three.
+-        double forwardSpeed = 0;
+-        double strafeLeftSpeed = 0;
+-        double turnCcwSpeed = 0;
++        double forwardSpeed = -gamepad1.left_stick_y;
++        double strafeLeftSpeed = -gamepad1.left_stick_x;
++        double turnCcwSpeed = -gamepad1.right_stick_x;
+         drivetrain.sticks(forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
+ 
+         loopAfter();
+```
+
+### No TODO of its own
+
+Delete 0 blank lines, write 4 real lines.
+
+These lines sit beside a blank rather than inside one, so the marker
+that asks for them is in another edit on this page.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -46,6 +46,10 @@
+         double turnCcwSpeed = -gamepad1.right_stick_x;
+         drivetrain.sticks(forwardSpeed, strafeLeftSpeed, turnCcwSpeed);
+ 
++        Tracker.publish("command/forward", forwardSpeed);
++        Tracker.publish("command/left", strafeLeftSpeed);
++        Tracker.publish("command/turn_ccw", turnCcwSpeed);
++
+         loopAfter();
+     }
+ 
+```

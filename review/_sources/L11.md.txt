@@ -1,0 +1,73 @@
+# L11
+
+2 blank(s) in 2 file(s), 12 line(s) for the student to write.
+
+## L11FieldRelativeOpMode
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L11FieldRelativeOpMode.java`
+
+### TODO
+
+Delete 6 blank lines, write 4 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -29,12 +29,10 @@
+     @Override
+     public void loop() {
+         loopBefore();
+-        // TODO (L11): the same three sticks as L5, but through
+-        //       drivetrain.fieldRelative(...) instead of drivetrain.sticks(...).
+-        //       The heading goes in first, and the drivetrain cannot get it
+-        //       itself: follower.pose().heading() is where it comes from.
+-        //       Try L5's version with the robot turned 180 degrees first, so you
+-        //       can feel the difference.
++        drivetrain.fieldRelative(follower.pose().heading(),
++                -gamepad1.left_stick_y,      // away from the driver
++                -gamepad1.left_stick_x,      // to the driver's left
++                -gamepad1.right_stick_x);    // counter-clockwise
+         loopAfter();
+     }
+ 
+```
+
+## LessonsDriveTrain
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/LessonsDriveTrain.java`
+
+### TODO 9
+
+Delete 12 blank lines, write 8 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -292,18 +292,14 @@
+      */
+     public void fieldRelative(double headingRad, double fieldXSpeed, double fieldYSpeed,
+                               double turnCcwSpeed) {
+-        // TODO 9 (L11): turn the driver's two field speeds into the robot's own
+-        //         forward and strafe, by rotating them backwards through the
+-        //         heading. Take the cosine and the sine of headingRad into their
+-        //         own variables, then
+-        //         forwardSpeed    =  fieldXSpeed * cos + fieldYSpeed * sin
+-        //         strafeLeftSpeed = -fieldXSpeed * sin + fieldYSpeed * cos
+-        //         Then mix those three, normalize what comes back, and command the
+-        //         four wheels, which is the same three lines L6's sticks() ends on.
+-        //         Works when:
+-        //         LessonsTest.l11_fieldRelativeIgnoresWhichWayTheRobotFaces passes,
+-        //         and pushing the stick away from the driver moves the robot away
+-        //         from the driver whichever way it is facing.
++        double cos = Math.cos(headingRad);
++        double sin = Math.sin(headingRad);
++        double forwardSpeed = fieldXSpeed * cos + fieldYSpeed * sin;
++        double strafeLeftSpeed = -fieldXSpeed * sin + fieldYSpeed * cos;
++
++        double[] mixed = mix(new DrivePowers(forwardSpeed, strafeLeftSpeed, turnCcwSpeed));
++        double[] scaled = normalized(mixed);
++        setCommandedWheels(scaled[FL], scaled[FR], scaled[BL], scaled[BR]);
+     }
+ 
+     // ------------------------------------------------- L16 writes this
+```

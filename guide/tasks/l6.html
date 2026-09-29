@@ -1,0 +1,527 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Mount the Pinpoint and plug it in" href="pinpoint.html"><link rel="prev" title="Check your work without a robot" href="bench.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>L6: let the path follower hold the drivetrain - Biobuz lessons</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="../_static/pencil.css?v=fe295335" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">Biobuz lessons</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <span class="sidebar-brand-text">Biobuz lessons</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Get the robot moving</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="directions.html">Are the motors turning the right way?</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Drive it with the sticks</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="l2.html">L2: the sticks drive the wheels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l3.html">L3: make the sticks feel right</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l4.html">L4: one stick to drive, one to turn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l5.html">L5: slide it sideways</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">See what it is doing</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="panels.html">Watch the numbers while it drives</a></li>
+<li class="toctree-l1"><a class="reference internal" href="bench.html">Check your work without a robot</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Hand the wheels to the follower</span></p>
+<ul class="current">
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">L6: let the path follower hold the drivetrain</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Know where it is</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="pinpoint.html">Mount the Pinpoint and plug it in</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l8.html">L8: work out where the robot is from the drive wheels</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Drive it without a driver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="l9.html">L9: the first autonomous</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l10.html">L10: two legs, and a turn on the way</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Drive it like a driver</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="l11.html">L11: make the sticks mean the field</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l12.html">L12: give the driver both</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l13.html">L13: hold the heading the driver left</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l14.html">L14: give the driver a button that parks the robot</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l15.html">L15: one OpMode a driver could take to a match</a></li>
+<li class="toctree-l1"><a class="reference internal" href="l16.html">L16: ask the wheels for a speed</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Measure the robot</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="l17.html">L17: measure the two numbers L16 trusted</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">The back of the book</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="glossary.html">Glossary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cheatsheet.html">Cheat sheet</a></li>
+<li class="toctree-l1"><a class="reference internal" href="sources.html">Where this came from</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">The answers</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../answers/index.html">Answers</a><input aria-label="Toggle navigation of Answers" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L10PathWithTurnOpMode.html">L10PathWithTurnOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L11FieldRelativeOpMode.html">L11FieldRelativeOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L12RobotRelativeButtonOpMode.html">L12RobotRelativeButtonOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L13HeadingHoldOpMode.html">L13HeadingHoldOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L14DriveToPoseOpMode.html">L14DriveToPoseOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L15CombinedOpMode.html">L15CombinedOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L16VelocityDriveOpMode.html">L16VelocityDriveOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L2TankDriveTrain.html">L2TankDriveTrain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L2aSticksOpMode.html">L2aSticksOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L2bTankOpMode.html">L2bTankOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L3aDeadbandOpMode.html">L3aDeadbandOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L3bSquaredOpMode.html">L3bSquaredOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L4ArcadeDriveTrain.html">L4ArcadeDriveTrain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L4ArcadeOpMode.html">L4ArcadeOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L5HolonomicDriveTrain.html">L5HolonomicDriveTrain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L5HolonomicOpMode.html">L5HolonomicOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L6FollowerDriveTrain.html">L6FollowerDriveTrain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L6WheelsFollowerOpMode.html">L6WheelsFollowerOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L8CompareLocalizersOpMode.html">L8CompareLocalizersOpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/L9Drive24OpMode.html">L9Drive24OpMode</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/LessonsDriveTrain.html">LessonsDriveTrain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../answers/MecanumEncoderLocalizer.html">MecanumEncoderLocalizer</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/tasks/l6.md.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="l6-let-the-path-follower-hold-the-drivetrain">
+<h1>L6: let the path follower hold the drivetrain<a class="headerlink" href="#l6-let-the-path-follower-hold-the-drivetrain" title="Link to this heading">¶</a></h1>
+<section id="what-you-will-have-when-this-is-done">
+<h2>What you will have when this is done<a class="headerlink" href="#what-you-will-have-when-this-is-done" title="Link to this heading">¶</a></h2>
+<p>The robot drives on the sticks exactly as well as it did in L5, and the path follower is holding the
+drivetrain. The sticks still win while the driver is pushing them.</p>
+<p>That matters because a follower holding the drivetrain can do things a lesson cannot. It knows where
+the robot is. It can hold a heading, and it can drive a path. None of that is possible while the
+follower is holding a stand-in, and all of it is what L8 onwards is about.</p>
+</section>
+<section id="before-you-start">
+<h2>Before you start<a class="headerlink" href="#before-you-start" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="l5.html"><span class="std std-doc">L5</span></a> is finished, so the four mixing sums are written once and work.</p></li>
+<li><p><a class="reference internal" href="l4.html"><span class="std std-doc">L4</span></a> is finished, so <code class="docutils literal notranslate"><span class="pre">normalized</span></code> is written. This lesson calls it twice.</p></li>
+<li><p>About 2 m by 2 m of clear floor.</p></li>
+</ul>
+<p>You write in three files. <code class="docutils literal notranslate"><span class="pre">LessonsDriveTrain.java</span></code> has three blanks, <code class="docutils literal notranslate"><span class="pre">L6FollowerDriveTrain.java</span></code> has
+two, and <code class="docutils literal notranslate"><span class="pre">L6WheelsFollowerOpMode.java</span></code> has two.</p>
+<div class="pencil admonition">
+<p class="admonition-title">fig-wheel-handover</p>
+<p>Two arrows reaching the same four wheels, one from the path follower and one from the driver’s
+sticks, with the commanded-wheels switch between them showing which one gets through.</p>
+</div>
+</section>
+<section id="the-steps">
+<h2>The steps<a class="headerlink" href="#the-steps" title="Link to this heading">¶</a></h2>
+<section id="step-1-let-the-follower-ask-for-wheels">
+<h3>Step 1: let the follower ask for wheels<a class="headerlink" href="#step-1-let-the-follower-ask-for-wheels" title="Link to this heading">¶</a></h3>
+<p>Up to L5 the drivetrain wrote the motors the moment the lesson asked. From here the follower calls
+<code class="docutils literal notranslate"><span class="pre">drive</span></code> on it every update and hands it three numbers: forward, slide left, turn. The drivetrain has
+to turn those into four powers.</p>
+<p>Write <code class="docutils literal notranslate"><span class="pre">mix</span></code> in <code class="docutils literal notranslate"><span class="pre">L6FollowerDriveTrain.java</span></code>, TODO 2. It is the same four sums as L5, in a four-slot
+array, named with <code class="docutils literal notranslate"><span class="pre">FL</span></code>, <code class="docutils literal notranslate"><span class="pre">FR</span></code>, <code class="docutils literal notranslate"><span class="pre">BL</span></code> and <code class="docutils literal notranslate"><span class="pre">BR</span></code>.</p>
+<p>Then write <code class="docutils literal notranslate"><span class="pre">drive</span></code> in <code class="docutils literal notranslate"><span class="pre">LessonsDriveTrain.java</span></code>, TODO 6. It picks where the four powers come from and
+sends them on. Step 2 is the other half of that choice, so for now the <code class="docutils literal notranslate"><span class="pre">if</span></code> takes the branch that
+asks <code class="docutils literal notranslate"><span class="pre">mix</span></code>.</p>
+<p><strong>You’ll know it worked when</strong> this prints <code class="docutils literal notranslate"><span class="pre">BUILD</span> <span class="pre">SUCCESSFUL</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">gradlew</span> <span class="p">:</span><span class="n">TeamCode</span><span class="p">:</span><span class="n">testDebugUnitTest</span> <span class="o">--</span><span class="n">tests</span> <span class="s1">'*L6FollowerDriveTrainTest.the*WheelIs*'</span>
+</pre></div>
+</div>
+<p>There is one test per wheel, so a sum that is wrong names its own wheel.</p>
+<p><strong>If it didn’t</strong>, open the report gradle names.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">sliding</span> <span class="pre">left</span> <span class="pre">runs</span> <span class="pre">it</span> <span class="pre">forward</span> <span class="pre">expected:&lt;1.0&gt;</span> <span class="pre">but</span> <span class="pre">was:&lt;-1.0&gt;</span></code> from <code class="docutils literal notranslate"><span class="pre">theBackLeftWheelIs...</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">sliding</span> <span class="pre">left</span> <span class="pre">runs</span> <span class="pre">it</span> <span class="pre">backwards</span> <span class="pre">expected:&lt;-1.0&gt;</span> <span class="pre">but</span> <span class="pre">was:&lt;1.0&gt;</span></code> from <code class="docutils literal notranslate"><span class="pre">theBackRightWheelIs...</span></code>. The
+two back sums are swapped. The test names the wheel, and the message says which of the three
+numbers is going the wrong way into it.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">driving</span> <span class="pre">forward</span> <span class="pre">runs</span> <span class="pre">it</span> <span class="pre">forward</span> <span class="pre">expected:&lt;1.0&gt;</span> <span class="pre">but</span> <span class="pre">was:&lt;0.0&gt;</span></code> from all four. Nothing reached the
+motors at all. Either <code class="docutils literal notranslate"><span class="pre">mix</span></code> still hands back the empty array it was given, or <code class="docutils literal notranslate"><span class="pre">drive</span></code> stops before
+calling <code class="docutils literal notranslate"><span class="pre">writeWheels()</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">NullPointerException:</span> <span class="pre">Cannot</span> <span class="pre">load</span> <span class="pre">from</span> <span class="pre">double</span> <span class="pre">array</span> <span class="pre">because</span> <span class="pre">&quot;sourcePowers&quot;</span> <span class="pre">is</span> <span class="pre">null</span></code>. The <code class="docutils literal notranslate"><span class="pre">if</span></code> in
+<code class="docutils literal notranslate"><span class="pre">drive</span></code> is the wrong way round. <code class="docutils literal notranslate"><span class="pre">commandedWheels</span> <span class="pre">==</span> <span class="pre">null</span></code> is the case that asks <code class="docutils literal notranslate"><span class="pre">mix</span></code>.</p></li>
+</ul>
+</section>
+<section id="step-2-let-the-sticks-win">
+<h3>Step 2: let the sticks win<a class="headerlink" href="#step-2-let-the-sticks-win" title="Link to this heading">¶</a></h3>
+<p>The follower is not the only one who wants the wheels. The driver does too, and the driver wins. A
+lesson says so by <strong>commanding</strong> the four wheels, and a commanded wheel ignores whatever the
+follower worked out until the lesson hands it back.</p>
+<p>Write <code class="docutils literal notranslate"><span class="pre">setCommandedWheels</span></code>, TODO 4, and <code class="docutils literal notranslate"><span class="pre">releaseCommandedWheels</span></code>, TODO 5, both in
+<code class="docutils literal notranslate"><span class="pre">LessonsDriveTrain.java</span></code>. One remembers four powers, the other forgets them.</p>
+<p>Then write <code class="docutils literal notranslate"><span class="pre">sticks</span></code> in <code class="docutils literal notranslate"><span class="pre">L6FollowerDriveTrain.java</span></code>, TODO 1. It goes through <code class="docutils literal notranslate"><span class="pre">mix</span></code> on purpose, so the
+driver’s three numbers and the follower’s three numbers mean the same thing at every wheel.</p>
+<p><strong>You’ll know it worked when</strong> the whole class passes:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">gradlew</span> <span class="p">:</span><span class="n">TeamCode</span><span class="p">:</span><span class="n">testDebugUnitTest</span> <span class="o">--</span><span class="n">tests</span> <span class="s1">'*L6FollowerDriveTrainTest*'</span>
+</pre></div>
+</div>
+<p><strong>If it didn’t</strong>:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">the</span> <span class="pre">wheels</span> <span class="pre">are</span> <span class="pre">commanded,</span> <span class="pre">not</span> <span class="pre">left</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">follower</span></code>, with no numbers after it. <code class="docutils literal notranslate"><span class="pre">sticks</span></code> ran and
+nothing got commanded. Either <code class="docutils literal notranslate"><span class="pre">sticks</span></code> is still blank, or <code class="docutils literal notranslate"><span class="pre">setCommandedWheels</span></code> is.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">expected:&lt;0.1&gt;</span> <span class="pre">but</span> <span class="pre">was:&lt;0.0&gt;</span></code> from <code class="docutils literal notranslate"><span class="pre">writeWheelsSendsEachPowerToItsOwnMotor</span></code>. That one commands
+four different numbers itself, so <code class="docutils literal notranslate"><span class="pre">sticks</span></code> is not the problem. <code class="docutils literal notranslate"><span class="pre">setCommandedWheels</span></code> is not storing
+them.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">released,</span> <span class="pre">so</span> <span class="pre">the</span> <span class="pre">follower's</span> <span class="pre">zero</span> <span class="pre">reaches</span> <span class="pre">the</span> <span class="pre">motor</span> <span class="pre">expected:&lt;0.0&gt;</span> <span class="pre">but</span> <span class="pre">was:&lt;0.1&gt;</span></code>, on its own.
+<code class="docutils literal notranslate"><span class="pre">releaseCommandedWheels</span></code> is the blank that is left, and setting the field to null is the whole
+line.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">IllegalStateException:</span> <span class="pre">L6FollowerDriveTrain</span> <span class="pre">is</span> <span class="pre">driven</span> <span class="pre">by</span> <span class="pre">driveWheelsNow</span> <span class="pre">and</span> <span class="pre">by</span> <span class="pre">the</span> <span class="pre">follower</span> <span class="pre">at</span> <span class="pre">the</span> <span class="pre">same</span> <span class="pre">time.</span></code> <code class="docutils literal notranslate"><span class="pre">sticks</span></code> called <code class="docutils literal notranslate"><span class="pre">driveWheelsNow</span></code>, which is L2b’s door and writes the motors
+straight away. The follower is holding this drivetrain now, so two things would be writing the
+same four motors. The check stops it, and the message says which door to use instead.</p></li>
+</ul>
+<div class="note admonition">
+<p class="admonition-title">One mistake the tests here cannot see</p>
+<p>Leaving <code class="docutils literal notranslate"><span class="pre">normalized</span></code> out of <code class="docutils literal notranslate"><span class="pre">sticks</span></code> passes all nine of them. <code class="docutils literal notranslate"><span class="pre">CachedMotor</span></code> chops any power over 1
+back down to 1, and on the diagonal that gives the same four numbers <code class="docutils literal notranslate"><span class="pre">normalized</span></code> would have. It is
+the lopsided asks that come out wrong. Watched, with full forward and half a turn: <code class="docutils literal notranslate"><span class="pre">1.000</span></code> and
+<code class="docutils literal notranslate"><span class="pre">0.333</span></code> with <code class="docutils literal notranslate"><span class="pre">normalized</span></code>, and <code class="docutils literal notranslate"><span class="pre">1.000</span></code> and <code class="docutils literal notranslate"><span class="pre">0.500</span></code> without. The right side runs faster than it
+should, so the robot turns less than the driver asked. Step 4 is where you feel it.</p>
+</div>
+</section>
+<section id="step-3-hand-the-drivetrain-over">
+<h3>Step 3: hand the drivetrain over<a class="headerlink" href="#step-3-hand-the-drivetrain-over" title="Link to this heading">¶</a></h3>
+<p>Two blanks in <code class="docutils literal notranslate"><span class="pre">L6WheelsFollowerOpMode.java</span></code>. TODO 1 changes the field to an <code class="docutils literal notranslate"><span class="pre">L6FollowerDriveTrain</span></code>,
+and TODO 2 passes it to <code class="docutils literal notranslate"><span class="pre">initAfter(drivetrain)</span></code>. L2 to L5 called <code class="docutils literal notranslate"><span class="pre">initAfter()</span></code> with nothing, because
+they drove their own wheels.</p>
+<p><strong>No test watches this step.</strong> The harness gives every OpMode its own follower and ignores what is
+passed to <code class="docutils literal notranslate"><span class="pre">initAfter</span></code>. Both blanks were left wrong on purpose, and the whole suite still passed.</p>
+<p><strong>You’ll know it worked when</strong> step 4 drives. That is the only check there is.</p>
+<p><strong>If it didn’t</strong>, and the robot does not move at all, this step is why. Commanding the wheels only
+remembers four numbers. Something has to call <code class="docutils literal notranslate"><span class="pre">drive</span></code> to send them, and that something is the
+follower. Watched: after <code class="docutils literal notranslate"><span class="pre">sticks(1,</span> <span class="pre">0,</span> <span class="pre">0)</span></code> and no follower update the front left motor holds <code class="docutils literal notranslate"><span class="pre">0.00</span></code>,
+and one update later it holds <code class="docutils literal notranslate"><span class="pre">1.00</span></code>.</p>
+</section>
+<section id="step-4-drive-it">
+<h3>Step 4: drive it<a class="headerlink" href="#step-4-drive-it" title="Link to this heading">¶</a></h3>
+<p>Send the code to the robot. Run <code class="docutils literal notranslate"><span class="pre">L6</span> <span class="pre">Follower</span> <span class="pre">Wheels</span></code> and press PLAY. Drive it the way you drove L5.</p>
+<p><strong>You’ll know it worked when</strong> it feels like L5. Forward, sideways, turn, and a diagonal, all the
+same as before.</p>
+<p><strong>If it didn’t</strong>, and nothing moves at all, go back to step 3.</p>
+<p><strong>If it didn’t</strong>, and it drives but turns lazily with the drive stick held all the way forward, that
+is <code class="docutils literal notranslate"><span class="pre">normalized</span></code> missing from <code class="docutils literal notranslate"><span class="pre">sticks</span></code>. It is the same fault L4 measured on the floor, and no test
+here catches it.</p>
+</section>
+</section>
+<section id="what-you-just-did">
+<h2>What you just did<a class="headerlink" href="#what-you-just-did" title="Link to this heading">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">drive</span></code> asks one question every update: has a lesson commanded the wheels? If not, mix what the
+follower asked for. If so, use what was commanded and throw the follower’s answer away. That is nine
+lines, and every lesson from L8 on stands on them.</p>
+<p><code class="docutils literal notranslate"><span class="pre">mix</span></code> is also the method L5’s drivetrain refuses to write. Hand an <code class="docutils literal notranslate"><span class="pre">L5HolonomicDriveTrain</span></code> to the
+follower and it stops at the first update and says why. This is the lesson where the missing method
+arrives, so the refusal is over.</p>
+<p>This door is ours, not Pedro’s. Pedro’s own mecanum drivetrain does what the follower says. Ours
+lets the driver reach past it, to the wheels. The teleop lessons after L8 all need that. The
+follower keeps doing its own job while they do.</p>
+</section>
+<section id="where-next">
+<h2>Where next<a class="headerlink" href="#where-next" title="Link to this heading">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="l8.html"><span class="std std-doc">task.l8</span></a> puts a second localizer beside the first one and logs both. It needs a follower
+that is holding a real drivetrain, which is what you just handed it.</p></li>
+</ul>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="pinpoint.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Mount the Pinpoint and plug it in</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="bench.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Check your work without a robot</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Catholic Central Spires Robotics
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">L6: let the path follower hold the drivetrain</a><ul>
+<li><a class="reference internal" href="#what-you-will-have-when-this-is-done">What you will have when this is done</a></li>
+<li><a class="reference internal" href="#before-you-start">Before you start</a></li>
+<li><a class="reference internal" href="#the-steps">The steps</a><ul>
+<li><a class="reference internal" href="#step-1-let-the-follower-ask-for-wheels">Step 1: let the follower ask for wheels</a></li>
+<li><a class="reference internal" href="#step-2-let-the-sticks-win">Step 2: let the sticks win</a></li>
+<li><a class="reference internal" href="#step-3-hand-the-drivetrain-over">Step 3: hand the drivetrain over</a></li>
+<li><a class="reference internal" href="#step-4-drive-it">Step 4: drive it</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#what-you-just-did">What you just did</a></li>
+<li><a class="reference internal" href="#where-next">Where next</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    </body>
+</html>

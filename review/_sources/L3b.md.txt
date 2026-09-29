@@ -1,0 +1,88 @@
+# L3b
+
+3 blank(s) in 2 file(s), 13 line(s) for the student to write.
+
+## L3bSquaredOpMode
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L3bSquaredOpMode.java`
+
+### TODO 1
+
+Delete 3 blank lines, write 1 real line.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -28,9 +28,7 @@
+ public class L3bSquaredOpMode extends CorbelsTeleOp {
+ 
+     /** Anything smaller than this counts as a stick that was let go. */
+-    // TODO 1 (L3b): pick the number again, the same way L3a did. Each lesson keeps
+-    //         its own, so changing one never changes the other.
+-    private static final double DEADBAND = 0;
++    private static final double DEADBAND = 0.05;
+ 
+     private L2TankDriveTrain drivetrain;
+ 
+```
+
+### TODO 2
+
+Delete 6 blank lines, write 6 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -52,12 +52,12 @@
+         double leftRawSpeed = -gamepad1.left_stick_y;
+         double rightRawSpeed = -gamepad1.right_stick_y;
+ 
+-        // TODO 2 (L3b): deadband each raw stick into its own variable, the way L3a
+-        //         did, then square each of those into a second variable, then hand
+-        //         the two to drivetrain.sticks(). One step to a line: no call
+-        //         inside another call.
+-        double leftSpeed = 0;
+-        double rightSpeed = 0;
++        double leftDeadbanded = drivetrain.deadband(leftRawSpeed, DEADBAND);
++        double rightDeadbanded = drivetrain.deadband(rightRawSpeed, DEADBAND);
++
++        double leftSpeed = drivetrain.squared(leftDeadbanded);
++        double rightSpeed = drivetrain.squared(rightDeadbanded);
++        drivetrain.sticks(leftSpeed, rightSpeed);
+ 
+         Tracker.publish("stick/left_raw", leftRawSpeed);
+         Tracker.publish("stick/left_shaped", leftSpeed);
+```
+
+## LessonsDriveTrain
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/LessonsDriveTrain.java`
+
+### TODO 8
+
+Delete 7 blank lines, write 6 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -275,13 +275,12 @@
+ 
+     /** The number times itself, with the sign it started with. */
+     public double squared(double value) {
+-        // TODO 8 (L3b): the value times itself, with the sign it started with.
+-        //         Squaring a negative number the ordinary way loses the minus
+-        //         sign, which would drive the robot forwards when the driver asked
+-        //         for backwards, so put it back.
+-        //         Works when: LessonsTest.l3b_halfAStickIsAQuarterOfThePower
+-        //         passes.
+-        return value;
++        double magnitude = value * value;
++        if (value < 0.0) {
++            return -magnitude;
++        } else {
++            return magnitude;
++        }
+     }
+ 
+     /**
+```

@@ -1,0 +1,61 @@
+# What the student writes
+
+Every blank on the lessons line at `HEAD`, filled one at a time from the
+solutions line at `solutions-03`, and grouped by the lesson that asks for it. Each
+page is one lesson, each section one file, and each diff is one edit a student
+makes.
+
+A blank in a file not named for a lesson belongs to the lesson its marker names, so
+LessonsDriveTrain's five blanks land on three different pages.
+
+The edits are grouped by where the two files differ, not by the TODO numbering, so
+a run holding three markers is one edit and is named after all three. Where the
+alignment puts a blank line in a different place, a line can also arrive one edit
+earlier than the TODO that asks for it.
+
+| Lesson | Files | Blanks | Lines to write |
+| --- | --- | --- | --- |
+| [L2a](L2a.md) | 1 | 5 | 22 |
+| [L2b](L2b.md) | 3 | 5 | 31 |
+| [L3a](L3a.md) | 2 | 3 | 9 |
+| [L3b](L3b.md) | 2 | 3 | 13 |
+| [L4](L4.md) | 3 | 4 | 18 |
+| [L5](L5.md) | 2 | 3 | 12 |
+| [L6](L6.md) | 3 | 7 | 29 |
+| [L8](L8.md) | 2 | 10 | 70 |
+| [L9](L9.md) | 1 | 1 | 3 |
+| [L10](L10.md) | 1 | 1 | 5 |
+| [L11](L11.md) | 2 | 2 | 12 |
+| [L12](L12.md) | 1 | 1 | 7 |
+| [L13](L13.md) | 1 | 2 | 6 |
+| [L14](L14.md) | 1 | 2 | 21 |
+| [L15](L15.md) | 1 | 1 | 2 |
+| [L16](L16.md) | 2 | 4 | 27 |
+| [L17a](L17a.md) | 1 | 1 | 4 |
+| **Total** | | **55** | **291** |
+
+Applying every blank in order reproduces each solutions file exactly, which is
+checked each time this is generated.
+
+```{toctree}
+:maxdepth: 1
+:hidden:
+
+L2a
+L2b
+L3a
+L3b
+L4
+L5
+L6
+L8
+L9
+L10
+L11
+L12
+L13
+L14
+L15
+L16
+L17a
+```

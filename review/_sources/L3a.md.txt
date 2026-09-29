@@ -1,0 +1,82 @@
+# L3a
+
+3 blank(s) in 2 file(s), 9 line(s) for the student to write.
+
+## L3aDeadbandOpMode
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L3aDeadbandOpMode.java`
+
+### TODO 1
+
+Delete 3 blank lines, write 1 real line.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -23,9 +23,7 @@
+ public class L3aDeadbandOpMode extends CorbelsTeleOp {
+ 
+     /** Anything smaller than this counts as a stick that was let go. */
+-    // TODO 1 (L3a): pick the number. A stick let go reads a few hundredths, so
+-    //         0.05 is a good first guess; 0 leaves the creep exactly where it was.
+-    private static final double DEADBAND = 0;
++    private static final double DEADBAND = 0.05;
+ 
+     private L2TankDriveTrain drivetrain;
+ 
+```
+
+### TODO 2
+
+Delete 5 blank lines, write 3 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -47,11 +47,9 @@
+         double leftRawSpeed = -gamepad1.left_stick_y;
+         double rightRawSpeed = -gamepad1.right_stick_y;
+ 
+-        // TODO 2 (L3a): put each raw stick through drivetrain.deadband(), with
+-        //         DEADBAND as the band both times, and hand the two to
+-        //         drivetrain.sticks().
+-        double leftSpeed = 0;
+-        double rightSpeed = 0;
++        double leftSpeed = drivetrain.deadband(leftRawSpeed, DEADBAND);
++        double rightSpeed = drivetrain.deadband(rightRawSpeed, DEADBAND);
++        drivetrain.sticks(leftSpeed, rightSpeed);
+ 
+         Tracker.publish("stick/left_raw", leftRawSpeed);
+         Tracker.publish("stick/left_shaped", leftSpeed);
+```
+
+## LessonsDriveTrain
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/LessonsDriveTrain.java`
+
+### TODO 7
+
+Delete 6 blank lines, write 5 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -266,12 +266,11 @@
+ 
+     /** Zero when the stick is inside the band, and the stick itself when it is not. */
+     public double deadband(double value, double band) {
+-        // TODO 7 (L3a): if the value is smaller than the band, ignoring its minus
+-        //         sign, the answer is 0. Otherwise the answer is the value itself.
+-        //         An if and an else, and Math.abs takes the minus sign off.
+-        //         Works when: LessonsTest.l3a_aNearlyCentredStickCountsAsCentred
+-        //         passes, and the robot sits still with the sticks let go.
+-        return value;
++        if (Math.abs(value) < band) {
++            return 0.0;
++        } else {
++            return value;
++        }
+     }
+ 
+     /** The number times itself, with the sign it started with. */
+```

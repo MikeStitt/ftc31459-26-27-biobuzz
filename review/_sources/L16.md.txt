@@ -1,0 +1,130 @@
+# L16
+
+4 blank(s) in 2 file(s), 27 line(s) for the student to write.
+
+## L16VelocityDriveOpMode
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L16VelocityDriveOpMode.java`
+
+### TODO 1
+
+Delete 7 blank lines, write 5 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -74,13 +74,11 @@
+     @Override
+     public void loop() {
+         loopBefore();
+-        // TODO 1 (L16): read the sticks as a SPEED, not a power. Full forward asks
+-        //         for MAX_IPS inches per second; full turn, MAX_TURN_RADPS radians
+-        //         per second. Use drivetrain.deadband(value, 0.05) as usual, and
+-        //         remember the minus signs from L5.
+-        double forwardSpeedInPerS = 0;
+-        double strafeLeftSpeedInPerS = 0;
+-        double turnCcwSpeedRadPerS = 0;
++        // 1. The sticks ask for a speed, not a power.
++        double forwardSpeedInPerS = drivetrain.deadband(-gamepad1.left_stick_y, 0.05) * MAX_IPS;
++        double strafeLeftSpeedInPerS = drivetrain.deadband(-gamepad1.left_stick_x, 0.05) * MAX_IPS;
++        double turnCcwSpeedRadPerS =
++                drivetrain.deadband(-gamepad1.right_stick_x, 0.05) * MAX_TURN_RADPS;
+ 
+         // TODO 2 (L16): work out how fast each wheel has to travel for the robot to
+         //         move like that. WheelTargets.forMecanum(forward, strafeLeft,
+```
+
+### TODO 2
+
+Delete 5 blank lines, write 3 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -80,11 +80,9 @@
+         double turnCcwSpeedRadPerS =
+                 drivetrain.deadband(-gamepad1.right_stick_x, 0.05) * MAX_TURN_RADPS;
+ 
+-        // TODO 2 (L16): work out how fast each wheel has to travel for the robot to
+-        //         move like that. WheelTargets.forMecanum(forward, strafeLeft,
+-        //         turnCcw, radius) does the arithmetic, and the radius is
+-        //         Constants.turnRadiusInches.
+-        double[] target = new double[4];
++        // 2. What each wheel must do for the robot to move like that.
++        double[] target = WheelTargets.forMecanum(forwardSpeedInPerS, strafeLeftSpeedInPerS,
++                turnCcwSpeedRadPerS, Constants.turnRadiusInches);
+ 
+         // TODO 3 (L16): ask the drivetrain for those four speeds, with
+         //         drivetrain.setCommandedWheelSpeeds(...). It measures, guesses and
+```
+
+### TODO 3
+
+Delete 3 blank lines, write 3 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -84,9 +84,9 @@
+         double[] target = WheelTargets.forMecanum(forwardSpeedInPerS, strafeLeftSpeedInPerS,
+                 turnCcwSpeedRadPerS, Constants.turnRadiusInches);
+ 
+-        // TODO 3 (L16): ask the drivetrain for those four speeds, with
+-        //         drivetrain.setCommandedWheelSpeeds(...). It measures, guesses and
+-        //         corrects, and publishes wheel/... for every wheel.
++        // 3. Ask the drivetrain for those speeds. It measures, guesses and corrects,
++        // and publishes wheel/... for every wheel.
++        drivetrain.setCommandedWheelSpeeds(target[0], target[1], target[2], target[3]);
+ 
+         Tracker.publish("command/forward_ips", forwardSpeedInPerS);
+         Tracker.publish("command/left_ips", strafeLeftSpeedInPerS);
+```
+
+## LessonsDriveTrain
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/LessonsDriveTrain.java`
+
+### TODO 10
+
+Delete 13 blank lines, write 16 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -315,19 +315,22 @@
+      */
+     public void setCommandedWheelSpeeds(double frontLeftInPerS, double frontRightInPerS,
+                                         double backLeftInPerS, double backRightInPerS) {
+-        // TODO 10 (L16): put the four speeds asked for into a four-slot array, in
+-        //         wheel order, and ask measuredSpeeds.all() for the four speeds the
+-        //         encoders see. Then work out a power for each wheel, in a loop
+-        //         with i as the index:
+-        //             feedforward = Constants.powerPerInchPerSecond * wanted[i]
+-        //             feedback    = VELOCITY_KP * (wanted[i] - measured[i])
+-        //         and put clampToPower(feedforward + feedback) in that wheel's
+-        //         slot. Command the four wheels with them, then call
+-        //         publishWheelSpeeds(wanted, measured, powers) so the log shows
+-        //         what was asked for, what happened, and the power in between.
+-        //         Works when:
+-        //         LessonsTest.l16_theSticksCommandASpeedAndTheWheelsAreCorrectedTowardsIt
+-        //         passes.
++        double[] wanted = new double[4];
++        wanted[FL] = frontLeftInPerS;
++        wanted[FR] = frontRightInPerS;
++        wanted[BL] = backLeftInPerS;
++        wanted[BR] = backRightInPerS;
++
++        double[] measured = measuredSpeeds.all();
++        double[] powers = new double[4];
++        for (int i = 0; i < powers.length; i++) {
++            double feedforward = Constants.powerPerInchPerSecond * wanted[i];
++            double feedback = VELOCITY_KP * (wanted[i] - measured[i]);
++            powers[i] = clampToPower(feedforward + feedback);
++        }
++
++        setCommandedWheels(powers[FL], powers[FR], powers[BL], powers[BR]);
++        publishWheelSpeeds(wanted, measured, powers);
+     }
+ 
+     // ------------------------------------------------- L17a and L17b write this
+```

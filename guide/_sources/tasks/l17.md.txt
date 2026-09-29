@@ -1,0 +1,124 @@
+# L17: measure the two numbers L16 trusted
+
+## What you will have when this is done
+
+Two numbers in `Constants.java` that came off your robot instead of somebody else's: how many
+encoder ticks make an inch, and how far a wheel sits from the middle. You get them by pushing and
+spinning the robot by hand while it watches itself.
+
+## Before you start
+
+- [L16](l16.md) is finished. It is the lesson that uses both numbers.
+- The Pinpoint is mounted and tuned, because this measurement believes it.
+  [task.pinpoint](pinpoint.md) is where the mounting comes from.
+- About 1.5 m of clear straight floor for the push, and room to spin the robot on the spot.
+
+You write four lines, all in `LessonsDriveTrain.java`. Both OpModes are given.
+
+## The steps
+
+### Step 1: open a door to the encoders
+
+TODO 11 writes `wheelTicks()`. Four lines, each one putting what a motor's encoder has counted into
+that wheel's slot: `ticks[FL] = hardware.frontLeft.getCurrentPosition();` and three more.
+
+Nothing here is new. It is the same shape as `writeWheels()` from L2b, pointing the other way: that
+one sends four numbers out to the motors, this one brings four numbers back.
+
+**You'll know it worked when** this prints `BUILD SUCCESSFUL`:
+
+```
+./gradlew :TeamCode:testDebugUnitTest --tests '*LessonsDriveTrainTest.theTicksDoor*'
+```
+
+**If it didn't**, the test puts 10, 20, 30 and 40 on the four encoders. So the numbers in the
+message name the wheel they came from.
+
+- `front left, front right, back left, back right: arrays first differed at element [0];
+  expected:<10> but was:<0>`. The blank is still open, so every measurement would say the robot
+  never moved.
+- `expected:<10> but was:<20>`. Two motors went into each other's slots. 20 is the front right,
+  and it is in the front left's place.
+- `expected:<10> but was:<0>`, with the door written. `getVelocity()` reads how fast a wheel is
+  turning, and a wheel nobody is pushing is turning at 0. `getCurrentPosition()` is the one that
+  counts.
+
+### Step 2: push the robot and measure an inch
+
+Send the code to the robot. Run `L17a Measure ticks per inch` and press PLAY. Push the robot slowly
+straight forward, at least 36 in, keeping it pointing the same way.
+
+The robot is keeping two accounts of the same journey. The Pinpoint says how far it went in inches,
+because its own wheels measure the floor. The drive encoders say how many ticks they counted. One
+divided by the other is the number, and neither account knows what the other said.
+
+Push slowly. A wheel that slips travels without turning. The encoders then count less than the
+floor did, and the answer comes out short. Do it three times. Three answers a tick or two apart are
+a measurement. Three that disagree mean something slipped.
+
+**You'll know it worked when** the Driver Station shows `ticksPerInch` with a number after it. Put
+that number in `Constants.ticksPerInch`, which is 45.0 until you do, and run it again to check.
+
+**If it didn't**, and it says `Encoders counted 0 ticks` while the inches climb, step 1 is not
+finished on the robot you just sent to.
+
+**If it didn't**, and the wheels drag as you push, they are braking when they should coast. The
+OpMode asks for that itself, and the two tests below say whether it works.
+
+### Step 3: spin the robot and measure the radius
+
+Run `L17b Measure turn radius` and spin the robot on the spot, at least two full turns, keeping
+it in roughly the same place. **Run L17a first**: this one turns ticks into inches with the
+number you just measured, so a wrong one there is a wrong one here.
+
+A wheel `r` inches from the middle travels `r` inches for every radian the robot turns. So the
+radius is wheel inches divided by radians, which is the same trick as step 2 with a different
+pair of accounts.
+
+**You'll know it worked when** the Driver Station shows a turn radius, and a tape measure agrees
+with it. Measure the diagonal between two opposite wheels and halve it. That is the same
+distance.
+
+**If it didn't**, and the number is about half what the tape says, check that you spun the robot
+rather than swinging it round the room. The Pinpoint counts the turning, and driving in a circle
+adds turning the wheels never made.
+
+:::{admonition} The wheels have to roll, and two tests say so
+:class: note
+Both OpModes force the wheels to coast in `start()` and put braking back in `stop()`. It is given
+code, and it has been wrong twice, so both mistakes are watched.
+
+- Put the coast back inside the loop instead of at the end and the coast lasts one loop:
+  `L17aMeasureTicksPerInchOpMode still coasts five loops in`. That is how the lesson used to be
+  written, and the wheels braked while the student was still pushing.
+- Leave braking un-restored at the end and two messages appear:
+  `L17aMeasureTicksPerInchOpMode brakes again afterwards`, and `braking is back although no loop
+  ran`. The second one is a run where STOP came before the first loop, which used to leave the next
+  OpMode coasting.
+
+Both were measured by putting each mistake back.
+:::
+
+:::{admonition} What has not been done here
+:class: note
+Steps 2 and 3 have not been performed on a robot for this page, and no test can stand in for them:
+pushing a robot by hand is not something the simulator does. The arithmetic underneath is tested on
+its own, in `CalibrationTest`, and step 1's messages are measured.
+:::
+
+## What you just did
+
+You turned two constants into measurements. `Constants.java` was handed to you with 45.0 and 8.0 in
+it, and those are somebody's robot, not yours. Nothing in L16 could tell they were wrong, because
+code cannot check a number it has no other way of knowing.
+
+The method is worth more than either number. Have the robot measure the same thing two ways, with
+two instruments that do not talk to each other, and compare. That is how the wheel size, the
+gearing, and the tuning numbers are all found, and it is what `task.autotune` does with the rest of
+them.
+
+## Where next
+
+- `task.autotune` measures the numbers that need the robot driving itself rather than being pushed.
+
+That page is not written yet.

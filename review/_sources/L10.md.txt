@@ -1,0 +1,35 @@
+# L10
+
+1 blank(s) in 1 file(s), 5 line(s) for the student to write.
+
+## L10ForwardThenStrafeOpMode
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L10ForwardThenStrafeOpMode.java`
+
+### TODO 1, 2 and 3
+
+Delete 8 blank lines, write 5 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -74,13 +74,10 @@
+ 
+     @Override
+     protected Command routine() {
+-        // TODO 1: drive start -> corner, holding the heading it starts at.
+-        //         That is forward, because the robot faces +y.
+-        // TODO 2: then corner -> end, holding that same heading. The robot does
+-        //         not turn, so this leg is a sideways strafe.
+-        // TODO 3: finish with hold(follower, end) so it stays put.
+-        //         .constant(pose) takes the heading from a pose. The number
+-        //         form is radians, so .constant(90) is not 90 degrees.
+-        return Command.NOOP;
++        return sequential(
++                follow(follower, line(start, corner).constant(start)),
++                follow(follower, line(corner, end).constant(start)),
++                hold(follower, end)
++        );
+     }
+ }
+```

@@ -1,0 +1,98 @@
+# L11: make the sticks mean the field
+
+## What you will have when this is done
+
+Push the stick away from you and the robot goes away from you. It does that whichever way the robot
+happens to be facing, so a driver never has to think about which end of the robot is the front.
+
+## Before you start
+
+- [L6](l6.md) is finished, because this uses the same three lines it ended on.
+- [L5](l5.md) is worth running again first. Turn the robot to face you, push the left stick away
+  from you, and watch it drive at you. That is the problem this lesson fixes.
+- About 2 m by 2 m of clear floor.
+
+You write in two files. `LessonsDriveTrain.java` gets the rotation, TODO 9, and
+`L11FieldRelativeOpMode.java` calls it.
+
+:::{admonition} fig-field-relative
+:class: pencil
+The field from above with the driver at the bottom, the robot turned a quarter turn, the stick's
+direction as an arrow on the field, and the same arrow drawn again on the robot showing what forward
+and sideways it turns into.
+:::
+
+## The steps
+
+### Step 1: rotate the driver's directions into the robot's
+
+The driver's two numbers are about the field. The wheels only understand the robot: forward along
+its nose, and sideways across it. Turning one into the other is a rotation, and the angle is the
+robot's heading.
+
+Write `fieldRelative` in `LessonsDriveTrain.java`, TODO 9. Take the cosine and the sine of the
+heading into their own variables. Then rotate the field pair **backwards** through the heading,
+which is what the two lines in the TODO do. Then mix, scale and command the wheels, which is the
+same three lines `sticks` ends on.
+
+Backwards is the part worth a second look. The heading says how far the robot has turned away
+from the field. To ask "what does the field's +x look like from where the robot is standing?",
+you have to undo that turn.
+
+### Step 2: hand it the heading
+
+The drivetrain cannot work out the heading for itself. It talks to motors; it has no idea where the
+robot is. The follower does, so the OpMode reads `follower.pose().heading()` and passes it in first.
+
+Then the same three sticks as L5, negated the same way.
+
+**You'll know it worked when** this prints `BUILD SUCCESSFUL`:
+
+```
+./gradlew :TeamCode:testDebugUnitTest --tests '*LessonsTest.l11*'
+```
+
+**If it didn't**, open the report gradle names.
+
+- `expected:<1.0> but was:<0.0>`, on the very first check. Nothing reached the wheels, so the
+  OpMode's blank is still open.
+- `same stick, still moves away from the driver expected:<0.0> but was:<1.0>`. The OpMode is still
+  calling `sticks`, which is L5's door and knows nothing about the field.
+- `expected:<-1.0> but was:<1.0>`. The rotation runs the wrong way. Either the two signs in
+  `fieldRelative` are the other way round, or the heading was negated on the way in. Both undo the
+  same thing twice.
+- `same stick, still moves away from the driver expected:<0.0> but was:<-0.3338674754196965>`. The
+  heading went in as degrees. `Math.cos` wants radians, and 90 radians is about 14 turns, so the
+  answer is nonsense of exactly this shape.
+
+### Step 3: drive it facing the wrong way
+
+Send the code to the robot. Run `L11 Field Relative` and press PLAY. Turn the robot to face you, by
+pushing the right stick until its nose points at you. Then push the left stick away from you.
+
+**You'll know it worked when** the robot drives away from you while facing you. Turn it a quarter
+turn and try again, and the stick still means the same direction on the field.
+
+**If it didn't**, and the robot drives away from you at first but the directions slide as you drive
+around, the follower's pose is drifting. That is the localizer, not this lesson.
+[task.l8](l8.md) is where the drift comes from.
+
+:::{admonition} What has not been done here
+:class: note
+Step 3 has not been performed on a robot for this page. The messages in step 2 are measured; the
+floor part is written from what the code does.
+:::
+
+## What you just did
+
+Field relative is one rotation, and nothing else. There is no new way of driving here: the same
+`mix`, the same `normalized`, the same commanded wheels. All that changed is which pair of numbers
+gets handed to them.
+
+It also depends on the follower knowing where the robot is pointing. A localizer that has drifted 20
+degrees gives a driver a robot whose sticks are 20 degrees crooked. This is the first lesson where
+somebody else's mistake shows up in your hands.
+
+## Where next
+
+- [task.l12](l12.md) puts the robot's own directions back on a bumper, so a driver can have both.

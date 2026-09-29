@@ -1,0 +1,28 @@
+# L15
+
+1 blank(s) in 1 file(s), 2 line(s) for the student to write.
+
+## L15CombinedOpMode
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L15CombinedOpMode.java`
+
+### TODO 1
+
+Delete 3 blank lines, write 2 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -40,9 +40,8 @@
+ 
+     @Override
+     protected void shadowLocalizers() {
+-        // TODO 1 (L15): add your encoder localizer as "driveWheelEncoders", as in
+-        //         L8, so the two localizers plot under the same names as they did
+-        //         there.
++        shadowLocalizers.add("driveWheelEncoders",
++                new MecanumEncoderLocalizer(new HardwareWheelSource(hardware)));
+     }
+ 
+     @Override
+```

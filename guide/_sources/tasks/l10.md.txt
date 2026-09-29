@@ -1,0 +1,91 @@
+# L10: two legs, forward then sideways
+
+## What you will have when this is done
+
+The robot drives forward, then slides 24 inches to its right without turning, and holds where it
+ends up. Five lines, and the first autonomous that does more than one thing.
+
+## Before you start
+
+- [L9](l9.md) is finished, so one leg works and the follower knows where the robot starts.
+- About 1 m by 2 m of clear floor, and a tape measure.
+
+You write five lines in one file, `L10ForwardThenStrafeOpMode.java`. Three poses are declared above
+it: `start`, `corner` and `end`. Read their headings before you write anything. All three are the
+same.
+
+## The steps
+
+### Step 1: two legs and a hold
+
+`sequential` takes a list of commands and runs them in order. L9's list had one item. This one has
+three.
+
+TODO 1 is the first leg, `start` to `corner`. TODO 2 is the second leg, `corner` to `end`. Both hold
+the heading the robot starts at, so it never turns. The second leg moves it sideways instead, which
+is what mecanum wheels are for. TODO 3 is `hold(follower, end)`, which keeps the robot where it
+finished.
+
+The robot faces +y the whole way. So the first leg is straight forward, and the second one is a pure
+strafe to its right.
+
+**You'll know it worked when** this prints `BUILD SUCCESSFUL`:
+
+```
+./gradlew :TeamCode:testDebugUnitTest --tests '*LessonsTest.l10*'
+```
+
+**If it didn't**, open the report gradle names.
+
+- `the robot never started following a path`. The routine still hands back `Command.NOOP`.
+- `never turned, so it still faces +y`. The heading changed somewhere. Pass a pose to `constant()`
+  and it takes the heading from that pose, which is what you want here.
+- `strafed 24 inches in x`. The first leg went straight to `end` instead of stopping at `corner`.
+  The robot drives one diagonal instead of two legs, and arrives somewhere between them.
+
+:::{admonition} `constant()` counts in radians
+:class: note
+`constant(90)` does not mean 90 degrees. The number form is radians, and 90 radians is about 14 full
+turns; the path settles at 116.6 degrees once that wraps around. Measured on Pedro 3.0.1.
+
+The poses use `POSES.of(x, y, degrees)` because a pose factory converts for you. `constant()` does
+not. So pass it a pose, `constant(start)`, or convert first with `Math.toRadians(90)`.
+:::
+
+### Step 2: drive it on the floor
+
+Put the robot down with tape at its front edge. Send the code. Choose `L10 Forward Then Strafe` and
+press PLAY.
+
+**You'll know it worked when** the robot drives straight forward, stops, then slides sideways to its
+right and stops again. Its nose points the same way the whole time. It should end up about 24 inches
+to the right of the line it drove up.
+
+**If it didn't**, and it drove both legs but the corner was a sharp stop and restart rather than a
+curve, that is what two separate legs do. The follower finishes the first line before it starts the
+second.
+
+**If it didn't**, and it slid left instead of right, check which way +x runs from where the robot is
+standing. Facing +y, the robot's right hand points at +x.
+
+:::{admonition} What has not been done here
+:class: note
+Step 2 has not been performed on a robot for this page. `hold` is not watched by anything either:
+the test passes with TODO 3 left out. What it does on a floor is keep the wheels working against a
+push once the path is over.
+:::
+
+## What you just did
+
+An autonomous routine is a list. That is all it is. Two legs and a hold here, and a real match
+autonomous is the same list with more items and a few of them moving something other than the
+wheels.
+
+A leg carries a heading, held from one end of it to the other. Hold the same heading on both legs
+and the robot never turns; where it goes and which way it faces are two separate things. That is
+what mecanum wheels buy, and [L11](l11.md) spends it.
+
+## Where next
+
+- [task.l11](l11.md) goes back to the sticks. A stick then means a direction on the field. It stops
+  meaning a direction on the robot.

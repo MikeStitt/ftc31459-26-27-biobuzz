@@ -1,0 +1,36 @@
+# L17a
+
+1 blank(s) in 1 file(s), 4 line(s) for the student to write.
+
+## LessonsDriveTrain
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/LessonsDriveTrain.java`
+
+### TODO 11
+
+Delete 9 blank lines, write 4 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -338,15 +338,10 @@
+     /** What each encoder has counted, in ticks, in wheel order. */
+     public int[] wheelTicks() {
+         int[] ticks = new int[4];
+-        // TODO 11 (L17a): fill each slot with what that wheel's encoder has
+-        //         counted, naming the slot with FL, FR, BL or BR and the motor
+-        //         through hardware:
+-        //         ticks[FL] = hardware.frontLeft.getCurrentPosition();  and three
+-        //         more. Four zeros is what comes back now, so a measurement says
+-        //         the robot never moved.
+-        //         Works when:
+-        //         LessonsDriveTrainTest.theTicksDoorReportsWhatEachEncoderCounted
+-        //         passes.
++        ticks[FL] = hardware.frontLeft.getCurrentPosition();
++        ticks[FR] = hardware.frontRight.getCurrentPosition();
++        ticks[BL] = hardware.backLeft.getCurrentPosition();
++        ticks[BR] = hardware.backRight.getCurrentPosition();
+         return ticks;
+     }
+ 
+```

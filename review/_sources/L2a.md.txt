@@ -1,0 +1,126 @@
+# L2a
+
+5 blank(s) in 1 file(s), 22 line(s) for the student to write.
+
+## L2aSticksOpMode
+
+`TeamCode/src/main/java/org/firstinspires/ftc/teamcode/lessons/L2aSticksOpMode.java`
+
+### TODO 1
+
+Delete 2 blank lines, write 4 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -59,8 +59,10 @@
+     public void loop() {
+         loopBefore();
+ 
+-        // TODO 1: read all four stick axes into four named doubles. Negate each
+-        //         y axis, so that pushing away from the driver is positive.
++        double leftSpeed = -gamepad1.left_stick_y;
++        double rightSpeed = -gamepad1.right_stick_y;
++        double leftSideways = gamepad1.left_stick_x;
++        double rightSideways = gamepad1.right_stick_x;
+ 
+         // TODO 2: log all four, so Panels can draw them:
+         //         Tracker.publish("stick/leftY", leftSpeed);
+```
+
+### TODO 2
+
+Delete 3 blank lines, write 4 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -64,9 +64,10 @@
+         double leftSideways = gamepad1.left_stick_x;
+         double rightSideways = gamepad1.right_stick_x;
+ 
+-        // TODO 2: log all four, so Panels can draw them:
+-        //         Tracker.publish("stick/leftY", leftSpeed);
+-        //         then stick/leftX, stick/rightY and stick/rightX.
++        Tracker.publish("stick/leftY", leftSpeed);
++        Tracker.publish("stick/leftX", leftSideways);
++        Tracker.publish("stick/rightY", rightSpeed);
++        Tracker.publish("stick/rightX", rightSideways);
+ 
+         // TODO 3: read gamepad1.a into a boolean, and log it as
+         //         "driver pressed A". A boolean logs the same way a double does.
+```
+
+### TODO 3
+
+Delete 2 blank lines, write 2 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -69,8 +69,8 @@
+         Tracker.publish("stick/rightY", rightSpeed);
+         Tracker.publish("stick/rightX", rightSideways);
+ 
+-        // TODO 3: read gamepad1.a into a boolean, and log it as
+-        //         "driver pressed A". A boolean logs the same way a double does.
++        boolean buttonA = gamepad1.a;
++        Tracker.publish("driver pressed A", buttonA);
+ 
+         // TODO 4: add one to loopCount, read getRuntime() into a double, and log
+         //         them as "lesson/loop_count" and "lesson/seconds_running". An int
+```
+
+### TODO 4
+
+Delete 3 blank lines, write 4 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -72,9 +72,10 @@
+         boolean buttonA = gamepad1.a;
+         Tracker.publish("driver pressed A", buttonA);
+ 
+-        // TODO 4: add one to loopCount, read getRuntime() into a double, and log
+-        //         them as "lesson/loop_count" and "lesson/seconds_running". An int
+-        //         and a double, so three of Java's kinds of number are now logged.
++        loopCount = loopCount + 1;
++        double secondsRunning = getRuntime();
++        Tracker.publish("lesson/loop_count", loopCount);
++        Tracker.publish("lesson/seconds_running", secondsRunning);
+ 
+         // TODO 5: say when the button changes. If the boolean is not the same as
+         //         previousButtonA, log "button A pressed" when it is now true and
+```
+
+### TODO 5
+
+Delete 7 blank lines, write 8 real lines.
+
+```diff
+--- as the lesson leaves it
++++ with this blank filled
+@@ -77,13 +77,14 @@
+         Tracker.publish("lesson/loop_count", loopCount);
+         Tracker.publish("lesson/seconds_running", secondsRunning);
+ 
+-        // TODO 5: say when the button changes. If the boolean is not the same as
+-        //         previousButtonA, log "button A pressed" when it is now true and
+-        //         "button A released" when it is now false, as
+-        //         "lesson/event". A String logs the same way. Then remember this
+-        //         loop's value in previousButtonA for the next one.
+-        //         Works when: LessonsTest.l2a_logsEveryStickAndTheAButton and
+-        //         LessonsTest.l2a_saysWhenTheButtonIsPressedAndReleased pass.
++        if (buttonA != previousButtonA) {
++            if (buttonA) {
++                Tracker.publish("lesson/event", "button A pressed");
++            } else {
++                Tracker.publish("lesson/event", "button A released");
++            }
++        }
++        previousButtonA = buttonA;
+ 
+         loopAfter();
+     }
+```
