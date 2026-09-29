@@ -76,7 +76,7 @@ public final class SimPads implements AutoCloseable {
      * does not pass an active gamepad over.
      */
     static State state(SimGamepad.Pad pad, List<SimGamepad.Pad> pads,
-            SimGamepad.Pad player1, SimGamepad.Pad player2) {
+            SimGamepad.Pad player1, SimGamepad.Pad player2, Map<String, String> stored) {
         if (pad == player1 || pad == player2) {
             return State.ACTIVE;
         }
@@ -86,7 +86,7 @@ public final class SimPads implements AutoCloseable {
         if (passedOver(pad, pads)) {
             return State.PASSED_OVER;
         }
-        return player1 == null || player2 == null
+        return freeInFile(stored, KEY1) || freeInFile(stored, KEY2)
                 ? State.UNCLAIMED_FREE
                 : State.UNCLAIMED_FULL;
     }
@@ -176,7 +176,7 @@ public final class SimPads implements AutoCloseable {
     public void gestures() {
         List<SimGamepad.Pad> all = sdl.pads();
         for (SimGamepad.Pad pad : all) {
-            if (state(pad, all, player1, player2) == State.NOT_ACCEPTED) {
+            if (!accepted(pad)) {
                 continue;
             }
             sdl.read(pad, probe);
@@ -614,7 +614,7 @@ public final class SimPads implements AutoCloseable {
      * saw it happen; this says where everything stands afterwards.
      */
     private void census() {
-        String body = censusText(sdl.pads(), player1, player2, source);
+        String body = censusText(sdl.pads(), player1, player2, source, read(store));
         if (body.equals(lastCensus)) {
             return;
         }
@@ -632,7 +632,8 @@ public final class SimPads implements AutoCloseable {
      * {@link #census()} knows nothing changed.
      */
     static String censusText(List<SimGamepad.Pad> pads, SimGamepad.Pad player1,
-            SimGamepad.Pad player2, Map<SimGamepad.Pad, Source> source) {
+            SimGamepad.Pad player2, Map<SimGamepad.Pad, Source> source,
+            Map<String, String> stored) {
         if (pads.isEmpty()) {
             return "No gamepad is plugged in. A gamepad object with no gamepad in its"
                     + " slot reads as untouched.\n";
@@ -640,7 +641,7 @@ public final class SimPads implements AutoCloseable {
         StringBuilder text = new StringBuilder();
         boolean settled = true;
         for (SimGamepad.Pad pad : pads) {
-            State s = state(pad, pads, player1, player2);
+            State s = state(pad, pads, player1, player2, stored);
             if (s != State.ACTIVE && s != State.NOT_ACCEPTED) {
                 // Only a gamepad with no serial number is one no gesture moves.
                 settled = false;
@@ -746,9 +747,10 @@ public final class SimPads implements AutoCloseable {
      */
     public void report() {
         List<SimGamepad.Pad> all = sdl.pads();
+        Map<String, String> stored = read(store);
         StringBuilder text = new StringBuilder();
         for (SimGamepad.Pad pad : all) {
-            State s = state(pad, all, player1, player2);
+            State s = state(pad, all, player1, player2, stored);
             if (s == State.NOT_ACCEPTED) {
                 continue;
             }

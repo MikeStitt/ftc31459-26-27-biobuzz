@@ -107,6 +107,18 @@ public final class SimPadsTest {
         return SimPads.opening(pads, pads, stored, null, null);
     }
 
+    /** The state with no file at all, for the cases the file cannot change. */
+    private static SimPads.State stateOf(SimGamepad.Pad pad, List<SimGamepad.Pad> pads,
+            SimGamepad.Pad player1, SimGamepad.Pad player2) {
+        return SimPads.state(pad, pads, player1, player2, storedAs());
+    }
+
+    /** The census with no file at all, for the cases the file cannot change. */
+    private static String censusOf(List<SimGamepad.Pad> pads, SimGamepad.Pad player1,
+            SimGamepad.Pad player2, Map<SimGamepad.Pad, SimPads.Source> source) {
+        return SimPads.censusText(pads, player1, player2, source, storedAs());
+    }
+
     @Test
     public void aStoredSecondSlotBeatsAFreeFirstSlot() {
         List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
@@ -300,54 +312,68 @@ public final class SimPadsTest {
     public void aGamepadInASlotIsActive() {
         List<SimGamepad.Pad> pads = Arrays.asList(pad(1, "AAA"), pad(2, "BBB"));
         assertEquals(SimPads.State.ACTIVE,
-                SimPads.state(pads.get(0), pads, pads.get(0), null));
+                stateOf(pads.get(0), pads, pads.get(0), null));
         assertEquals(SimPads.State.ACTIVE,
-                SimPads.state(pads.get(1), pads, null, pads.get(1)));
+                stateOf(pads.get(1), pads, null, pads.get(1)));
     }
 
     @Test
     public void aGamepadWithNoSerialNumberIsNotAccepted() {
         List<SimGamepad.Pad> pads = Arrays.asList(pad(1, null), pad(2, ""));
         assertEquals(SimPads.State.NOT_ACCEPTED,
-                SimPads.state(pads.get(0), pads, null, null));
+                stateOf(pads.get(0), pads, null, null));
         assertEquals("an empty string is no serial number either",
-                SimPads.State.NOT_ACCEPTED, SimPads.state(pads.get(1), pads, null, null));
+                SimPads.State.NOT_ACCEPTED, stateOf(pads.get(1), pads, null, null));
     }
 
     @Test
     public void theLowerDeviceIdOfTwoAnsweringToOneSerialNumberIsPassedOver() {
         List<SimGamepad.Pad> pads = Arrays.asList(pad(3, "SAME"), pad(7, "SAME"));
         assertEquals(SimPads.State.PASSED_OVER,
-                SimPads.state(pads.get(0), pads, null, null));
+                stateOf(pads.get(0), pads, null, null));
         assertEquals(SimPads.State.UNCLAIMED_FREE,
-                SimPads.state(pads.get(1), pads, null, null));
+                stateOf(pads.get(1), pads, null, null));
     }
 
     @Test
     public void aGamepadHoldingASlotIsNotPassedOverByATwinWithAHigherId() {
         List<SimGamepad.Pad> pads = Arrays.asList(pad(3, "SAME"), pad(7, "SAME"));
         assertEquals("a slot is kept until the cable comes out or a gesture moves it",
-                SimPads.State.ACTIVE, SimPads.state(pads.get(0), pads, pads.get(0), null));
+                SimPads.State.ACTIVE, stateOf(pads.get(0), pads, pads.get(0), null));
     }
 
     @Test
     public void anUnclaimedGamepadSaysWhetherAGestureHasAnywhereToPutIt() {
         List<SimGamepad.Pad> pads = Arrays.asList(pad(1, "AAA"), pad(2, "BBB"),
                 pad(3, "CCC"));
-        assertEquals(SimPads.State.UNCLAIMED_FREE,
-                SimPads.state(pads.get(2), pads, pads.get(0), null));
-        assertEquals(SimPads.State.UNCLAIMED_FULL,
-                SimPads.state(pads.get(2), pads, pads.get(0), pads.get(1)));
+        assertEquals("gamepad2 has no entry, so a gesture has somewhere to put it",
+                SimPads.State.UNCLAIMED_FREE,
+                SimPads.state(pads.get(2), pads, pads.get(0), null,
+                        storedAs(SimPads.KEY1, "AAA")));
+        assertEquals("both entries are taken, so a gesture has to displace somebody",
+                SimPads.State.UNCLAIMED_FULL,
+                SimPads.state(pads.get(2), pads, pads.get(0), pads.get(1),
+                        storedAs(SimPads.KEY1, "AAA", SimPads.KEY2, "BBB")));
+    }
+
+    @Test
+    public void bothEntriesTakenLeavesNoFreeSlotEvenThoughNoGamepadIsDriving() {
+        List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
+        assertEquals("the file holds both slots for gamepads that are not plugged in,"
+                        + " so a gesture has to displace one of them",
+                SimPads.State.UNCLAIMED_FULL,
+                SimPads.state(pads.get(0), pads, null, null,
+                        storedAs(SimPads.KEY1, "GONE1", SimPads.KEY2, "GONE2")));
     }
 
     @Test
     public void unpluggingTheTwinLeavesTheOneThatWasPassedOverNamedByItsSerialNumber() {
         SimGamepad.Pad lower = pad(3, "SAME");
         List<SimGamepad.Pad> both = Arrays.asList(lower, pad(7, "SAME"));
-        assertEquals(SimPads.State.PASSED_OVER, SimPads.state(lower, both, null, null));
+        assertEquals(SimPads.State.PASSED_OVER, stateOf(lower, both, null, null));
         List<SimGamepad.Pad> alone = Collections.singletonList(lower);
         assertEquals("the higher device id is gone, so this one answers to the serial number",
-                SimPads.State.UNCLAIMED_FREE, SimPads.state(lower, alone, null, null));
+                SimPads.State.UNCLAIMED_FREE, stateOf(lower, alone, null, null));
     }
 
     // --- what the census says ---------------------------------------------
@@ -363,7 +389,7 @@ public final class SimPadsTest {
     public void theCensusOfNoGamepadsSaysSoRatherThanSayingNothing() {
         assertEquals("No gamepad is plugged in. A gamepad object with no gamepad in its"
                         + " slot reads as untouched.\n",
-                SimPads.censusText(Collections.<SimGamepad.Pad>emptyList(), null, null,
+                censusOf(Collections.<SimGamepad.Pad>emptyList(), null, null,
                         Collections.<SimGamepad.Pad, SimPads.Source>emptyMap()));
     }
 
@@ -379,7 +405,7 @@ public final class SimPadsTest {
                         + "  \"pad 3\", serial CCC, id 3 -- not claimed yet\n"
                         + "Hold Start and press A to drive as gamepad1,"
                         + " or Start and B for gamepad2.\n",
-                SimPads.censusText(pads, driving, null, from(driving, SimPads.Source.FREE_SLOT)));
+                censusOf(pads, driving, null, from(driving, SimPads.Source.FREE_SLOT)));
     }
 
     @Test
@@ -388,8 +414,8 @@ public final class SimPadsTest {
         List<SimGamepad.Pad> pads = Collections.singletonList(one);
         Map<SimGamepad.Pad, SimPads.Source> source = from(one, SimPads.Source.GESTURE);
         assertEquals("nothing changed, so there is nothing to print",
-                SimPads.censusText(pads, one, null, source),
-                SimPads.censusText(pads, one, null, source));
+                censusOf(pads, one, null, source),
+                censusOf(pads, one, null, source));
     }
 
     @Test
@@ -406,9 +432,9 @@ public final class SimPadsTest {
     public void aGamepadInASlotSaysWhereItsSlotCameFrom() {
         SimGamepad.Pad one = pad(1, "AAA");
         List<SimGamepad.Pad> pads = Collections.singletonList(one);
-        assertTrue(SimPads.censusText(pads, one, null, from(one, SimPads.Source.STORED))
+        assertTrue(censusOf(pads, one, null, from(one, SimPads.Source.STORED))
                 .contains("gamepad1, remembered in local.properties by serial number"));
-        assertTrue(SimPads.censusText(pads, one, null, from(one, SimPads.Source.GESTURE))
+        assertTrue(censusOf(pads, one, null, from(one, SimPads.Source.GESTURE))
                 .contains("gamepad1, claimed this run"));
     }
 
@@ -420,14 +446,14 @@ public final class SimPadsTest {
         source.put(two, SimPads.Source.GESTURE);
         assertEquals("  \"pad 1\", serial AAA, id 1 -- gamepad1, claimed this run\n"
                         + "  \"pad 2\", serial BBB, id 2 -- gamepad2, claimed this run\n",
-                SimPads.censusText(Arrays.asList(one, two), one, two, source));
+                censusOf(Arrays.asList(one, two), one, two, source));
     }
 
     @Test
     public void aCensusWithEveryGamepadDrivingDoesNotAskForAGesture() {
         SimGamepad.Pad one = pad(1, "AAA");
         SimGamepad.Pad two = pad(2, "BBB");
-        String full = SimPads.censusText(Arrays.asList(one, two), one, two,
+        String full = censusOf(Arrays.asList(one, two), one, two,
                 from(one, SimPads.Source.STORED));
         assertFalse("nothing is waiting for a slot: " + full, full.contains("Hold Start"));
     }
