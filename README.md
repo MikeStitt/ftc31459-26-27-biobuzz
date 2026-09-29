@@ -3,6 +3,16 @@
 Welcome! This repository contains the source code for FTC Team 31459, Corbels Gold, for
 the 2026-27 BIOBUZZ season.
 
+### Temporary: the guide and the answers, on the web
+
+Built by hand from this branch and committed as bytes, so they do not rebuild
+themselves and stop matching the moment either branch moves. Built on
+`lessons-03` at 5ea90ad against `solutions-03` at 13bfea1.
+
+- [The guide](https://mikestitt.github.io/ftc31459-26-27-biobuzz/guide/) — the student pages.
+- [What the student writes](https://mikestitt.github.io/ftc31459-26-27-biobuzz/review/) — every
+  blank with the answer beside it, 55 across 17 lessons.
+
 ### TODO 
 - [ ] Monitor the sloth plugin for updates to Gradle version [see](PANELS.md#one-time-setup) - 1. Gradle version
 
