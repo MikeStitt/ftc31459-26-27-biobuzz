@@ -131,13 +131,24 @@ public final class SimPadsTest {
     }
 
     @Test
-    public void oneSerialNumberInBothSlotsIsIgnoredRatherThanHalfHonoured() {
+    public void oneSerialNumberInBothSlotsFillsTheFirstAndLeavesTheSecondEmpty() {
         List<SimGamepad.Pad> pads = Collections.singletonList(pad(1, "AAA"));
         SimPads.Opening open =
                 SimPads.opening(pads, pads, storedAs(SimPads.KEY1, "AAA", SimPads.KEY2, "AAA"));
-        assertSame("one gamepad plugged in still takes gamepad1", pads.get(0), open.pad1);
-        assertNull(open.pad2);
-        assertEquals(SimPads.Source.ONLY_PAD, open.from);
+        assertSame("the gamepad the file names still drives", pads.get(0), open.pad1);
+        assertNull("one gamepad cannot fill two slots", open.pad2);
+        assertEquals("the file named it, so that is where the slot came from",
+                SimPads.Source.STORED, open.from);
+    }
+
+    @Test
+    public void oneSerialNumberInBothSlotsFillsTheFirstWithOtherGamepadsPluggedIn() {
+        List<SimGamepad.Pad> pads = Arrays.asList(pad(1, "AAA"), pad(2, "BBB"));
+        SimPads.Opening open =
+                SimPads.opening(pads, pads, storedAs(SimPads.KEY1, "AAA", SimPads.KEY2, "AAA"));
+        assertSame("the gamepad the file names takes gamepad1", pads.get(0), open.pad1);
+        assertNull("and the one it does not name waits for a gesture", open.pad2);
+        assertEquals(SimPads.Source.STORED, open.from);
     }
 
     @Test

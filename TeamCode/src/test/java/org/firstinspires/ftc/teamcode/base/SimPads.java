@@ -306,15 +306,17 @@ public final class SimPads implements AutoCloseable {
      * gamepad in hand.
      *
      * <p>A serial number written to both keys names one gamepad for two slots,
-     * so the file is ignored rather than half honoured, and the one-gamepad rule
-     * is what is left.
+     * which one gamepad cannot fill. The first slot wins and the second is left
+     * empty, so the file is half honoured on purpose rather than thrown away:
+     * the gamepad it names still drives. Writing the file back without the
+     * second line is allowed and is not done, because only a gesture writes the
+     * file.
      */
     static Opening opening(List<SimGamepad.Pad> all, List<SimGamepad.Pad> usable,
             Map<String, String> stored) {
         SimGamepad.Pad first = highestWithSerial(all, stored.get(KEY1));
         SimGamepad.Pad second = highestWithSerial(all, stored.get(KEY2));
         if (first != null && first == second) {
-            first = null;
             second = null;
         }
         if (first != null || second != null) {
