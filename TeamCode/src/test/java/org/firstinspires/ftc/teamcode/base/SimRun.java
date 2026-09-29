@@ -42,6 +42,7 @@ import java.lang.reflect.Field;
  * OpMode burning 25 ms in every loop ran at 0.398 of real time while a pass
  * advanced a fixed 10 ms, and at 1.001 once it advanced what it measured. An
  * OpMode with nothing in its loop runs at 1.000 either way.
+ * {@link SimTicker#stepWorth} says what a step is worth and bounds it.
  *
  * <p>Passes when: SimRunTest, SimArgsTest.
  */
