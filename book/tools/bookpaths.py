@@ -32,5 +32,10 @@ def tracked(*globs: str) -> list[Path]:
 
 
 def relative(path: Path) -> str:
-    """A path as the checks print it: relative to book/."""
-    return str(Path(path).resolve().relative_to(book_root()))
+    """A path as the checks print it and compare it: relative to book/, with
+    forward slashes.
+
+    as_posix(), not str(): on Windows str() gives `source\\tasks\\l9.md`, which
+    matches nothing in keep.toml, and every page read as having no ceiling.
+    """
+    return Path(path).resolve().relative_to(book_root()).as_posix()
