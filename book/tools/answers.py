@@ -173,8 +173,9 @@ def index(names: list[str]) -> str:
     )
 
 
-def generate() -> dict[str, str]:
-    lessons, solutions = pins()
+def generate(solutions: str | None = None) -> dict[str, str]:
+    lessons, pinned = pins()
+    solutions = solutions or pinned
     pages = {}
 
     for path in lesson_files(lessons):
@@ -189,13 +190,17 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true",
                         help="compare with what is committed instead of writing")
+    pinned_lessons, pinned_solutions = pins()
+    parser.add_argument("--solutions", default=pinned_solutions,
+                        help=f"the solutions ref to read (default {pinned_solutions},"
+                             " from keep.toml)")
     args = parser.parse_args()
 
-    lessons, solutions = pins()
+    lessons, solutions = pinned_lessons, args.solutions
     print(f"reading {resolved(lessons)} and {resolved(solutions)}")
 
     out = book_root() / OUT
-    pages = generate()
+    pages = generate(args.solutions)
 
     if args.check:
         problems = 0
