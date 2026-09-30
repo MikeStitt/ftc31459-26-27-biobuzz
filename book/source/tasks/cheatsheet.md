@@ -19,7 +19,7 @@ names that lesson: its check is on the floor.
 | L6 | `L6 Follower Wheels` (TeleOp) | `./gradlew :TeamCode:testDebugUnitTest --tests '*L6FollowerDriveTrainTest*'` |
 | L8 | `L8 Compare Localizers` (TeleOp) | `./gradlew :TeamCode:testDebugUnitTest --tests '*LessonsTest.l8*'` |
 | L9 | `L9 Drive 24` (Autonomous) | `./gradlew :TeamCode:testDebugUnitTest --tests '*LessonsTest.l9*'` |
-| L10 | `L10 Path With Turn` (Autonomous) | `./gradlew :TeamCode:testDebugUnitTest --tests '*LessonsTest.l10*'` |
+| L10 | `L10 Forward Then Strafe` (Autonomous) | `./gradlew :TeamCode:testDebugUnitTest --tests '*LessonsTest.l10*'` |
 | L11 | `L11 Field Relative` (TeleOp) | `./gradlew :TeamCode:testDebugUnitTest --tests '*LessonsTest.l11*'` |
 | L12 | `L12 Robot Relative Button` (TeleOp) | `./gradlew :TeamCode:testDebugUnitTest --tests '*LessonsTest.l12*'` |
 | L13 | `L13 Heading Hold` (TeleOp) | `./gradlew :TeamCode:testDebugUnitTest --tests '*LessonsTest.l13*'` |
@@ -82,4 +82,4 @@ A key ending in `...` has a name added to the end of it, one per wheel or per lo
 | `stick/right_shaped` | `L3aDeadbandOpMode`, `L3bSquaredOpMode` |
 | `wheel/...` | `LessonsDriveTrain` |
 
-Generated from the lessons line at `HEAD` and the solutions line at `solutions-sim-gamepad`.
+Generated from the lessons line at `HEAD` and the solutions line at `solutions-03`.

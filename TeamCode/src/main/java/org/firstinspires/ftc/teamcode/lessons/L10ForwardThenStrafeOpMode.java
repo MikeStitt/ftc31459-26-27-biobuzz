@@ -14,23 +14,25 @@ import org.firstinspires.ftc.teamcode.base.CorbelsAuto;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 
 /**
- * L10: two moves in a row, and the second one turns.
+ * L10: two moves in a row -- drive forward, then strafe sideways.
  *
- * <p>Each leg holds a constant heading, so the robot turns while driving the
- * second leg. (Pedro 3.0.1 has a bug in .linear() heading interpolation --
- * issues #176 and #181 -- so we use .constant().)
+ * <p>Both legs hold the same heading, so the robot never turns. The second leg
+ * moves it sideways instead, which is what mecanum wheels are for: the robot
+ * ends up 24 inches to its right, still facing the way it started.
  *
- * <p>Passes when: LessonsTest.l10_autoDrivesTwoLegsAndEndsTurned
+ * <p>Passes when: LessonsTest.l10_autoDrivesForwardThenStrafesSideways
  */
-@Autonomous(name = "L10 Path With Turn", group = "Lessons")
-public class L10PathWithTurnOpMode extends CorbelsAuto {
+@Autonomous(name = "L10 Forward Then Strafe", group = "Lessons")
+public class L10ForwardThenStrafeOpMode extends CorbelsAuto {
 
     private static final PoseFactory POSES = PoseFactory.degrees();
 
-    private final Pose start = POSES.of(72, 72, 0);
-    private final Pose corner = POSES.of(96, 72, 0);
-    private final Pose end = POSES.of(96, 96, 90);
-
+    double robotHalfLengthIn = 9.0;
+    double fieldPerimeterWidthIn = 1.5;
+    double botStartYIn = robotHalfLengthIn + fieldPerimeterWidthIn;
+    private final Pose start = POSES.of(72, botStartYIn, 90);
+    private final Pose corner = POSES.of(72, 72, 90);
+    private final Pose end = POSES.of(96, 72, 90);
 
     private L6FollowerDriveTrain drivetrain;
 
@@ -72,10 +74,13 @@ public class L10PathWithTurnOpMode extends CorbelsAuto {
 
     @Override
     protected Command routine() {
-        // TODO 1: drive start -> corner holding heading 0.
-        // TODO 2: then corner -> end holding heading 90 degrees, so the robot
-        //         turns as it drives the second leg.
+        // TODO 1: drive start -> corner, holding the heading it starts at.
+        //         That is forward, because the robot faces +y.
+        // TODO 2: then corner -> end, holding that same heading. The robot does
+        //         not turn, so this leg is a sideways strafe.
         // TODO 3: finish with hold(follower, end) so it stays put.
+        //         .constant(pose) takes the heading from a pose. The number
+        //         form is radians, so .constant(90) is not 90 degrees.
         return Command.NOOP;
     }
 }

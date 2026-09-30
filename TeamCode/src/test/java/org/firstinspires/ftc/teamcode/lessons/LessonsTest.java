@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 
 import org.firstinspires.ftc.teamcode.base.CorbelsOpMode;
+import org.firstinspires.ftc.teamcode.OpModeStorage;
 import org.firstinspires.ftc.teamcode.base.OpModeHarness;
 import org.firstinspires.ftc.teamcode.base.Tracker;
 import org.firstinspires.ftc.teamcode.pedro.Constants;
@@ -144,10 +145,26 @@ public class LessonsTest {
         h.gamepad1.right_stick_y = -1.0f;
         h.loops(100, 0);                      // 100 x 10 ms of simulated time
 
+        // A teleop starts where the last autonomous left the robot, so these
+        // are measured from there and along the way it is facing.
         Pose pose = h.robot.localizer.state().pose();
-        assertTrue("drove forward, and got a fair way: " + pose.x(), pose.x() > 40);
-        assertEquals("no sideways drift", 0, pose.y(), EPS);
+        assertTrue("drove forward, and got a fair way: " + forwardOf(pose), forwardOf(pose) > 40);
+        assertEquals("no sideways drift", 0, lateralOf(pose), EPS);
         h.stop();
+    }
+
+    /** How far the robot went along the way it was facing when it started. */
+    private static double forwardOf(Pose now) {
+        Pose s = OpModeStorage.autonomousEndPose;
+        return (now.x() - s.x()) * Math.cos(s.heading())
+                + (now.y() - s.y()) * Math.sin(s.heading());
+    }
+
+    /** How far it slid across that line, which for a tank drive is nothing. */
+    private static double lateralOf(Pose now) {
+        Pose s = OpModeStorage.autonomousEndPose;
+        return -(now.x() - s.x()) * Math.sin(s.heading())
+                + (now.y() - s.y()) * Math.cos(s.heading());
     }
 
     // -------------------------------------------------------------- L3a
@@ -366,29 +383,35 @@ public class LessonsTest {
         Follower follower = h.robot.follower;
         h.init();
         assertEquals("placed at the start pose", 72.0, follower.pose().x(), EPS);
+        assertEquals("against the wall, half a robot out", 10.5, follower.pose().y(), EPS);
+        assertEquals("facing +y", 90.0, Math.toDegrees(follower.pose().heading()), EPS);
         h.start();
         runUntilDone(h, follower, 3.0);
         h.stop();
 
-        assertEquals("ends 24 inches further along x", 96.0, follower.pose().x(), 1.0);
-        assertEquals("and does not wander in y", 72.0, follower.pose().y(), 1.0);
+        // Forward is +y at heading 90, so the 24 inches are in y and x holds.
+        assertEquals("ends 24 inches further along y", 34.5, follower.pose().y(), 1.0);
+        assertEquals("and does not wander in x", 72.0, follower.pose().x(), 1.0);
+        assertEquals("and still faces +y", 90.0, Math.toDegrees(follower.pose().heading()), 15.0);
     }
 
     // -------------------------------------------------------------- L10
 
     @Test
-    public void l10_autoDrivesTwoLegsAndEndsTurned() {
-        OpModeHarness h = new OpModeHarness(new L10PathWithTurnOpMode());
+    public void l10_autoDrivesForwardThenStrafesSideways() {
+        OpModeHarness h = new OpModeHarness(new L10ForwardThenStrafeOpMode());
         Follower follower = h.robot.follower;
         h.init();
         h.start();
         runUntilDone(h, follower, 6.0);
         h.stop();
 
+        // Forward to (72, 72), then 24 inches of strafe to the robot's right.
         Pose end = follower.pose();
-        assertEquals(96.0, end.x(), 2.0);
-        assertEquals(96.0, end.y(), 2.0);
-        assertEquals("finishes facing +y", 90.0, Math.toDegrees(end.heading()), 15.0);
+        assertEquals("strafed 24 inches in x", 96.0, end.x(), 2.0);
+        assertEquals("and stayed on the line it drove up", 72.0, end.y(), 2.0);
+        assertEquals("never turned, so it still faces +y",
+                90.0, Math.toDegrees(end.heading()), 15.0);
     }
 
     // -------------------------------------------------------------- L11

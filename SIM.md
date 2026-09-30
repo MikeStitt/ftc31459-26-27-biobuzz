@@ -14,28 +14,35 @@ Two ways to run it:
 
 | Way | What it is for |
 |---|---|
-| `./gradlew :TeamCode:test` | The tests. They drive the sticks in code and assert where the robot ended up |
-| `./gradlew :TeamCode:simRun` | Watching. One lesson, running until Ctrl-C, published to AdvantageScope |
+| `./gradlew :TeamCode:test` | Everything except the lessons package. They drive the sticks in code and assert where the robot ended up |
+| `./gradlew :TeamCode:testLessons` | The lessons package alone. On the lessons line most of it fails, because the blanks are open |
+| `./gradlew :TeamCode:simRun` | Watching. One OpMode, running until Ctrl-C, published to AdvantageScope |
 
 ## Watching a lesson
 
 Start the simulator:
 
 ```
-./gradlew :TeamCode:simRun --args="L2bTankOpMode left_stick_y=-1 right_stick_y=-1"
+./gradlew :TeamCode:simRun --args="lessons.L2bTankOpMode --left_stick_y=-1 --right_stick_y=-1"
 ```
 
-The first argument is a lesson's class name without its package; leave it off and you get
-`L15CombinedOpMode`. Everything after it sets a field of `gamepad1` by that field's own name, so
-`left_stick_y=-1` is the left stick pushed fully forward, and `a=true` is the A button held. The
-values are set once and held for the whole run. Driving the sticks while it runs is
-`sim.sticks.input` in the workspace's `open-work.md`, and is not built yet.
+The first argument is the OpMode's class name after `org.firstinspires.ftc.teamcode`, so a lesson is
+`lessons.L2bTankOpMode` and a simulator teleop is `base.SimOpModes$Tank`. Leaving it off is an
+error, not a default. Every option after it is `--name=value` naming one of the 21 controls a
+gamepad has, so `--left_stick_y=-1` is the left stick pushed fully forward and `--a=true` is the A
+button held. A control is held from before the run starts, so `--a=true` fires `aWasPressed()` on
+the first loop and not again.
+
+`--args="--help"` prints all of it, including which field names are refused and why.
+
+To push the sticks yourself instead, plug a gamepad in and use `--pad`. `--pad-check` reports what a
+gamepad is doing without running an OpMode, so it can run beside one.
 
 It prints the port it is listening on and then runs:
 
 ```
 NT: Listening on NT3 port 1735, NT4 port 5810
-L2bTankOpMode running. Connect AdvantageScope to 127.0.0.1 as NetworkTables 4, and Ctrl-C to stop.
+lessons.L2bTankOpMode running. Connect AdvantageScope to 127.0.0.1 as NetworkTables 4, and Ctrl-C to stop.
 ```
 
 Point AdvantageScope at `127.0.0.1` and it will find the topics under `sim/`. Add a 2D field and
@@ -69,12 +76,14 @@ The flight log's other struct topics are still missing: no `Speeds`, no `Twist`,
 ## Which teleop a test drives
 
 The simulator's own tests drive `SimOpModes.Tank` and `SimOpModes.Driven`, which are built only out
-of `base`. That is deliberate: on the lessons branch the lessons are blanks, and a test of the
-simulator that drove one would fail there, where a failure outside the `lessons` package is a defect
-rather than the point.
+of `base`. `SimOpModes.Edges` and `SimOpModes.Slow` are there for running by hand: one prints a
+button and its press edge, the other burns 25 ms in every loop to show a slow OpMode still moves the
+robot at field speed. That is deliberate: on the lessons branch the lessons are blanks, and a test
+of the simulator that drove one would fail there, where a failure outside the `lessons` package is a
+defect rather than the point.
 
 The one test that asks a real lesson to move the robot is
-`LessonsTest.l2_theSticksMoveTheSimulatedRobot`, and it lives in the `lessons` package, where a
+`LessonsTest.l2b_theSticksMoveTheSimulatedRobot`, and it lives in the `lessons` package, where a
 blank L2 failing is expected.
 
 ## Where a failing test leaves its log
@@ -115,12 +124,16 @@ So the simulator has no slip, no scrub, no battery sag, no floor, no field wall,
 backwards and no Pinpoint. It cannot tell you a path is too fast for the tyres, and it will happily
 drive through the perimeter. **When the simulator and the robot disagree, the robot is right.**
 
-The robot starts at Pedro's origin, which is a corner of the field, unless the lesson sets a pose.
-So a lesson that drives forward out of `simRun` starts against the wall and heads up the field.
+An autonomous starts where its own `startPose()` says. A teleop starts where the last autonomous
+finished, which `OpModeStorage.autonomousEndPose` carries between them; with no autonomous before
+it, that is the middle of the near wall facing up the field. Nothing starts at Pedro's origin any
+more, which is a field corner and outside the perimeter frame.
 
-Time is simulated, not measured: `OpModeHarness.clock` advances `stepMs` every loop and nothing
-reads the wall clock, so the same number of loops integrates the same motion every run. `simRun`
-sleeps `stepMs` between loops as well, which is what makes it look like real time.
+Time is simulated in a test and measured in a run. `OpModeHarness.loop()` advances `stepMs` and
+reads no wall clock, so a test integrates the same motion every time. `simRun` calls `loop(long)`
+with the real milliseconds its last pass took, bounded at 100 ms, so the robot moves at the speed it
+would move on the field however slow the OpMode's own loop is. Everything periodic runs on a 10 ms
+grid measured from the clock read at startup, rather than sleeping a fixed time after each pass.
 
 ## Why the NetworkTables version is not the current one
 
