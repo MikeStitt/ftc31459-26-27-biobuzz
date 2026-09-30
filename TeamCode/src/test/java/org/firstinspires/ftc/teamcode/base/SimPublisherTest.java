@@ -16,13 +16,11 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The simulation's NetworkTables server: that it starts, and that what it
  * publishes is what the simulated robot is doing.
- *
- * <p>Ports 1799 and 5899 rather than the real 1735 and 5810, so a test never
- * fights a server someone left running.
  */
 public class SimPublisherTest {
 
@@ -30,15 +28,53 @@ public class SimPublisherTest {
     @Rule
     public final SimLogs logs = new SimLogs();
 
+    /**
+     * A port pair of its own for each test, counted from these.
+     *
+     * <p>1799 and 5899 rather than the real 1735 and 5810, so a test never
+     * fights a server someone left running. A pair per test rather than one
+     * pair reused: a server the test before it stopped has released its port
+     * here every time, and on a loaded runner it need not have, which makes the
+     * bind a race nothing in the test can see.
+     */
     private static final int NT3 = 1799;
     private static final int NT4 = 5899;
 
+    private static int nt3(int test) {
+        return NT3 + test;
+    }
+
+    private static int nt4(int test) {
+        return NT4 + test;
+    }
+
+    /**
+     * Whether a client can connect on this port, waiting for a listener to
+     * appear rather than asking once.
+     *
+     * <p>{@code startServer} hands the work to a thread and returns, so the
+     * socket is not bound when the constructor returns. A connect timeout is no
+     * help: a port nothing is listening on is refused at once, so one attempt
+     * either wins the race or reports a server that is on its way as absent.
+     * That is what failed on windows-latest and nowhere else.
+     */
     private static boolean accepts(int port) {
-        try (Socket socket = new Socket()) {
-            socket.connect(new InetSocketAddress("127.0.0.1", port), 2000);
-            return true;
-        } catch (Exception e) {
-            return false;
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+        while (true) {
+            try (Socket socket = new Socket()) {
+                socket.connect(new InetSocketAddress("127.0.0.1", port), 500);
+                return true;
+            } catch (Exception e) {
+                if (System.nanoTime() >= deadline) {
+                    return false;
+                }
+            }
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return false;
+            }
         }
     }
 
@@ -46,9 +82,9 @@ public class SimPublisherTest {
     public void theServerStartsAndListens() {
         OpModeHarness h = new OpModeHarness(new SimOpModes.Tank());
         h.init();
-        try (SimPublisher out = new SimPublisher(h, NT3, NT4)) {
+        try (SimPublisher out = new SimPublisher(h, nt3(0), nt4(0))) {
             out.publish();
-            assertTrue("a client can connect on the NT4 port", accepts(NT4));
+            assertTrue("a client can connect on the NT4 port", accepts(nt4(0)));
             assertTrue("the instance is a server",
                     out.instance().getNetworkMode()
                             .contains(NetworkTableInstance.NetworkMode.kServer));
@@ -66,7 +102,7 @@ public class SimPublisherTest {
     public void theFieldViewIsToldWhatAPoseLooksLike() {
         OpModeHarness h = new OpModeHarness(new SimOpModes.Tank());
         h.init();
-        try (SimPublisher out = new SimPublisher(h, NT3, NT4)) {
+        try (SimPublisher out = new SimPublisher(h, nt3(1), nt4(1))) {
             out.publish();
             assertEquals("the pose topic says it is a struct", "struct:Pose2d",
                     out.instance().getTopic("sim/Pose").getTypeString());
@@ -98,7 +134,7 @@ public class SimPublisherTest {
             h.gamepad1.left_stick_y = -1.0f;
             h.gamepad1.right_stick_y = -1.0f;
             h.loops(200, 0);
-            try (SimPublisher out = new SimPublisher(h, NT3, NT4)) {
+            try (SimPublisher out = new SimPublisher(h, nt3(2), nt4(2))) {
                 out.publish();
                 byte[] raw = out.instance().getRawTopic("sim/Pose")
                         .subscribe("struct:Pose2d", new byte[0]).get();
