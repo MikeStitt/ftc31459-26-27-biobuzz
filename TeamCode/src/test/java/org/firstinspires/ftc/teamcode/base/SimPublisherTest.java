@@ -21,6 +21,24 @@ import java.util.concurrent.TimeUnit;
 /**
  * The simulation's NetworkTables server: that it starts, and that what it
  * publishes is what the simulated robot is doing.
+ *
+ * <p>One test rather than one per fact, because a second NetworkTables instance
+ * in the same JVM aborts that JVM on macOS. Measured on macos-latest, Temurin
+ * 17.0.20 on arm64: the first server logs
+ * {@code NT: Listening on NT3 port 1800, NT4 port 5900} and 15 ms later the next
+ * instance's startup gives {@code libc++abi: terminating due to uncaught
+ * exception of type std::__1::system_error: mutex lock failed: Invalid argument}
+ * and exit 134, with no test reported as failing. There is no
+ * {@code hs_err_pid} file to read, because the abort is on a thread HotSpot does
+ * not cover, and macOS writes no crash report for it on that runner either. It
+ * failed three of the six runs made on 2026-09-30 and never once on this
+ * laptop, which has sixteen cores against the runner's few: 15 runs of this
+ * suite in one JVM, 600 sequential create-and-close cycles, and 600 more with
+ * each close on a thread of its own so a teardown overlaps the next startup.
+ *
+ * <p>Standing one server up and asking it everything is also the simpler shape.
+ * Binding a port is the one thing here that is not side-effect-free, and three
+ * tests bound three of them to check facts that need no client at all.
  */
 public class SimPublisherTest {
 
@@ -29,24 +47,11 @@ public class SimPublisherTest {
     public final SimLogs logs = new SimLogs();
 
     /**
-     * A port pair of its own for each test, counted from these.
-     *
-     * <p>1799 and 5899 rather than the real 1735 and 5810, so a test never
-     * fights a server someone left running. A pair per test rather than one
-     * pair reused: a server the test before it stopped has released its port
-     * here every time, and on a loaded runner it need not have, which makes the
-     * bind a race nothing in the test can see.
+     * 1799 and 5899 rather than the real 1735 and 5810, so the test never fights
+     * a server someone left running.
      */
     private static final int NT3 = 1799;
     private static final int NT4 = 5899;
-
-    private static int nt3(int test) {
-        return NT3 + test;
-    }
-
-    private static int nt4(int test) {
-        return NT4 + test;
-    }
 
     /**
      * Whether a client can connect on this port, waiting for a listener to
@@ -78,20 +83,6 @@ public class SimPublisherTest {
         }
     }
 
-    @Test
-    public void theServerStartsAndListens() {
-        OpModeHarness h = new OpModeHarness(new SimOpModes.Tank());
-        h.init();
-        try (SimPublisher out = new SimPublisher(h, nt3(0), nt4(0))) {
-            out.publish();
-            assertTrue("a client can connect on the NT4 port", accepts(nt4(0)));
-            assertTrue("the instance is a server",
-                    out.instance().getNetworkMode()
-                            .contains(NetworkTableInstance.NetworkMode.kServer));
-        }
-        h.stop();
-    }
-
     /** The three little-endian doubles of a {@code struct:Pose2d}. */
     private static double[] unpack(byte[] raw) {
         ByteBuffer b = ByteBuffer.wrap(raw).order(ByteOrder.LITTLE_ENDIAN);
@@ -99,32 +90,7 @@ public class SimPublisherTest {
     }
 
     @Test
-    public void theFieldViewIsToldWhatAPoseLooksLike() {
-        OpModeHarness h = new OpModeHarness(new SimOpModes.Tank());
-        h.init();
-        try (SimPublisher out = new SimPublisher(h, nt3(1), nt4(1))) {
-            out.publish();
-            assertEquals("the pose topic says it is a struct", "struct:Pose2d",
-                    out.instance().getTopic("sim/Pose").getTypeString());
-            String[][] expected = {
-                    {"struct:Translation2d", "double x;double y"},
-                    {"struct:Rotation2d", "double value"},
-                    {"struct:Pose2d", "Translation2d translation;Rotation2d rotation"}};
-            for (String[] schema : expected) {
-                String key = "/.schema/" + schema[0];
-                assertEquals(key + " is published as a schema", "structschema",
-                        out.instance().getTopic(key).getTypeString());
-                byte[] raw = out.instance().getRawTopic(key)
-                        .subscribe("structschema", new byte[0]).get();
-                assertEquals("what " + schema[0] + " is made of", schema[1],
-                        new String(raw, StandardCharsets.UTF_8));
-            }
-        }
-        h.stop();
-    }
-
-    @Test
-    public void theRobotIsPublishedWhereTheFieldViewWantsIt() {
+    public void theServerPublishesWhatTheSimulatedRobotIsDoing() {
         int savedTurns = FlightLog.fieldQuarterTurns;
         OpModeHarness h = new OpModeHarness(new SimOpModes.Tank());
         try {
@@ -134,8 +100,30 @@ public class SimPublisherTest {
             h.gamepad1.left_stick_y = -1.0f;
             h.gamepad1.right_stick_y = -1.0f;
             h.loops(200, 0);
-            try (SimPublisher out = new SimPublisher(h, nt3(2), nt4(2))) {
+            try (SimPublisher out = new SimPublisher(h, NT3, NT4)) {
                 out.publish();
+
+                assertTrue("a client can connect on the NT4 port", accepts(NT4));
+                assertTrue("the instance is a server",
+                        out.instance().getNetworkMode()
+                                .contains(NetworkTableInstance.NetworkMode.kServer));
+
+                assertEquals("the pose topic says it is a struct", "struct:Pose2d",
+                        out.instance().getTopic("sim/Pose").getTypeString());
+                String[][] expected = {
+                        {"struct:Translation2d", "double x;double y"},
+                        {"struct:Rotation2d", "double value"},
+                        {"struct:Pose2d", "Translation2d translation;Rotation2d rotation"}};
+                for (String[] schema : expected) {
+                    String key = "/.schema/" + schema[0];
+                    assertEquals(key + " is published as a schema", "structschema",
+                            out.instance().getTopic(key).getTypeString());
+                    byte[] raw = out.instance().getRawTopic(key)
+                            .subscribe("structschema", new byte[0]).get();
+                    assertEquals("what " + schema[0] + " is made of", schema[1],
+                            new String(raw, StandardCharsets.UTF_8));
+                }
+
                 byte[] raw = out.instance().getRawTopic("sim/Pose")
                         .subscribe("struct:Pose2d", new byte[0]).get();
                 assertEquals("a Pose2d is three doubles", 24, raw.length);
