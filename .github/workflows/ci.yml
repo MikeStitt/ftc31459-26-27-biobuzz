@@ -39,6 +39,21 @@ jobs:
         shell: bash
         run: ./gradlew --no-daemon :TeamCode:test
 
+      # A JVM that dies in native code writes its frames to hs_err_pid<pid>.log
+      # and the console gets the header alone, so the Windows crash read as an
+      # address in a DLL and nothing more. Keep the reports of a failing run.
+      - name: Keep the reports of a failing run
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tests-${{ matrix.os }}
+          if-no-files-found: ignore
+          path: |
+            TeamCode/build/test-results/**
+            TeamCode/build/reports/tests/**
+            **/hs_err_pid*.log
+            **/replay_pid*.log
+
   solutions-tests:
     name: lessons suite against the solutions (${{ matrix.os }})
     if: contains(github.ref_name, 'solutions')
