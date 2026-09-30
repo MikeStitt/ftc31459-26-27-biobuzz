@@ -39,6 +39,20 @@ jobs:
         shell: bash
         run: ./gradlew --no-daemon :TeamCode:test
 
+      # A native abort on a thread HotSpot does not cover writes no
+      # hs_err_pid<pid>.log, and macOS aborts the test JVM that way: the console
+      # gets one libc++abi line and nothing else. The operating system keeps the
+      # backtrace of every crashed process, so gather it where the upload can
+      # reach it.
+      - name: Gather the operating system's crash reports
+        if: failure() && runner.os == 'macOS'
+        shell: bash
+        run: |
+          mkdir -p crash-reports
+          cp -R ~/Library/Logs/DiagnosticReports/. crash-reports/ 2>/dev/null || true
+          cp -R /Library/Logs/DiagnosticReports/. crash-reports/ 2>/dev/null || true
+          ls -l crash-reports
+
       # A JVM that dies in native code writes its frames to hs_err_pid<pid>.log
       # and the console gets the header alone, so the Windows crash read as an
       # address in a DLL and nothing more. Keep the reports of a failing run.
@@ -53,6 +67,7 @@ jobs:
             TeamCode/build/reports/tests/**
             **/hs_err_pid*.log
             **/replay_pid*.log
+            crash-reports/**
 
   solutions-tests:
     name: lessons suite against the solutions (${{ matrix.os }})
