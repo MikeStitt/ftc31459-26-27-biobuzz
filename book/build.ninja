@@ -13,8 +13,12 @@
 
 ninja_required_version = 1.10
 
-py = python3
-tools = PYTHONPATH=tools $py
+# `python`, not `python3`: the guide's venv and every CI runner provide it, and
+# `python3` does not exist on Windows. The import path is set by tools/run.py
+# rather than by an inline PYTHONPATH, which is shell syntax that Windows `cmd`
+# reads as the name of a program to run.
+py = python
+run = $py tools/run.py
 
 rule sphinx
   command = sphinx-build -W -b html source build/html
@@ -22,37 +26,37 @@ rule sphinx
   pool = console
 
 rule wrap
-  command = $tools tools/check_wrap.py
+  command = $run check_wrap
   description = prose wrapped at 100 columns
   pool = console
 
 rule reading
-  command = $tools tools/check_reading_level.py
+  command = $run check_reading_level
   description = student pages at grade 8 or below
   pool = console
 
 rule keep
-  command = $tools tools/check_keep.py
+  command = $run check_keep
   description = kept passages unchanged
   pool = console
 
 rule words
-  command = $tools tools/check_words.py
+  command = $run check_words
   description = pages under their word ceilings
   pool = console
 
 rule answers
-  command = $tools tools/answers.py --check
+  command = $run answers --check
   description = answer pages match the two lesson lines
   pool = console
 
 rule figures
-  command = $tools tools/check_figures.py
+  command = $run check_figures
   description = pencilled figures match FIGURES.md
   pool = console
 
 rule cheatsheet
-  command = $tools tools/cheatsheet.py --check
+  command = $run cheatsheet --check
   description = the cheat sheet matches the lesson code
   pool = console
 
@@ -74,7 +78,7 @@ default book
 # student to write, for reading rather than gating. Its pages are generated and
 # not committed.
 rule diffs
-  command = $tools tools/diffs.py --build
+  command = $run diffs --build
   description = what the student writes, one blank at a time
   pool = console
 
