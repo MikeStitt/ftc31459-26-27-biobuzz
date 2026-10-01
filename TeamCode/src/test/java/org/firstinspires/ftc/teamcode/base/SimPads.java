@@ -371,15 +371,32 @@ public final class SimPads implements AutoCloseable {
     }
 
     /**
+     * True for every pad the library lists and opens, a pad reporting no serial
+     * number included.
+     *
+     * <p>Experimental, and on this branch only. The requirements say a pad with
+     * no serial number is not accepted, and {@link State#NOT_ACCEPTED} is left
+     * in place, unreached, so that going back is this one method. A pad with no
+     * serial number is read, takes a free slot and answers a gesture; what it
+     * cannot do is be remembered, because the slot table in
+     * {@code local.properties} is keyed on the serial number. Its slot is
+     * written nowhere, so the next run starts it over.
+     *
+     * <p>{@link #hasSerial} is the question where identity is what matters.
+     */
+    static boolean accepted(SimGamepad.Pad pad) {
+        return true;
+    }
+
+    /**
      * True when the library reports a serial number for this pad, which is any
      * string of one character or more.
      *
      * <p>A serial number is the only handle that survives unplugging, so a pad
      * without one cannot be remembered and cannot be told from another of the
-     * same model. Such a pad is not used: it is not read, no slot takes it and
-     * no gesture moves it.
+     * same model.
      */
-    static boolean accepted(SimGamepad.Pad pad) {
+    static boolean hasSerial(SimGamepad.Pad pad) {
         return pad.serial != null && !pad.serial.isEmpty();
     }
 
@@ -407,9 +424,17 @@ public final class SimPads implements AutoCloseable {
         return found;
     }
 
-    /** True when this pad is the one another with its serial number stands in for. */
+    /**
+     * True when this pad is the one another with its serial number stands in for.
+     *
+     * <p>{@link #hasSerial} rather than {@link #accepted}, because being passed
+     * over is about a serial number two pads share. A pad with no serial number
+     * has no twin to be passed over by, and asking {@code accepted} here would
+     * pass every one of them over, which on this branch is every pad that
+     * reports no serial number.
+     */
     static boolean passedOver(SimGamepad.Pad pad, List<SimGamepad.Pad> pads) {
-        return accepted(pad) && highestWithSerial(pads, pad.serial) != pad;
+        return hasSerial(pad) && highestWithSerial(pads, pad.serial) != pad;
     }
 
     /**
