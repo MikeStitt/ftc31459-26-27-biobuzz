@@ -86,11 +86,18 @@ public final class SimPadsTest {
     // --- which pads are accepted ------------------------------------------
 
     @Test
-    public void aPadIsAcceptedOnceItReportsASerialNumberOfAnyLength() {
-        assertTrue("one character is a serial number", SimPads.accepted(pad(1, "X")));
+    public void everyPadIsAccepted() {
         assertTrue(SimPads.accepted(pad(1, "1DD5F3D")));
-        assertFalse("no serial number at all", SimPads.accepted(pad(1, null)));
-        assertFalse("an empty string is not a serial number", SimPads.accepted(pad(1, "")));
+        assertTrue("no serial number at all", SimPads.accepted(pad(1, null)));
+        assertTrue("an empty string either", SimPads.accepted(pad(1, "")));
+    }
+
+    @Test
+    public void aSerialNumberIsAnyStringOfOneCharacterOrMore() {
+        assertTrue("one character is a serial number", SimPads.hasSerial(pad(1, "X")));
+        assertTrue(SimPads.hasSerial(pad(1, "1DD5F3D")));
+        assertFalse("no serial number at all", SimPads.hasSerial(pad(1, null)));
+        assertFalse("an empty string is not a serial number", SimPads.hasSerial(pad(1, "")));
     }
 
     // --- what fills a slot before any gesture -----------------------------
@@ -242,6 +249,17 @@ public final class SimPadsTest {
                 SimPads.slotLine(null, "AAA", pads));
     }
 
+    @Test
+    public void aPadWithNoSerialNumberHoldingASlotWritesNoEntryForIt() {
+        SimGamepad.Pad nameless = pad(1, null);
+        List<SimGamepad.Pad> pads = Collections.singletonList(nameless);
+        assertNull("there is no serial number to write, so the slot is remembered nowhere",
+                SimPads.slotLine(nameless, null, pads));
+        assertNull("a gesture can put it in a slot an absent gamepad had reserved,"
+                        + " and then that reservation goes",
+                SimPads.slotLine(nameless, "GONE", pads));
+    }
+
     // --- whether a stored serial number is trusted ------------------------
 
     @Test
@@ -298,12 +316,14 @@ public final class SimPadsTest {
     }
 
     @Test
-    public void aPadWithNoSerialNumberIsNotPassedOverButIsNotUsedEither() {
+    public void aPadWithNoSerialNumberIsNotPassedOverAndIsUsedAnyway() {
         List<SimGamepad.Pad> pads = Arrays.asList(pad(3, null), pad(7, null));
         assertFalse("passed over is about a serial number two pads share",
                 SimPads.passedOver(pads.get(0), pads));
-        assertFalse(SimPads.accepted(pads.get(0)));
-        assertFalse(SimPads.accepted(pads.get(1)));
+        assertFalse("and neither of them stands in for the other",
+                SimPads.passedOver(pads.get(1), pads));
+        assertTrue(SimPads.accepted(pads.get(0)));
+        assertTrue(SimPads.accepted(pads.get(1)));
     }
 
     // --- which of the five states a gamepad is in -------------------------
@@ -318,12 +338,12 @@ public final class SimPadsTest {
     }
 
     @Test
-    public void aGamepadWithNoSerialNumberIsNotAccepted() {
+    public void aGamepadWithNoSerialNumberWaitsForASlotRatherThanBeingRefused() {
         List<SimGamepad.Pad> pads = Arrays.asList(pad(1, null), pad(2, ""));
-        assertEquals(SimPads.State.NOT_ACCEPTED,
+        assertEquals(SimPads.State.UNCLAIMED_FREE,
                 stateOf(pads.get(0), pads, null, null));
         assertEquals("an empty string is no serial number either",
-                SimPads.State.NOT_ACCEPTED, stateOf(pads.get(1), pads, null, null));
+                SimPads.State.UNCLAIMED_FREE, stateOf(pads.get(1), pads, null, null));
     }
 
     @Test
@@ -400,8 +420,7 @@ public final class SimPadsTest {
         SimGamepad.Pad waiting = pad(3, "CCC");
         List<SimGamepad.Pad> pads = Arrays.asList(driving, nameless, waiting);
         assertEquals("  \"pad 1\", serial AAA, id 1 -- gamepad1, a slot local.properties left free\n"
-                        + "  \"pad 2\", no serial number, id 2"
-                        + " -- no serial number, so it is not used\n"
+                        + "  \"pad 2\", no serial number, id 2 -- not claimed yet\n"
                         + "  \"pad 3\", serial CCC, id 3 -- not claimed yet\n"
                         + "Hold Start and press A to drive as gamepad1,"
                         + " or Start and B for gamepad2.\n",
